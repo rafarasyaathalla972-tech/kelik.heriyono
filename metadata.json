@@ -1,0 +1,6 @@
+{
+  "name": "Laporan Kinerja Shift Pabrik Kertas",
+  "description": "Sistem laporan kinerja harian shift mesin PM1, PM2, dan PM5 PT. Panca Usahatama Paramita lengkap dengan grafik pencapaian, SOP 4 tahapan proses, materi training, dan audit riwayat.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
