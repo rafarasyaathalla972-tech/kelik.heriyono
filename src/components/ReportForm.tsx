@@ -145,7 +145,15 @@ export const ReportForm: React.FC<ReportFormProps> = ({
   const [date, setDate] = useState<string>(
     editingReport?.date || new Date().toISOString().split('T')[0]
   );
-  const [shift, setShift] = useState<ShiftType>(editingReport?.shift || 'Pagi');
+  const [shift, setShift] = useState<ShiftType>(() => {
+    if (editingReport?.shift) {
+      if (editingReport.shift === 'Pagi') return 'Shift 1';
+      if (editingReport.shift === 'Siang') return 'Shift 2';
+      if (editingReport.shift === 'Malam') return 'Shift 3';
+      return editingReport.shift;
+    }
+    return 'Shift 1';
+  });
   const [operatorName, setOperatorName] = useState<string>(editingReport?.operatorName || '');
   const [machine, setMachine] = useState<MachineId>(editingReport?.machine || 'PM1');
 
@@ -463,7 +471,13 @@ export const ReportForm: React.FC<ReportFormProps> = ({
         try {
           const parsed = JSON.parse(savedDraft);
           if (parsed.operatorName) setOperatorName(parsed.operatorName);
-          if (parsed.shift) setShift(parsed.shift);
+          if (parsed.shift) {
+            let s = parsed.shift;
+            if (s === 'Pagi') s = 'Shift 1';
+            else if (s === 'Siang') s = 'Shift 2';
+            else if (s === 'Malam') s = 'Shift 3';
+            setShift(s);
+          }
         } catch (e) {
           // ignore corrupted draft
         }
@@ -492,8 +506,9 @@ export const ReportForm: React.FC<ReportFormProps> = ({
     }
 
     // Build new report
+    const shiftSlug = shift.toLowerCase().replace(/\s+/g, '');
     const newReport: ShiftReport = {
-      id: `rep-${machine.toLowerCase()}-${date}-${shift.toLowerCase()}-${Date.now().toString().slice(-4)}`,
+      id: `rep-${machine.toLowerCase()}-${date}-${shiftSlug}-${Date.now().toString().slice(-4)}`,
       date,
       shift,
       operatorName: operatorName.trim(),
@@ -818,17 +833,17 @@ export const ReportForm: React.FC<ReportFormProps> = ({
 
             {/* Shift & Tanggal */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs pt-1">
-              {/* Shift Pagi / Siang / Malam */}
+              {/* Shift 1 / Shift 2 / Shift 3 */}
               <div>
                 <label className="block text-slate-300 font-semibold mb-1.5">
                   Shift Kerja <span className="text-rose-400">*</span>
                 </label>
                 <div className="grid grid-cols-3 gap-1.5">
-                  {(['Pagi', 'Siang', 'Malam'] as ShiftType[]).map((s) => (
+                  {(['Shift 1', 'Shift 2', 'Shift 3'] as ShiftType[]).map((s) => (
                     <button
                       type="button"
                       key={s}
-                      id={`shift-select-${s}`}
+                      id={`shift-select-${s.toLowerCase().replace(/\s+/g, '-')}`}
                       onClick={() => setShift(s)}
                       className={`py-2.5 px-2 text-center font-bold text-xs rounded-xl border transition-all ${
                         shift === s
@@ -836,7 +851,7 @@ export const ReportForm: React.FC<ReportFormProps> = ({
                           : 'bg-slate-950 border-slate-800 text-slate-300 hover:bg-slate-800'
                       }`}
                     >
-                      Shift {s}
+                      {s}
                     </button>
                   ))}
                 </div>

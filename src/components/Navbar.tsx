@@ -30,8 +30,8 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const [currentTime, setCurrentTime] = useState<string>('');
   const [currentShift, setCurrentShift] = useState<{ shift: ShiftType; timeRange: string }>({
-    shift: 'Pagi',
-    timeRange: '07:00 - 15:00'
+    shift: 'Shift 1',
+    timeRange: '07:00 - 15:00 WIB'
   });
 
   useEffect(() => {
@@ -43,11 +43,11 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       const hour = now.getHours();
       if (hour >= 7 && hour < 15) {
-        setCurrentShift({ shift: 'Pagi', timeRange: '07:00 - 15:00 WIB' });
+        setCurrentShift({ shift: 'Shift 1', timeRange: '07:00 - 15:00 WIB' });
       } else if (hour >= 15 && hour < 23) {
-        setCurrentShift({ shift: 'Siang', timeRange: '15:00 - 23:00 WIB' });
+        setCurrentShift({ shift: 'Shift 2', timeRange: '15:00 - 23:00 WIB' });
       } else {
-        setCurrentShift({ shift: 'Malam', timeRange: '23:00 - 07:00 WIB' });
+        setCurrentShift({ shift: 'Shift 3', timeRange: '23:00 - 07:00 WIB' });
       }
     };
 

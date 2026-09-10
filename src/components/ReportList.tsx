@@ -45,7 +45,11 @@ export const ReportList: React.FC<ReportListProps> = ({
   const filteredReports = useMemo(() => {
     return reports.filter(rep => {
       const matchMachine = machineFilter === 'ALL' || rep.machine === machineFilter;
-      const matchShift = shiftFilter === 'ALL' || rep.shift === shiftFilter;
+      const matchShift = shiftFilter === 'ALL' || 
+        rep.shift === shiftFilter ||
+        (shiftFilter === 'Shift 1' && (rep.shift as string) === 'Pagi') ||
+        (shiftFilter === 'Shift 2' && (rep.shift as string) === 'Siang') ||
+        (shiftFilter === 'Shift 3' && (rep.shift as string) === 'Malam');
       const matchDate = !selectedDateFilter || rep.date === selectedDateFilter;
       
       const q = searchQuery.toLowerCase();
@@ -208,9 +212,9 @@ export const ReportList: React.FC<ReportListProps> = ({
               className="bg-transparent text-slate-100 font-bold focus:outline-none flex-1 cursor-pointer"
             >
               <option value="ALL" className="bg-slate-900">Semua Shift</option>
-              <option value="Pagi" className="bg-slate-900">Shift Pagi</option>
-              <option value="Siang" className="bg-slate-900">Shift Siang</option>
-              <option value="Malam" className="bg-slate-900">Shift Malam</option>
+              <option value="Shift 1" className="bg-slate-900">Shift 1</option>
+              <option value="Shift 2" className="bg-slate-900">Shift 2</option>
+              <option value="Shift 3" className="bg-slate-900">Shift 3</option>
             </select>
           </div>
 
@@ -280,7 +284,7 @@ export const ReportList: React.FC<ReportListProps> = ({
                       {report.date}
                     </span>
                     <span className="px-2 py-1 bg-slate-800/90 text-slate-300 text-xs font-semibold rounded-md">
-                      Shift {report.shift}
+                      {report.shift.startsWith('Shift') ? report.shift : `Shift ${report.shift}`}
                     </span>
                     <span className="text-xs font-semibold text-slate-200 pl-1">
                       Oleh: <strong className="text-white">{report.operatorName}</strong>

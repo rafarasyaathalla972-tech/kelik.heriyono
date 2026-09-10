@@ -40,7 +40,11 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ reports }) => 
   const filteredReports = useMemo(() => {
     return reports.filter(r => {
       const matchMachine = selectedMachineFilter === 'ALL' || r.machine === selectedMachineFilter;
-      const matchShift = selectedShiftFilter === 'ALL' || r.shift === selectedShiftFilter;
+      const matchShift = selectedShiftFilter === 'ALL' || 
+        r.shift === selectedShiftFilter ||
+        (selectedShiftFilter === 'Shift 1' && (r.shift as string) === 'Pagi') ||
+        (selectedShiftFilter === 'Shift 2' && (r.shift as string) === 'Siang') ||
+        (selectedShiftFilter === 'Shift 3' && (r.shift as string) === 'Malam');
       return matchMachine && matchShift;
     });
   }, [reports, selectedMachineFilter, selectedShiftFilter]);
@@ -141,18 +145,28 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ reports }) => 
     const sorted = [...filteredReports].sort((a, b) => {
       const dComp = a.date.localeCompare(b.date);
       if (dComp !== 0) return dComp;
-      const shiftOrder = { Pagi: 1, Siang: 2, Malam: 3 };
+      const shiftOrder: Record<string, number> = {
+        'Shift 1': 1,
+        'Shift 2': 2,
+        'Shift 3': 3,
+        Pagi: 1,
+        Siang: 2,
+        Malam: 3
+      };
       return (shiftOrder[a.shift] || 0) - (shiftOrder[b.shift] || 0);
     });
 
-    return sorted.map(r => ({
-      label: `${r.date.slice(5)} (${r.shift[0]}-${r.machine})`,
-      target: r.targetProductionTon,
-      aktual: r.actualProductionTon,
-      persentase: r.achievementPercentage,
-      downtime: r.totalDowntimeMinutes,
-      operator: r.operatorName
-    }));
+    return sorted.map(r => {
+      const shiftCode = r.shift.replace('Shift ', 'S');
+      return {
+        label: `${r.date.slice(5)} (${shiftCode}-${r.machine})`,
+        target: r.targetProductionTon,
+        aktual: r.actualProductionTon,
+        persentase: r.achievementPercentage,
+        downtime: r.totalDowntimeMinutes,
+        operator: r.operatorName
+      };
+    });
   }, [filteredReports]);
 
   // Downtime breakdown by process location
@@ -210,9 +224,9 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ reports }) => 
               className="bg-transparent text-slate-100 font-bold focus:outline-none cursor-pointer"
             >
               <option value="ALL" className="bg-slate-900">Semua Shift</option>
-              <option value="Pagi" className="bg-slate-900">Shift Pagi</option>
-              <option value="Siang" className="bg-slate-900">Shift Siang</option>
-              <option value="Malam" className="bg-slate-900">Shift Malam</option>
+              <option value="Shift 1" className="bg-slate-900">Shift 1</option>
+              <option value="Shift 2" className="bg-slate-900">Shift 2</option>
+              <option value="Shift 3" className="bg-slate-900">Shift 3</option>
             </select>
           </div>
         </div>

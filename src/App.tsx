@@ -19,7 +19,17 @@ export default function App() {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
+          // Normalize legacy shift values if present
+          return parsed.map((item: ShiftReport) => {
+            let normalizedShift = item.shift;
+            if ((normalizedShift as string) === 'Pagi') normalizedShift = 'Shift 1';
+            else if ((normalizedShift as string) === 'Siang') normalizedShift = 'Shift 2';
+            else if ((normalizedShift as string) === 'Malam') normalizedShift = 'Shift 3';
+            return {
+              ...item,
+              shift: normalizedShift
+            };
+          });
         }
       }
     } catch (e) {

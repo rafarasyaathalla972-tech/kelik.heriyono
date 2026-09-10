@@ -2,9 +2,9 @@ import { ShiftReport } from '../types';
 
 export const INITIAL_SHIFT_REPORTS: ShiftReport[] = [
   {
-    id: 'rep-pm5-2026-09-09-malam',
+    id: 'rep-pm5-2026-09-09-shift3',
     date: '2026-09-09',
-    shift: 'Malam',
+    shift: 'Shift 3',
     operatorName: 'Bambang Supriyanto',
     machine: 'PM5',
     targetProductionTon: 110.0,
@@ -41,9 +41,9 @@ export const INITIAL_SHIFT_REPORTS: ShiftReport[] = [
     editHistory: []
   },
   {
-    id: 'rep-pm2-2026-09-09-siang',
+    id: 'rep-pm2-2026-09-09-shift2',
     date: '2026-09-09',
-    shift: 'Siang',
+    shift: 'Shift 2',
     operatorName: 'Ahmad Fauzi',
     machine: 'PM2',
     targetProductionTon: 62.0,
@@ -80,9 +80,9 @@ export const INITIAL_SHIFT_REPORTS: ShiftReport[] = [
     editHistory: []
   },
   {
-    id: 'rep-pm1-2026-09-09-pagi',
+    id: 'rep-pm1-2026-09-09-shift1',
     date: '2026-09-09',
-    shift: 'Pagi',
+    shift: 'Shift 1',
     operatorName: 'Dedi Kurniawan',
     machine: 'PM1',
     targetProductionTon: 40.0,
@@ -111,9 +111,9 @@ export const INITIAL_SHIFT_REPORTS: ShiftReport[] = [
     editHistory: []
   },
   {
-    id: 'rep-pm5-2026-09-08-siang',
+    id: 'rep-pm5-2026-09-08-shift2',
     date: '2026-09-08',
-    shift: 'Siang',
+    shift: 'Shift 2',
     operatorName: 'Hendra Gunawan',
     machine: 'PM5',
     targetProductionTon: 110.0,
@@ -150,9 +150,9 @@ export const INITIAL_SHIFT_REPORTS: ShiftReport[] = [
     editHistory: []
   },
   {
-    id: 'rep-pm2-2026-09-08-pagi',
+    id: 'rep-pm2-2026-09-08-shift1',
     date: '2026-09-08',
-    shift: 'Pagi',
+    shift: 'Shift 1',
     operatorName: 'Ahmad Fauzi',
     machine: 'PM2',
     targetProductionTon: 62.0,
@@ -189,9 +189,9 @@ export const INITIAL_SHIFT_REPORTS: ShiftReport[] = [
     editHistory: []
   },
   {
-    id: 'rep-pm1-2026-09-08-malam',
+    id: 'rep-pm1-2026-09-08-shift3',
     date: '2026-09-08',
-    shift: 'Malam',
+    shift: 'Shift 3',
     operatorName: 'Rudi Hartono',
     machine: 'PM1',
     targetProductionTon: 40.0,
