@@ -8,7 +8,9 @@ import {
   Clock, 
   Printer, 
   Factory,
-  ChevronRight
+  ChevronRight,
+  Share2,
+  Check
 } from 'lucide-react';
 import { ShiftType } from '../types';
 
@@ -17,6 +19,7 @@ interface NavbarProps {
   onTabChange: (tab: 'form' | 'dashboard' | 'history') => void;
   onOpenSop: () => void;
   onOpenTraining: () => void;
+  onOpenShare?: () => void;
   onPrintAll?: () => void;
   reportCount: number;
 }
@@ -26,6 +29,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onTabChange,
   onOpenSop,
   onOpenTraining,
+  onOpenShare,
   reportCount
 }) => {
   const [currentTime, setCurrentTime] = useState<string>('');
@@ -33,6 +37,15 @@ export const Navbar: React.FC<NavbarProps> = ({
     shift: 'Shift 1',
     timeRange: '07:00 - 15:00 WIB'
   });
+
+  const handleShareClick = () => {
+    if (onOpenShare) {
+      onOpenShare();
+    } else {
+      navigator.clipboard?.writeText('https://bit.ly/laporan-shift-pm-pup');
+      alert('Tautan bit.ly/laporan-shift-pm-pup berhasil disalin!');
+    }
+  };
 
   useEffect(() => {
     const updateTime = () => {
@@ -68,11 +81,11 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-bold text-base sm:text-lg tracking-wide text-white">
-                  PT. PANCA USAHATAMA PARAMITA
+                <span className="font-extrabold text-base sm:text-lg tracking-wide text-white">
+                  LAPORAN SHIFT PM, PT. PUP
                 </span>
                 <span className="hidden md:inline-block text-[11px] bg-blue-900/60 border border-blue-600/40 text-blue-300 font-semibold px-2 py-0.5 rounded">
-                  PABRIK KERTAS
+                  PT. PANCA USAHATAMA PARAMITA
                 </span>
               </div>
               <p className="text-xs text-slate-400 font-medium">
@@ -81,8 +94,18 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
           </div>
 
-          {/* Live Clock & Shift Badge */}
-          <div className="flex items-center justify-between sm:justify-end gap-3 text-xs">
+          {/* Live Clock & Shift Badge & Share Link */}
+          <div className="flex items-center justify-between sm:justify-end gap-2 text-xs">
+            <button
+              id="btn-copy-link-header"
+              onClick={handleShareClick}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border font-semibold transition-all bg-blue-950/90 hover:bg-blue-900 border-blue-600/60 text-blue-200 shadow-sm"
+              title="Bagikan tautan bit.ly/laporan-shift-pm-pup ke Kepala Shift"
+            >
+              <Share2 className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Bagikan Link <span className="text-amber-400 font-mono text-[11px] hidden sm:inline">(bit.ly)</span></span>
+            </button>
+
             <div className="flex items-center gap-1.5 bg-slate-800/90 px-2.5 py-1.5 rounded-md border border-slate-700/60 text-slate-300">
               <Clock className="w-3.5 h-3.5 text-blue-400" />
               <span className="font-mono font-medium">{currentTime}</span>

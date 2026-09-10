@@ -5,9 +5,10 @@ import { DashboardCharts } from './components/DashboardCharts';
 import { ReportList } from './components/ReportList';
 import { SopModal } from './components/SopModal';
 import { TrainingModal } from './components/TrainingModal';
+import { ShareModal } from './components/ShareModal';
 import { ShiftReport, MachineId, EditAuditLog } from './types';
 import { INITIAL_SHIFT_REPORTS } from './data/initialReports';
-import { CheckCircle2, Factory, HelpCircle, BookOpen, GraduationCap, ArrowRight } from 'lucide-react';
+import { CheckCircle2, Factory, HelpCircle, BookOpen, GraduationCap, ArrowRight, Share2 } from 'lucide-react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<'form' | 'dashboard' | 'history'>('dashboard');
@@ -44,6 +45,7 @@ export default function App() {
   // Modals state
   const [isSopOpen, setIsSopOpen] = useState<boolean>(false);
   const [isTrainingOpen, setIsTrainingOpen] = useState<boolean>(false);
+  const [isShareOpen, setIsShareOpen] = useState<boolean>(false);
   const [trainingDefaultMachine, setTrainingDefaultMachine] = useState<MachineId>('PM1');
 
   // Success Notification banner
@@ -140,6 +142,7 @@ export default function App() {
         }}
         onOpenSop={() => setIsSopOpen(true)}
         onOpenTraining={() => handleOpenTraining()}
+        onOpenShare={() => setIsShareOpen(true)}
         reportCount={reports.length}
       />
 
@@ -211,6 +214,15 @@ export default function App() {
               <span>Materi Training Operator</span>
             </button>
             <span className="text-slate-600">&bull;</span>
+            <button
+              onClick={() => setIsShareOpen(true)}
+              className="text-cyan-400 hover:text-cyan-300 font-semibold flex items-center gap-1 font-mono"
+              title="Buka menu bagikan link bit.ly/laporan-shift-pm-pup"
+            >
+              <Share2 className="w-3.5 h-3.5" />
+              <span>bit.ly/laporan-shift-pm-pup</span>
+            </button>
+            <span className="text-slate-600">&bull;</span>
             <span className="text-slate-500">Sistem Laporan Shift Pabrik Kertas v2.4</span>
           </div>
         </div>
@@ -226,6 +238,12 @@ export default function App() {
         isOpen={isTrainingOpen}
         onClose={() => setIsTrainingOpen(false)}
         defaultMachine={trainingDefaultMachine}
+      />
+
+      <ShareModal
+        isOpen={isShareOpen}
+        onClose={() => setIsShareOpen(false)}
+        sharedCloudUrl="https://ais-pre-edi5lhzgtwjelot4ig647n-845444139980.asia-east1.run.app"
       />
 
     </div>
