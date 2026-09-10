@@ -99,11 +99,11 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               id="btn-copy-link-header"
               onClick={handleShareClick}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border font-semibold transition-all bg-blue-950/90 hover:bg-blue-900 border-blue-600/60 text-blue-200 shadow-sm"
-              title="Bagikan tautan bit.ly/laporan-shift-pm-pup ke Kepala Shift"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border font-semibold transition-all bg-emerald-950/90 hover:bg-emerald-900 border-emerald-600/60 text-emerald-200 shadow-sm"
+              title="Buka menu bagikan link otomatis ke WhatsApp / HP"
             >
-              <Share2 className="w-3.5 h-3.5 text-cyan-400" />
-              <span>Bagikan Link <span className="text-amber-400 font-mono text-[11px] hidden sm:inline">(bit.ly)</span></span>
+              <Share2 className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Bagikan Link Aplikasi</span>
             </button>
 
             <div className="flex items-center gap-1.5 bg-slate-800/90 px-2.5 py-1.5 rounded-md border border-slate-700/60 text-slate-300">

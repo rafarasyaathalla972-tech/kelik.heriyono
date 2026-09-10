@@ -216,11 +216,11 @@ export default function App() {
             <span className="text-slate-600">&bull;</span>
             <button
               onClick={() => setIsShareOpen(true)}
-              className="text-cyan-400 hover:text-cyan-300 font-semibold flex items-center gap-1 font-mono"
-              title="Buka menu bagikan link bit.ly/laporan-shift-pm-pup"
+              className="text-emerald-400 hover:text-emerald-300 font-semibold flex items-center gap-1"
+              title="Buka menu bagikan link aplikasi"
             >
               <Share2 className="w-3.5 h-3.5" />
-              <span>bit.ly/laporan-shift-pm-pup</span>
+              <span>Bagikan Link Aplikasi</span>
             </button>
             <span className="text-slate-600">&bull;</span>
             <span className="text-slate-500">Sistem Laporan Shift Pabrik Kertas v2.4</span>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   X, 
   Share2, 
@@ -7,9 +7,10 @@ import {
   QrCode, 
   ExternalLink, 
   Send, 
-  HelpCircle,
   Smartphone,
-  Globe
+  Info,
+  CheckCircle2,
+  Sparkles
 } from 'lucide-react';
 
 interface ShareModalProps {
@@ -23,43 +24,61 @@ export const ShareModal: React.FC<ShareModalProps> = ({
   onClose,
   sharedCloudUrl
 }) => {
-  const bitlyUrl = 'https://bit.ly/laporan-shift-pm-pup';
-  const [copiedBitly, setCopiedBitly] = useState<boolean>(false);
-  const [copiedCloud, setCopiedCloud] = useState<boolean>(false);
+  const [activeUrl, setActiveUrl] = useState<string>('');
+  const [copiedLink, setCopiedLink] = useState<boolean>(false);
   const [copiedWaMessage, setCopiedWaMessage] = useState<boolean>(false);
-  const [activeQrTarget, setActiveQrTarget] = useState<'bitly' | 'cloud'>('bitly');
+  const [canNativeShare, setCanNativeShare] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      // Get the exact running URL of the current instance
+      const currentUrl = window.location.href;
+      setActiveUrl(currentUrl);
+      if (typeof navigator !== 'undefined' && 'share' in navigator) {
+        setCanNativeShare(true);
+      }
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
-  const currentQrUrl = activeQrTarget === 'bitly' ? bitlyUrl : sharedCloudUrl;
-  const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=10&data=${encodeURIComponent(currentQrUrl)}`;
+  const finalUrl = activeUrl || sharedCloudUrl;
+  const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=10&data=${encodeURIComponent(finalUrl)}`;
 
-  const waMessage = `Yth. Bapak/Ibu Kepala Shift & Tim Operasional PT. PUP,
+  const waMessage = `Yth. Bapak/Ibu Kepala Shift & Operator PM PT. PUP,
 
 Berikut link resmi aplikasi *LAPORAN SHIFT PM, PT. PUP* (Unit PM1, PM2, PM5):
-👉 ${bitlyUrl}
+👉 ${finalUrl}
 
-Link alternatif Cloud:
-👉 ${sharedCloudUrl}
+Silakan buka link di atas melalui Google Chrome pada HP Android atau laptop untuk pengisian laporan shift kerja. Terima kasih.`;
 
-Mohon dapat diakses melalui HP Android atau laptop untuk pengisian laporan pada setiap akhir shift kerja. Terima kasih.`;
-
-  const handleCopyBitly = () => {
-    navigator.clipboard.writeText(bitlyUrl);
-    setCopiedBitly(true);
-    setTimeout(() => setCopiedBitly(false), 2000);
+  const handleNativeShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'LAPORAN SHIFT PM, PT. PUP',
+          text: 'Sistem Laporan Kinerja Shift Pabrik Kertas PT. Panca Usahatama Paramita:\n' + finalUrl,
+          url: finalUrl,
+        });
+      } catch (e) {
+        // User cancelled or share failed, fallback to copy
+        handleCopyLink();
+      }
+    } else {
+      handleCopyLink();
+    }
   };
 
-  const handleCopyCloud = () => {
-    navigator.clipboard.writeText(sharedCloudUrl);
-    setCopiedCloud(true);
-    setTimeout(() => setCopiedCloud(false), 2000);
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(finalUrl);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2500);
   };
 
   const handleCopyWa = () => {
     navigator.clipboard.writeText(waMessage);
     setCopiedWaMessage(true);
-    setTimeout(() => setCopiedWaMessage(false), 2000);
+    setTimeout(() => setCopiedWaMessage(false), 2500);
   };
 
   const handleOpenWhatsApp = () => {
@@ -71,17 +90,21 @@ Mohon dapat diakses melalui HP Android atau laptop untuk pengisian laporan pada 
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
       <div 
         id="share-modal-container"
-        className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col text-white"
+        className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-xl max-h-[92vh] overflow-y-auto shadow-2xl flex flex-col text-white"
       >
         {/* Header */}
-        <div className="p-4 sm:p-5 border-b border-slate-800 flex items-center justify-between bg-slate-950/60 sticky top-0 z-10">
+        <div className="p-4 sm:p-5 border-b border-slate-800 flex items-center justify-between bg-slate-950/70 sticky top-0 z-10">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-blue-400">
+            <div className="w-10 h-10 rounded-xl bg-emerald-600/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
               <Share2 className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-bold text-base sm:text-lg text-slate-100">
-                Bagikan Link Laporan Shift
+              <h3 className="font-bold text-base sm:text-lg text-slate-100 flex items-center gap-2">
+                <span>Bagikan Link Aplikasi</span>
+                <span className="text-[10px] bg-emerald-950 border border-emerald-500/50 text-emerald-300 font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                  Otomatis Aktif
+                </span>
               </h3>
               <p className="text-xs text-slate-400">
                 LAPORAN SHIFT PM, PT. PUP &bull; Mesin PM1, PM2, PM5
@@ -99,168 +122,143 @@ Mohon dapat diakses melalui HP Android atau laptop untuk pengisian laporan pada 
 
         {/* Content */}
         <div className="p-4 sm:p-6 space-y-5 text-sm">
-          {/* Card 1: Custom Bitly Link */}
-          <div className="bg-slate-950 border border-blue-500/40 rounded-xl p-4 relative overflow-hidden shadow-inner">
+          {/* Main Action: 1-Click Share Button for Mobile & Desktop */}
+          <div className="bg-gradient-to-br from-blue-950/80 via-slate-900 to-emerald-950/50 border border-blue-500/50 rounded-2xl p-4 sm:p-5 shadow-lg">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-blue-400 flex items-center gap-1.5">
-                <Globe className="w-3.5 h-3.5" />
-                Tautan Singkat Khusus (Bitly)
+              <span className="text-xs font-bold uppercase tracking-wider text-blue-300 flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-amber-400" />
+                Tautan Resmi Aktif (Langsung Dibuka)
               </span>
-              <span className="text-[11px] bg-blue-900/60 text-blue-300 font-semibold px-2 py-0.5 rounded border border-blue-700/50">
-                Mudah Diketik di HP
+              <span className="text-[11px] bg-blue-900/60 text-blue-200 font-semibold px-2 py-0.5 rounded">
+                100% Siap Digunakan
               </span>
             </div>
 
-            <div className="flex items-center gap-2 bg-slate-900 border border-slate-700/80 rounded-lg p-2.5">
-              <span className="font-mono text-sm sm:text-base font-bold text-amber-400 select-all flex-1 truncate">
-                {bitlyUrl}
+            {/* URL Display */}
+            <div className="bg-slate-950 border border-slate-700/90 rounded-xl p-3 mb-3 flex items-center gap-2">
+              <span className="font-mono text-xs sm:text-sm text-emerald-300 select-all flex-1 truncate font-semibold">
+                {finalUrl}
               </span>
               <button
-                onClick={handleCopyBitly}
-                className={`px-3 py-1.5 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all ${
-                  copiedBitly
+                onClick={handleCopyLink}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shrink-0 ${
+                  copiedLink
                     ? 'bg-emerald-600 text-white'
-                    : 'bg-blue-600 hover:bg-blue-500 text-white shadow-sm'
+                    : 'bg-blue-600 hover:bg-blue-500 text-white shadow-md'
                 }`}
               >
-                {copiedBitly ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                <span>{copiedBitly ? 'Tersalin!' : 'Salin'}</span>
+                {copiedLink ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                <span>{copiedLink ? 'Link Tersalin!' : 'Salin Link'}</span>
               </button>
             </div>
 
-            {/* Bitly Setup Note */}
-            <div className="mt-3 p-2.5 bg-blue-950/40 border border-blue-800/40 rounded-lg text-xs text-slate-300 flex items-start gap-2">
-              <HelpCircle className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
-              <div className="space-y-1 leading-relaxed">
-                <p>
-                  <strong>Catatan Penggunaan Bitly:</strong> Agar tautan <code className="text-amber-300 bg-slate-900 px-1 py-0.5 rounded">bit.ly/laporan-shift-pm-pup</code> mengarah ke aplikasi ini, pastikan tautan ini telah dihubungkan ke link Cloud Run asli di akun <a href="https://bitly.com" target="_blank" rel="noreferrer" className="text-blue-300 underline font-semibold">bitly.com</a>.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Card 2: Link Asli Cloud Run (Selalu Aktif Langsung) */}
-          <div className="bg-slate-950/70 border border-slate-800 rounded-xl p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
-                Tautan Asli Cloud Run (Langsung Buka Tanpa Redirect)
-              </span>
-              <span className="text-[10px] bg-emerald-950 border border-emerald-700/60 text-emerald-400 font-semibold px-2 py-0.5 rounded">
-                Aktif & Berjalan
-              </span>
-            </div>
-
-            <div className="flex items-center gap-2 bg-slate-900 border border-slate-800 rounded-lg p-2.5">
-              <span className="font-mono text-xs text-slate-300 select-all flex-1 truncate">
-                {sharedCloudUrl}
-              </span>
-              <button
-                onClick={handleCopyCloud}
-                className={`px-3 py-1.5 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all ${
-                  copiedCloud
-                    ? 'bg-emerald-600 text-white'
-                    : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700'
-                }`}
-              >
-                {copiedCloud ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                <span>{copiedCloud ? 'Tersalin!' : 'Salin'}</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Card 3: WhatsApp Quick Share Button */}
-          <div className="bg-emerald-950/30 border border-emerald-800/40 rounded-xl p-4">
-            <h4 className="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-              <Send className="w-3.5 h-3.5" />
-              Kirim Pesan Langsung ke Grup WhatsApp Kepala Shift
-            </h4>
-            <p className="text-xs text-slate-300 mb-3">
-              Kirimkan format pengumuman lengkap ke WhatsApp dengan satu kali klik:
-            </p>
-            <div className="flex flex-wrap items-center gap-2">
+            {/* Action Buttons: Native Share + WhatsApp */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {canNativeShare && (
+                <button
+                  onClick={handleNativeShare}
+                  className="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 shadow-md transition-all"
+                >
+                  <Share2 className="w-4 h-4" />
+                  <span>Kirim ke Kontak / Aplikasi HP</span>
+                </button>
+              )}
               <button
                 onClick={handleOpenWhatsApp}
-                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-lg flex items-center gap-2 transition-all shadow-md"
-              >
-                <Send className="w-4 h-4" />
-                <span>Buka & Kirim via WhatsApp</span>
-              </button>
-              <button
-                onClick={handleCopyWa}
-                className={`px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 border transition-all ${
-                  copiedWaMessage
-                    ? 'bg-emerald-700 text-white border-emerald-600'
-                    : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
+                className={`w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 shadow-md transition-all ${
+                  !canNativeShare ? 'sm:col-span-2' : ''
                 }`}
               >
-                {copiedWaMessage ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                <span>{copiedWaMessage ? 'Pesan Tersalin!' : 'Salin Teks Pesan'}</span>
+                <Send className="w-4 h-4" />
+                <span>Kirim Format ke WhatsApp</span>
               </button>
             </div>
           </div>
 
-          {/* Card 4: QR Code untuk Dicetak di Ruang Operator / Mesin */}
+          {/* Quick WhatsApp Format Copy */}
+          <div className="bg-slate-950/80 border border-slate-800 rounded-xl p-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                <Send className="w-3.5 h-3.5 text-emerald-400" />
+                Format Pesan WhatsApp (Siap Kirim ke Grup Kepala Shift):
+              </span>
+              <button
+                onClick={handleCopyWa}
+                className="text-xs text-blue-400 hover:text-blue-300 font-semibold flex items-center gap-1"
+              >
+                {copiedWaMessage ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                <span>{copiedWaMessage ? 'Teks Tersalin!' : 'Salin Teks'}</span>
+              </button>
+            </div>
+            <pre className="text-[11px] font-sans text-slate-300 bg-slate-900 border border-slate-800/80 rounded-lg p-3 whitespace-pre-wrap leading-relaxed">
+              {waMessage}
+            </pre>
+          </div>
+
+          {/* QR Code Section */}
           <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 flex flex-col sm:flex-row items-center gap-4">
-            <div className="bg-white p-2.5 rounded-xl border border-slate-200 shrink-0 shadow-md">
+            <div className="bg-white p-2 rounded-xl shrink-0 shadow-md">
               <img 
                 src={qrApiUrl} 
                 alt="QR Code Laporan Shift" 
-                className="w-32 h-32 object-contain"
+                className="w-28 h-28 object-contain"
                 referrerPolicy="no-referrer"
               />
             </div>
-            <div className="space-y-2 text-center sm:text-left flex-1">
+            <div className="space-y-1.5 text-center sm:text-left flex-1">
               <div className="flex items-center justify-center sm:justify-start gap-1.5 text-xs font-bold text-slate-200">
-                <QrCode className="w-4 h-4 text-blue-400" />
-                <span>Scan QR Code dari HP Android / iPhone</span>
+                <QrCode className="w-4 h-4 text-emerald-400" />
+                <span>Scan Langsung dari HP Operator</span>
               </div>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Operator dapat langsung mengarahkan kamera HP ke kode QR ini untuk membuka formulir pengisian laporan tanpa perlu mengetik link.
+                Arahkan kamera HP ke kode QR di atas untuk langsung membuka formulir pengisian laporan tanpa perlu mengetik link.
               </p>
-              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-1 text-[11px]">
-                <button
-                  type="button"
-                  onClick={() => setActiveQrTarget('bitly')}
-                  className={`px-2.5 py-1 rounded-md border font-medium ${
-                    activeQrTarget === 'bitly'
-                      ? 'bg-blue-600 border-blue-500 text-white'
-                      : 'bg-slate-900 border-slate-700 text-slate-400 hover:text-slate-200'
-                  }`}
+              <div className="pt-1">
+                <a
+                  href={finalUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 text-xs text-cyan-400 hover:underline font-semibold"
                 >
-                  QR Bitly ({bitlyUrl.replace('https://', '')})
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveQrTarget('cloud')}
-                  className={`px-2.5 py-1 rounded-md border font-medium ${
-                    activeQrTarget === 'cloud'
-                      ? 'bg-blue-600 border-blue-500 text-white'
-                      : 'bg-slate-900 border-slate-700 text-slate-400 hover:text-slate-200'
-                  }`}
-                >
-                  QR Link Langsung
-                </button>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span>Uji Coba Buka di Tab Baru Sekarang</span>
+                </a>
               </div>
             </div>
           </div>
 
-          {/* Tips Akses Mudah untuk Operator */}
+          {/* Important AI Studio Sharing Note to prevent 404 */}
+          <div className="p-3.5 bg-amber-950/30 border border-amber-800/40 rounded-xl text-xs text-amber-200/90 flex items-start gap-2.5">
+            <Info className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+            <div className="space-y-1 leading-relaxed">
+              <p className="font-bold text-amber-300">
+                Catatan Penting Agar Link Dapat Dibuka Semua Orang (Tanpa Error 404):
+              </p>
+              <p>
+                Agar siapapun rekan kerja Anda di luar dapat membuka link ini dari HP mereka masing-masing, pastikan Anda telah menekan tombol <strong>"Share" (Bagikan)</strong> yang ada di <strong>bilah menu kanan atas Google AI Studio</strong>. Fitur tersebut akan membuat aplikasi aktif untuk publik secara permanen.
+              </p>
+            </div>
+          </div>
+
+          {/* Tips Android Shortcut */}
           <div className="p-3 bg-slate-900/60 border border-slate-800 rounded-xl flex items-center gap-3 text-xs text-slate-300">
             <Smartphone className="w-5 h-5 text-cyan-400 shrink-0" />
             <span>
-              <strong>Tips Operator HP:</strong> Setelah link terbuka di Google Chrome HP, klik menu titik 3 di pojok kanan atas lalu pilih <em>"Tambahkan ke Layar Utama" (Add to Home screen)</em> agar menjadi aplikasi langsung di menu HP.
+              <strong>Tips Tambah ke Menu HP:</strong> Setelah link terbuka di Google Chrome HP operator, klik menu titik 3 di pojok kanan atas &rarr; pilih <em>"Tambahkan ke Layar Utama" (Add to Home screen)</em> agar menjadi seperti aplikasi Android langsung.
             </span>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-slate-800 bg-slate-950/80 flex items-center justify-end">
+        <div className="p-4 border-t border-slate-800 bg-slate-950/80 flex items-center justify-between">
+          <span className="text-[11px] text-slate-400">
+            PT. Panca Usahatama Paramita
+          </span>
           <button
             onClick={onClose}
             className="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs rounded-xl transition-colors"
           >
-            Selesai
+            Tutup
           </button>
         </div>
       </div>
