@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Navbar } from './components/Navbar';
 import { ReportForm } from './components/ReportForm';
 import { DashboardCharts } from './components/DashboardCharts';
@@ -8,7 +8,14 @@ import { TrainingModal } from './components/TrainingModal';
 import { ShareModal } from './components/ShareModal';
 import { ShiftReport, MachineId, EditAuditLog } from './types';
 import { INITIAL_SHIFT_REPORTS } from './data/initialReports';
-import { CheckCircle2, Factory, HelpCircle, BookOpen, GraduationCap, ArrowRight, Share2 } from 'lucide-react';
+import { 
+  getSharedReports, 
+  saveSharedReport, 
+  updateSharedReport, 
+  deleteSharedReport,
+  checkServerHealth 
+} from './services/reportService';
+import { CheckCircle2, Factory, BookOpen, GraduationCap, Share2 } from 'lucide-react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<'form' | 'dashboard' | 'history'>('dashboard');
@@ -20,7 +27,6 @@ export default function App() {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          // Normalize legacy shift values if present
           return parsed.map((item: ShiftReport) => {
             let normalizedShift = item.shift;
             if ((normalizedShift as string) === 'Pagi') normalizedShift = 'Shift 1';
@@ -39,6 +45,10 @@ export default function App() {
     return INITIAL_SHIFT_REPORTS;
   });
 
+  // Server synchronization state
+  const [isServerConnected, setIsServerConnected] = useState<boolean>(true);
+  const isEditingRef = useRef<boolean>(false);
+
   // Edit mode state
   const [editingReport, setEditingReport] = useState<ShiftReport | null>(null);
 
@@ -51,15 +61,6 @@ export default function App() {
   // Success Notification banner
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Auto-persist reports to localStorage whenever changed
-  useEffect(() => {
-    try {
-      localStorage.setItem('panca_paper_shift_reports', JSON.stringify(reports));
-    } catch (e) {
-      console.error('Failed to persist reports to localStorage', e);
-    }
-  }, [reports]);
-
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => {
@@ -67,8 +68,55 @@ export default function App() {
     }, 4000);
   };
 
+  // Sync with shared server
+  const fetchLatestReports = useCallback(async () => {
+    // Avoid overwriting local state if the user is currently editing an item
+    if (isEditingRef.current) return;
+
+    try {
+      const { reports: sharedList, isFromServer } = await getSharedReports();
+      setIsServerConnected(isFromServer);
+      if (sharedList && sharedList.length > 0) {
+        setReports(prev => {
+          // Compare JSON string to avoid unnecessary re-renders
+          if (JSON.stringify(prev) !== JSON.stringify(sharedList)) {
+            return sharedList;
+          }
+          return prev;
+        });
+      }
+    } catch (e) {
+      console.warn('Sync error:', e);
+      setIsServerConnected(false);
+    }
+  }, []);
+
+  // Initial load + periodic real-time team polling (every 4 seconds)
+  useEffect(() => {
+    fetchLatestReports();
+
+    const interval = setInterval(() => {
+      fetchLatestReports();
+    }, 4000);
+
+    const handleFocus = () => {
+      fetchLatestReports();
+    };
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [fetchLatestReports]);
+
+  // Keep ref updated
+  useEffect(() => {
+    isEditingRef.current = !!editingReport;
+  }, [editingReport]);
+
   // Save handler (both create and edit)
-  const handleSaveReport = (report: ShiftReport, editReason?: string, editorName?: string) => {
+  const handleSaveReport = async (report: ShiftReport, editReason?: string, editorName?: string) => {
     if (editingReport) {
       // Update existing report with audit log
       const auditEntry: EditAuditLog = {
@@ -79,25 +127,38 @@ export default function App() {
         summary: `Revisi tonase ${report.actualProductionTon}T (${report.achievementPercentage}%)`
       };
 
-      const updatedList = reports.map(r => {
-        if (r.id === report.id) {
-          return {
-            ...report,
-            editHistory: [auditEntry, ...(r.editHistory || [])],
-            updatedAt: new Date().toISOString()
-          };
-        }
-        return r;
-      });
+      const updatedReportObj: ShiftReport = {
+        ...report,
+        editHistory: [auditEntry, ...(report.editHistory || [])],
+        updatedAt: new Date().toISOString()
+      };
 
+      // Optimistic local update
+      const updatedList = reports.map(r => r.id === report.id ? updatedReportObj : r);
       setReports(updatedList);
       setEditingReport(null);
-      showToast(`Laporan ${report.machine} - ${report.shift} (${report.date}) berhasil diperbaiki & dicatat dalam riwayat audit!`);
+
+      // Save to shared database
+      await updateSharedReport(updatedReportObj);
+
+      showToast(`Laporan ${report.machine} - ${report.shift} (${report.date}) berhasil diperbaiki & disinkronkan ke seluruh tim!`);
       setActiveTab('history');
     } else {
-      // Add new report at the beginning
-      setReports([report, ...reports]);
-      showToast(`Laporan Shift ${report.machine} berhasil disimpan dan grafik kinerja diperbarui!`);
+      // Add new report
+      const newReportObj: ShiftReport = {
+        ...report,
+        id: report.id || `rep-${report.machine.toLowerCase()}-${Date.now()}`,
+        createdAt: report.createdAt || new Date().toISOString(),
+        editHistory: []
+      };
+
+      // Optimistic local update
+      setReports([newReportObj, ...reports]);
+
+      // Save to shared database
+      await saveSharedReport(newReportObj);
+
+      showToast(`Laporan Shift ${report.machine} berhasil disimpan & disinkronkan ke seluruh tim!`);
       setActiveTab('dashboard');
     }
   };
@@ -112,9 +173,24 @@ export default function App() {
     setEditingReport(null);
   };
 
-  const handleDeleteReport = (id: string) => {
-    setReports(reports.filter(r => r.id !== id));
-    showToast('Laporan berhasil dihapus dari sistem.');
+  const handleDeleteReport = async (id: string) => {
+    setReports(prev => prev.filter(r => r.id !== id));
+    await deleteSharedReport(id);
+    showToast('Laporan berhasil dihapus dari database tim.');
+  };
+
+  const handleImportReports = async (importedList: ShiftReport[]) => {
+    setReports(importedList);
+    try {
+      await fetch('/api/reports/bulk-sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reports: importedList, mergeMode: 'merged' })
+      });
+    } catch (e) {
+      console.warn('Could not bulk sync to server', e);
+    }
+    showToast(`Data berhasil dipulihkan: ${importedList.length} laporan shift aktif.`);
   };
 
   const handleOpenTraining = (machine?: MachineId) => {
@@ -144,6 +220,7 @@ export default function App() {
         onOpenTraining={() => handleOpenTraining()}
         onOpenShare={() => setIsShareOpen(true)}
         reportCount={reports.length}
+        isServerConnected={isServerConnected}
       />
 
       {/* Floating Notification Toast */}
@@ -217,13 +294,13 @@ export default function App() {
             <button
               onClick={() => setIsShareOpen(true)}
               className="text-emerald-400 hover:text-emerald-300 font-semibold flex items-center gap-1"
-              title="Buka menu bagikan link aplikasi"
+              title="Buka menu bagikan akses tim"
             >
               <Share2 className="w-3.5 h-3.5" />
-              <span>Bagikan Link Aplikasi</span>
+              <span>Bagikan Akses Tim</span>
             </button>
             <span className="text-slate-600">&bull;</span>
-            <span className="text-slate-500">Sistem Laporan Shift Pabrik Kertas v2.4</span>
+            <span className="text-slate-500">Sistem Laporan Shift Pabrik Kertas v2.5</span>
           </div>
         </div>
       </footer>
@@ -244,6 +321,9 @@ export default function App() {
         isOpen={isShareOpen}
         onClose={() => setIsShareOpen(false)}
         sharedCloudUrl="https://ais-pre-edi5lhzgtwjelot4ig647n-845444139980.asia-east1.run.app"
+        isServerConnected={isServerConnected}
+        reports={reports}
+        onImportReports={handleImportReports}
       />
 
     </div>

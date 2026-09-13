@@ -22,6 +22,7 @@ interface NavbarProps {
   onOpenShare?: () => void;
   onPrintAll?: () => void;
   reportCount: number;
+  isServerConnected?: boolean;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -30,7 +31,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenSop,
   onOpenTraining,
   onOpenShare,
-  reportCount
+  reportCount,
+  isServerConnected = true
 }) => {
   const [currentTime, setCurrentTime] = useState<string>('');
   const [currentShift, setCurrentShift] = useState<{ shift: ShiftType; timeRange: string }>({
@@ -100,11 +102,18 @@ export const Navbar: React.FC<NavbarProps> = ({
               id="btn-copy-link-header"
               onClick={handleShareClick}
               className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border font-semibold transition-all bg-emerald-950/90 hover:bg-emerald-900 border-emerald-600/60 text-emerald-200 shadow-sm"
-              title="Buka menu bagikan link otomatis ke WhatsApp / HP"
+              title="Buka menu bagikan akses tim ke WhatsApp / HP"
             >
               <Share2 className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Bagikan Link Aplikasi</span>
+              <span>Bagikan Akses Tim</span>
             </button>
+
+            <div className="hidden md:flex items-center gap-1.5 bg-slate-900/90 border border-slate-700/80 px-2 py-1.5 rounded-md text-[11px]">
+              <span className={`w-2 h-2 rounded-full ${isServerConnected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`}></span>
+              <span className={isServerConnected ? 'text-emerald-300 font-medium' : 'text-amber-300 font-medium'}>
+                {isServerConnected ? 'Sinkronisasi Tim Aktif' : 'Mode Offline'}
+              </span>
+            </div>
 
             <div className="flex items-center gap-1.5 bg-slate-800/90 px-2.5 py-1.5 rounded-md border border-slate-700/60 text-slate-300">
               <Clock className="w-3.5 h-3.5 text-blue-400" />
