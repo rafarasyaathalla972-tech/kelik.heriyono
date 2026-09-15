@@ -36,6 +36,7 @@ import { TRAINING_MODULES } from '../data/trainingData';
 import { TRAINING_MEDIA_DATA } from '../data/trainingMediaData';
 import { TrainingModuleId, MachinePhotoItem, MachineVideoTutorial } from '../types';
 import { StockPrepTrainingView } from './StockPrepTrainingView';
+import { TissueMachineTrainingView } from './TissueMachineTrainingView';
 
 interface TrainingModalProps {
   isOpen: boolean;
@@ -46,7 +47,7 @@ interface TrainingModalProps {
 export const TrainingModal: React.FC<TrainingModalProps> = ({
   isOpen,
   onClose,
-  defaultMachine = 'STOCK_PREP'
+  defaultMachine = 'TISSUE_PM'
 }) => {
   const [selectedMachine, setSelectedMachine] = useState<TrainingModuleId>(defaultMachine);
   const [activeSubTab, setActiveSubTab] = useState<string>('all');
@@ -76,8 +77,9 @@ export const TrainingModal: React.FC<TrainingModalProps> = ({
 
   if (!isOpen) return null;
 
-  const data = TRAINING_MODULES[selectedMachine] || TRAINING_MODULES['STOCK_PREP'] || TRAINING_MODULES['REWINDER'];
+  const data = TRAINING_MODULES[selectedMachine] || TRAINING_MODULES['TISSUE_PM'] || TRAINING_MODULES['STOCK_PREP'];
   const media = TRAINING_MEDIA_DATA[selectedMachine];
+  const isTissuePm = selectedMachine === 'TISSUE_PM';
   const isRewinder = selectedMachine === 'REWINDER';
   const isStockPrep = selectedMachine === 'STOCK_PREP';
 
@@ -129,9 +131,28 @@ export const TrainingModal: React.FC<TrainingModalProps> = ({
           </div>
         </div>
 
-        {/* Machine Navigation Tabs (STOCK PREP, REWINDER, PM1, PM2, PM5) */}
+        {/* Machine Navigation Tabs (TISSUE PM, STOCK PREP, REWINDER, PM1, PM2, PM5) */}
         <div className="border-b border-slate-800 bg-slate-950/70 px-4 py-2 flex flex-wrap items-center justify-between gap-2 shrink-0">
           <div className="flex items-center gap-1.5 overflow-x-auto py-0.5">
+            {/* Tissue PM Highlight Tab (Official 18-Slide Tissue Machine) */}
+            <button
+              id="training-tab-TISSUE_PM"
+              onClick={() => {
+                setSelectedMachine('TISSUE_PM');
+                setActiveSubTab('all');
+                setActiveVideoId('');
+              }}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
+                selectedMachine === 'TISSUE_PM'
+                  ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 text-white shadow-lg ring-2 ring-blue-400/40'
+                  : 'bg-blue-950/60 text-blue-300 hover:bg-blue-900/60 border border-blue-700/50'
+              }`}
+            >
+              <Factory className="w-3.5 h-3.5" />
+              <span>MODUL TISSUE MESIN (PM)</span>
+              <span className="text-[10px] bg-white/20 px-1.5 py-0.2 rounded font-black">18 Slide + 10 Kuis</span>
+            </button>
+
             {/* Stock Preparation Highlight Tab */}
             <button
               id="training-tab-STOCK_PREP"
@@ -232,7 +253,60 @@ export const TrainingModal: React.FC<TrainingModalProps> = ({
             <span className="bg-amber-500/30 text-[9px] px-1 rounded text-amber-200">Media</span>
           </button>
 
-          {isStockPrep ? (
+          {isTissuePm ? (
+            <>
+              <button
+                onClick={() => setActiveSubTab('wetend')}
+                className={`px-2.5 py-1 rounded-md transition-colors whitespace-nowrap ${
+                  activeSubTab === 'wetend'
+                    ? 'bg-cyan-500/20 text-cyan-300 font-bold border border-cyan-500/40'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                Wet End & Forming (12)
+              </button>
+              <button
+                onClick={() => setActiveSubTab('dryend')}
+                className={`px-2.5 py-1 rounded-md transition-colors whitespace-nowrap ${
+                  activeSubTab === 'dryend'
+                    ? 'bg-amber-500/20 text-amber-300 font-bold border border-amber-500/40'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                Dry End & Creping 15% (4)
+              </button>
+              <button
+                onClick={() => setActiveSubTab('popereel')}
+                className={`px-2.5 py-1 rounded-md transition-colors whitespace-nowrap ${
+                  activeSubTab === 'popereel'
+                    ? 'bg-purple-500/20 text-purple-300 font-bold border border-purple-500/40'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                Pope Reel (Speed 127.5 mpm)
+              </button>
+              <button
+                onClick={() => setActiveSubTab('roles')}
+                className={`px-2.5 py-1 rounded-md transition-colors whitespace-nowrap ${
+                  activeSubTab === 'roles'
+                    ? 'bg-blue-500/20 text-blue-300 font-bold border border-blue-500/40'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                Tugas: Helper &bull; Operator &bull; Karu
+              </button>
+              <button
+                onClick={() => setActiveSubTab('quiz')}
+                className={`px-2.5 py-1 rounded-md transition-colors whitespace-nowrap ${
+                  activeSubTab === 'quiz'
+                    ? 'bg-purple-500/20 text-purple-300 font-bold border border-purple-500/40'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                10 Kuis Evaluasi (Slide 17 & 18)
+              </button>
+            </>
+          ) : isStockPrep ? (
             <>
               <button
                 onClick={() => setActiveSubTab('flow')}
@@ -937,6 +1011,24 @@ export const TrainingModal: React.FC<TrainingModalProps> = ({
                 </div>
               )}
             </div>
+          )}
+
+          {/* ========================================================= */}
+          {/* KHUSUS TISSUE PM / PM CYLINDER MOULD: 18 ALAT, KUIS & SIM */}
+          {/* ========================================================= */}
+          {data.tissueEquipments && data.tissueQuizzes && (
+            <TissueMachineTrainingView
+              equipments={data.tissueEquipments}
+              quizzes={data.tissueQuizzes}
+              roleGuides={data.roleGuides}
+              activeSubTab={activeSubTab}
+              onOpenPhoto={(photo) => setSelectedPhoto(photo)}
+              onWatchVideo={(videoId) => {
+                setActiveSubTab('media');
+                if (videoId) setActiveVideoId(videoId);
+              }}
+              galleryPhotos={media?.galleryPhotos || []}
+            />
           )}
 
           {/* ========================================================= */}

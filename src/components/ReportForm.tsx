@@ -21,19 +21,31 @@ import {
   Check,
   RotateCcw,
   Sliders,
-  ShieldCheck
+  ShieldCheck,
+  Building2,
+  Users,
+  HardHat,
+  UserPlus,
+  ChevronDown
 } from 'lucide-react';
 import { 
   ShiftReport, 
   MachineId, 
   ShiftType, 
-  IncidentReport 
+  IncidentReport,
+  PupPersonnel,
+  PupGroup
 } from '../types';
+import { 
+  PUP_PERSONNEL_ROSTER, 
+  PT_PUP_METADATA 
+} from '../data/orgStructureData';
 
 interface ReportFormProps {
   onSaveReport: (report: ShiftReport, editReason?: string, editorName?: string) => void;
   onOpenSop: () => void;
   onOpenTraining: (machine?: MachineId) => void;
+  onOpenOrgStructure?: () => void;
   editingReport?: ShiftReport | null;
   onCancelEdit?: () => void;
   existingReports?: ShiftReport[];
@@ -136,6 +148,7 @@ export const ReportForm: React.FC<ReportFormProps> = ({
   onSaveReport,
   onOpenSop,
   onOpenTraining,
+  onOpenOrgStructure,
   editingReport,
   onCancelEdit,
   existingReports = []
@@ -144,7 +157,7 @@ export const ReportForm: React.FC<ReportFormProps> = ({
   const [inputMode, setInputMode] = useState<'wizard' | 'classic'>('wizard');
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
 
-  // A. Data Umum
+  // A. Data Umum & Struktur Regu PT. PUP
   const [date, setDate] = useState<string>(
     editingReport?.date || new Date().toISOString().split('T')[0]
   );
@@ -157,8 +170,22 @@ export const ReportForm: React.FC<ReportFormProps> = ({
     }
     return 'Shift 1';
   });
+  const [groupShift, setGroupShift] = useState<'Group 1' | 'Group 2' | 'Group 3'>(
+    editingReport?.groupShift || 'Group 1'
+  );
   const [operatorName, setOperatorName] = useState<string>(editingReport?.operatorName || '');
+  const [assistantOperatorName, setAssistantOperatorName] = useState<string>(
+    editingReport?.assistantOperatorName || ''
+  );
+  const [karuName, setKaruName] = useState<string>(
+    editingReport?.karuName || ''
+  );
   const [machine, setMachine] = useState<MachineId>(editingReport?.machine || 'PM1');
+
+  // Quick Personnel Picker Dialog State
+  const [showRosterModal, setShowRosterModal] = useState<boolean>(false);
+  const [rosterTargetField, setRosterTargetField] = useState<'operator' | 'assistant' | 'karu'>('operator');
+  const [rosterSearch, setRosterSearch] = useState<string>('');
 
   // B. Hasil Produksi
   const [targetProductionTon, setTargetProductionTon] = useState<number>(
@@ -237,16 +264,50 @@ export const ReportForm: React.FC<ReportFormProps> = ({
 
   const totalDowntimeMinutes = incidents.reduce((acc, inc) => acc + (inc.downtimeMinutes || 0), 0);
 
-  // List of operator suggestions
-  const operatorSuggestions = useMemo(() => {
-    const list = new Set<string>(DEFAULT_OPERATOR_NAMES);
+  // Daftar Operator Resmi PT. PUP yang relevan dengan Mesin & Group aktif
+  const operatorsForActiveSelection = useMemo(() => {
+    const matching = PUP_PERSONNEL_ROSTER.filter(p => 
+      !p.isHelper &&
+      (p.unit === machine || p.unit === 'STOCK_PREP' || p.unit === 'REWINDER') &&
+      (p.group === groupShift || p.group === 'All')
+    );
+    const names = new Set<string>(matching.map(m => m.name));
     existingReports.forEach(r => {
-      if (r.operatorName && r.operatorName.trim()) {
-        list.add(r.operatorName.trim());
-      }
+      if (r.operatorName && r.operatorName.trim()) names.add(r.operatorName.trim());
     });
-    return Array.from(list).slice(0, 8);
-  }, [existingReports]);
+    DEFAULT_OPERATOR_NAMES.forEach(n => names.add(n));
+    return Array.from(names).slice(0, 10);
+  }, [machine, groupShift, existingReports]);
+
+  // Daftar Pembantu Operator (Helper) Resmi PT. PUP yang relevan dengan group / mesin
+  const helpersForActiveSelection = useMemo(() => {
+    const matching = PUP_PERSONNEL_ROSTER.filter(p => 
+      p.isHelper && (p.group === groupShift || p.group === 'All' || p.unit === machine)
+    );
+    const names = new Set<string>(matching.map(m => m.name));
+    existingReports.forEach(r => {
+      if (r.assistantOperatorName && r.assistantOperatorName.trim()) names.add(r.assistantOperatorName.trim());
+    });
+    return Array.from(names);
+  }, [machine, groupShift, existingReports]);
+
+  // Daftar Kepala Regu / Unit Head PT. PUP
+  const foremenList = useMemo(() => [
+    { name: 'Untung S', title: 'Kepala PM 1', unit: 'PM1' },
+    { name: 'Sarino', title: 'Wakil 1 PM 1', unit: 'PM1' },
+    { name: 'Piih Samboja', title: 'Wakil 2 PM 1', unit: 'PM1' },
+    { name: 'Rumawan', title: 'Kepala PM 2', unit: 'PM2' },
+    { name: 'CANDRA S', title: 'Wakil 1 PM 2', unit: 'PM2' },
+    { name: 'Lukman A', title: 'Wakil 2 PM 2', unit: 'PM2' },
+    { name: 'Suwardi', title: 'Kepala PM 5', unit: 'PM5' },
+    { name: 'Bambang JH', title: 'Wakil 1 PM 5', unit: 'PM5' },
+    { name: 'Warsito', title: 'Wakil 2 PM 5', unit: 'PM5' },
+    { name: 'YANA ANDRIYANA', title: 'Kepala Boiler', unit: 'BOILER' },
+    { name: 'Kelik Heriyono', title: 'Kepala Pabrik / JR Div. Head', unit: 'MANAGEMENT' }
+  ], []);
+
+  // Backward-compatible alias
+  const operatorSuggestions = operatorsForActiveSelection;
 
   const flashNotification = (msg: string) => {
     setQuickNotification(msg);
@@ -406,7 +467,10 @@ export const ReportForm: React.FC<ReportFormProps> = ({
       const draftData = {
         date,
         shift,
+        groupShift,
         operatorName,
+        assistantOperatorName,
+        karuName,
         machine,
         targetProductionTon,
         actualProductionTon,
@@ -441,7 +505,10 @@ export const ReportForm: React.FC<ReportFormProps> = ({
   }, [
     date,
     shift,
+    groupShift,
     operatorName,
+    assistantOperatorName,
+    karuName,
     machine,
     targetProductionTon,
     actualProductionTon,
@@ -474,6 +541,9 @@ export const ReportForm: React.FC<ReportFormProps> = ({
         try {
           const parsed = JSON.parse(savedDraft);
           if (parsed.operatorName) setOperatorName(parsed.operatorName);
+          if (parsed.assistantOperatorName) setAssistantOperatorName(parsed.assistantOperatorName);
+          if (parsed.karuName) setKaruName(parsed.karuName);
+          if (parsed.groupShift) setGroupShift(parsed.groupShift);
           if (parsed.shift) {
             let s = parsed.shift;
             if (s === 'Pagi') s = 'Shift 1';
@@ -514,7 +584,10 @@ export const ReportForm: React.FC<ReportFormProps> = ({
       id: `rep-${machine.toLowerCase()}-${date}-${shiftSlug}-${Date.now().toString().slice(-4)}`,
       date,
       shift,
+      groupShift,
       operatorName: operatorName.trim(),
+      assistantOperatorName: assistantOperatorName.trim(),
+      karuName: karuName.trim(),
       machine,
       targetProductionTon: Number(targetProductionTon) || 0,
       actualProductionTon: Number(actualProductionTon) || 0,
@@ -561,7 +634,10 @@ export const ReportForm: React.FC<ReportFormProps> = ({
         ...editingReport,
         date,
         shift,
+        groupShift,
         operatorName: operatorName.trim(),
+        assistantOperatorName: assistantOperatorName.trim(),
+        karuName: karuName.trim(),
         machine,
         targetProductionTon: Number(targetProductionTon) || 0,
         actualProductionTon: Number(actualProductionTon) || 0,
@@ -834,8 +910,8 @@ export const ReportForm: React.FC<ReportFormProps> = ({
               </div>
             </div>
 
-            {/* Shift & Tanggal */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs pt-1">
+            {/* Shift, Group Kerja & Tanggal */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs pt-1">
               {/* Shift 1 / Shift 2 / Shift 3 */}
               <div>
                 <label className="block text-slate-300 font-semibold mb-1.5">
@@ -848,13 +924,38 @@ export const ReportForm: React.FC<ReportFormProps> = ({
                       key={s}
                       id={`shift-select-${s.toLowerCase().replace(/\s+/g, '-')}`}
                       onClick={() => setShift(s)}
-                      className={`py-2.5 px-2 text-center font-bold text-xs rounded-xl border transition-all ${
+                      className={`py-2 px-1.5 text-center font-bold text-xs rounded-xl border transition-all ${
                         shift === s
                           ? 'bg-blue-600 border-blue-500 text-white shadow'
                           : 'bg-slate-950 border-slate-800 text-slate-300 hover:bg-slate-800'
                       }`}
                     >
                       {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Group Kerja PT. PUP (Group 1, 2, 3) */}
+              <div>
+                <label className="block text-slate-300 font-semibold mb-1.5 flex items-center justify-between">
+                  <span>Group Regu Kerja PT. PUP <span className="text-rose-400">*</span></span>
+                  <span className="text-[10px] text-cyan-400 font-mono">Rotasi 3 Regu</span>
+                </label>
+                <div className="grid grid-cols-3 gap-1.5">
+                  {(['Group 1', 'Group 2', 'Group 3'] as const).map((grp) => (
+                    <button
+                      type="button"
+                      key={grp}
+                      id={`group-select-${grp.toLowerCase().replace(/\s+/g, '-')}`}
+                      onClick={() => setGroupShift(grp)}
+                      className={`py-2 px-1.5 text-center font-bold text-xs rounded-xl border transition-all ${
+                        groupShift === grp
+                          ? 'bg-cyan-600 border-cyan-500 text-white shadow'
+                          : 'bg-slate-950 border-slate-800 text-slate-300 hover:bg-slate-800'
+                      }`}
+                    >
+                      {grp}
                     </button>
                   ))}
                 </div>
@@ -870,51 +971,337 @@ export const ReportForm: React.FC<ReportFormProps> = ({
                   required
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  className="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 font-mono text-sm focus:outline-none focus:border-blue-500"
+                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 font-mono text-sm focus:outline-none focus:border-blue-500"
                 />
               </div>
             </div>
 
-            {/* Nama Petugas Pengisi */}
-            <div className="pt-1">
-              <label className="block text-slate-300 font-semibold text-xs mb-1.5">
-                Nama Petugas Pengisi Shift <span className="text-rose-400">*</span>
-              </label>
+            {/* Sub-Section: Struktur Personel Regu Shift PT. PUP */}
+            <div className="mt-4 p-3.5 bg-slate-950/70 border border-slate-800 rounded-xl space-y-3.5">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-slate-800/80 pb-2.5">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-blue-900/60 border border-blue-600/50 flex items-center justify-center text-blue-300">
+                    <Users className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-xs sm:text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                      <span>Penugasan Personel Shift ({groupShift})</span>
+                      <span className="text-[10px] font-normal px-2 py-0.5 rounded bg-blue-950 border border-blue-700/50 text-blue-300">
+                        {machine}
+                      </span>
+                    </h3>
+                    <p className="text-[11px] text-slate-400">
+                      Sesuai Struktur Organisasi Pabrik PT. Panca Usahatama Paramita
+                    </p>
+                  </div>
+                </div>
 
-              {/* Quick Chip Selection */}
-              <div className="flex flex-wrap gap-1.5 mb-2">
-                {operatorSuggestions.map((name) => (
+                <div className="flex items-center gap-2">
                   <button
                     type="button"
-                    key={name}
-                    onClick={() => setOperatorName(name)}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all ${
-                      operatorName === name
-                        ? 'bg-blue-600 border-blue-500 text-white'
-                        : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-800'
-                    }`}
+                    onClick={() => {
+                      setRosterTargetField('operator');
+                      setRosterSearch('');
+                      setShowRosterModal(true);
+                    }}
+                    className="px-2.5 py-1 text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg flex items-center gap-1.5 transition-colors"
                   >
-                    + {name}
+                    <UserPlus className="w-3.5 h-3.5 text-blue-400" />
+                    <span>Daftar Personel PT. PUP</span>
                   </button>
-                ))}
+
+                  {onOpenOrgStructure && (
+                    <button
+                      type="button"
+                      onClick={onOpenOrgStructure}
+                      className="px-2.5 py-1 text-xs font-semibold bg-indigo-950/80 hover:bg-indigo-900 text-indigo-200 border border-indigo-600/50 rounded-lg flex items-center gap-1.5 transition-colors"
+                      title="Buka Bagan Struktur Lengkap & SOP Job Desc Tiap Jabatan"
+                    >
+                      <Building2 className="w-3.5 h-3.5 text-indigo-400" />
+                      <span>Job Desc & Bagan</span>
+                    </button>
+                  )}
+                </div>
               </div>
 
-              <div className="relative">
-                <input
-                  type="text"
-                  required
-                  placeholder="Ketik nama Anda atau klik nama di atas..."
-                  value={operatorName}
-                  onChange={(e) => setOperatorName(e.target.value)}
-                  className="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 text-sm focus:outline-none focus:border-blue-500"
-                />
-                {operatorName && (
-                  <span className="absolute right-3 top-2.5 text-xs text-emerald-400 flex items-center gap-1 font-semibold">
-                    <UserCheck className="w-4 h-4" /> Siap
-                  </span>
-                )}
+              {/* Grid 3 Kolom: Operator Utama, Pembantu Operator (Helper), Kepala Regu */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {/* 1. Operator Utama */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-slate-200 flex items-center gap-1">
+                      <span>Operator Utama ({machine})</span>
+                      <span className="text-rose-400">*</span>
+                    </label>
+                    <span className="text-[10px] text-emerald-400 font-semibold">Penanggung Jawab</span>
+                  </div>
+
+                  {/* Quick Chip Selection Operator */}
+                  <div className="flex flex-wrap gap-1 max-h-16 overflow-y-auto py-0.5">
+                    {operatorsForActiveSelection.slice(0, 6).map((name) => (
+                      <button
+                        type="button"
+                        key={name}
+                        onClick={() => setOperatorName(name)}
+                        className={`px-2 py-0.5 rounded text-[11px] font-semibold border transition-all ${
+                          operatorName === name
+                            ? 'bg-blue-600 border-blue-500 text-white'
+                            : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                        }`}
+                      >
+                        + {name}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="relative">
+                    <input
+                      type="text"
+                      required
+                      placeholder="Nama Operator Utama..."
+                      value={operatorName}
+                      onChange={(e) => setOperatorName(e.target.value)}
+                      className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 text-xs focus:outline-none focus:border-blue-500"
+                    />
+                    {operatorName && (
+                      <span className="absolute right-2.5 top-2 text-[11px] text-emerald-400 flex items-center gap-0.5 font-semibold">
+                        <UserCheck className="w-3.5 h-3.5" /> Ok
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* 2. Pembantu Operator (Helper) - Sesuai Permintaan Spesifik User */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-amber-300 flex items-center gap-1">
+                      <HardHat className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Pembantu Operator (Helper)</span>
+                    </label>
+                    <span className="text-[10px] px-1.5 py-0.2 bg-amber-950/70 border border-amber-600/40 text-amber-300 rounded font-semibold">
+                      Posisi Baru
+                    </span>
+                  </div>
+
+                  {/* Quick Chip Selection Helper */}
+                  <div className="flex flex-wrap gap-1 max-h-16 overflow-y-auto py-0.5">
+                    {helpersForActiveSelection.slice(0, 6).map((name) => (
+                      <button
+                        type="button"
+                        key={name}
+                        onClick={() => setAssistantOperatorName(name)}
+                        className={`px-2 py-0.5 rounded text-[11px] font-semibold border transition-all ${
+                          assistantOperatorName === name
+                            ? 'bg-amber-600 border-amber-500 text-white'
+                            : 'bg-slate-900 border-slate-800 text-amber-300/80 hover:text-amber-200 hover:bg-slate-800'
+                        }`}
+                      >
+                        + {name}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="Nama Pembantu Operator (Helper)..."
+                      value={assistantOperatorName}
+                      onChange={(e) => setAssistantOperatorName(e.target.value)}
+                      className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 text-xs focus:outline-none focus:border-amber-500"
+                    />
+                    {assistantOperatorName && (
+                      <span className="absolute right-2.5 top-2 text-[11px] text-amber-400 flex items-center gap-0.5 font-semibold">
+                        <Check className="w-3.5 h-3.5" /> Helper
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[10px] text-slate-400 italic leading-tight">
+                    Tugas: Bantu reel drum, tali pope, broke & pelumasan area mesin.
+                  </p>
+                </div>
+
+                {/* 3. Kepala Regu / Pengawas Shift (Karu) */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-slate-200">
+                      Kepala Regu / Wakil PM
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (machine === 'PM1') setKaruName('Untung S');
+                        else if (machine === 'PM2') setKaruName('Rumawan');
+                        else if (machine === 'PM5') setKaruName('Suwardi');
+                      }}
+                      className="text-[10px] text-blue-400 hover:text-blue-300 underline font-semibold"
+                    >
+                      Auto-set {machine}
+                    </button>
+                  </div>
+
+                  <div className="relative">
+                    <select
+                      value={karuName}
+                      onChange={(e) => setKaruName(e.target.value)}
+                      className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 text-xs focus:outline-none focus:border-blue-500"
+                    >
+                      <option value="">-- Pilih Kepala Regu / Wakil PM --</option>
+                      {foremenList.map((f) => (
+                        <option key={f.name} value={f.name}>
+                          {f.name} - {f.title} ({f.unit})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {karuName && (
+                    <div className="text-[11px] text-blue-300/90 font-mono flex items-center gap-1 bg-blue-950/40 px-2 py-1 rounded border border-blue-900/50">
+                      <ShieldCheck className="w-3 h-3 text-blue-400 shrink-0" />
+                      <span className="truncate">Pengawas: {karuName}</span>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
+
+            {/* Quick Modal: Pencarian & Pemilihan Personel PT. PUP */}
+            {showRosterModal && (
+              <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+                <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+                  <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+                    <div>
+                      <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                        <Users className="w-4 h-4 text-blue-400" />
+                        <span>Pilih Personel PT. PANCA USAHATAMA PARAMITA</span>
+                      </h3>
+                      <p className="text-xs text-slate-400 mt-0.5">
+                        Target input: <strong className="text-cyan-300 uppercase">
+                          {rosterTargetField === 'operator' ? 'Operator Utama' : rosterTargetField === 'assistant' ? 'Pembantu Operator (Helper)' : 'Kepala Regu / Pengawas'}
+                        </strong>
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowRosterModal(false)}
+                      className="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white"
+                    >
+                      &times;
+                    </button>
+                  </div>
+
+                  <div className="p-3 border-b border-slate-800 bg-slate-950/60 flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Ketik nama atau peran personel (misal: Bambang, Topik, Helper, PM1)..."
+                      value={rosterSearch}
+                      onChange={(e) => setRosterSearch(e.target.value)}
+                      className="flex-1 px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs text-slate-100 focus:outline-none focus:border-blue-500"
+                      autoFocus
+                    />
+                    <div className="flex gap-1">
+                      <button
+                        type="button"
+                        onClick={() => setRosterTargetField('operator')}
+                        className={`px-2 py-1 text-xs rounded font-semibold border ${
+                          rosterTargetField === 'operator' ? 'bg-blue-600 border-blue-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-300'
+                        }`}
+                      >
+                        Operator
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setRosterTargetField('assistant')}
+                        className={`px-2 py-1 text-xs rounded font-semibold border ${
+                          rosterTargetField === 'assistant' ? 'bg-amber-600 border-amber-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-300'
+                        }`}
+                      >
+                        Helper
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setRosterTargetField('karu')}
+                        className={`px-2 py-1 text-xs rounded font-semibold border ${
+                          rosterTargetField === 'karu' ? 'bg-emerald-600 border-emerald-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-300'
+                        }`}
+                      >
+                        Karu
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="p-3 overflow-y-auto flex-1 divide-y divide-slate-800/60 text-xs">
+                    {PUP_PERSONNEL_ROSTER
+                      .filter(p => {
+                        const q = rosterSearch.toLowerCase();
+                        if (!q) return true;
+                        return (
+                          p.name.toLowerCase().includes(q) ||
+                          p.role.toLowerCase().includes(q) ||
+                          p.unit.toLowerCase().includes(q) ||
+                          p.group.toLowerCase().includes(q)
+                        );
+                      })
+                      .map((person) => {
+                        const isHelper = person.isHelper;
+                        return (
+                          <div
+                            key={person.id}
+                            className="py-2.5 px-2 hover:bg-slate-800/60 rounded-lg flex items-center justify-between gap-3 transition-colors cursor-pointer"
+                            onClick={() => {
+                              if (rosterTargetField === 'operator') {
+                                setOperatorName(person.name);
+                              } else if (rosterTargetField === 'assistant') {
+                                setAssistantOperatorName(person.name);
+                              } else {
+                                setKaruName(person.name);
+                              }
+                              setShowRosterModal(false);
+                              flashNotification(`Personel ${person.name} dimasukkan ke ${rosterTargetField}`);
+                            }}
+                          >
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="font-bold text-white text-sm">{person.name}</span>
+                                <span className={`px-1.5 py-0.2 rounded text-[10px] font-bold ${
+                                  isHelper
+                                    ? 'bg-amber-950 text-amber-300 border border-amber-700/50'
+                                    : 'bg-blue-950 text-blue-300 border border-blue-700/50'
+                                }`}>
+                                  {person.role}
+                                </span>
+                                <span className="text-[10px] px-1.5 py-0.2 rounded bg-slate-800 text-slate-300">
+                                  {person.group}
+                                </span>
+                              </div>
+                              <p className="text-[11px] text-slate-400 mt-0.5">
+                                Unit: <strong className="text-slate-300">{person.unit}</strong> &bull; Shift: {person.shiftPreference || 'Bergilir 3 Shift'}
+                              </p>
+                            </div>
+
+                            <button
+                              type="button"
+                              className="px-2.5 py-1 bg-blue-600/90 hover:bg-blue-500 text-white rounded font-bold text-xs shrink-0"
+                            >
+                              Pilih
+                            </button>
+                          </div>
+                        );
+                      })}
+                  </div>
+
+                  <div className="p-3 border-t border-slate-800 bg-slate-950/80 flex items-center justify-between text-xs text-slate-400">
+                    <span>Total terdaftar: {PUP_PERSONNEL_ROSTER.length} personel PT. PUP</span>
+                    <button
+                      type="button"
+                      onClick={() => setShowRosterModal(false)}
+                      className="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded font-semibold"
+                    >
+                      Tutup
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Navigation Button for Wizard */}
             {inputMode === 'wizard' && (

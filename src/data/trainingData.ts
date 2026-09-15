@@ -1,8 +1,10 @@
 import { MachineTrainingData, TrainingModuleId } from '../types';
 import { REWINDER_TRAINING_DATA } from './rewinderTrainingData';
 import { STOCK_PREP_TRAINING_DATA } from './stockPrepTrainingData';
+import { TISSUE_PM_MASTER_TRAINING } from './tissueMachineTrainingData';
 
 export const TRAINING_MODULES: Record<TrainingModuleId, MachineTrainingData> = {
+  TISSUE_PM: TISSUE_PM_MASTER_TRAINING,
   STOCK_PREP: STOCK_PREP_TRAINING_DATA,
   PM1: {
     machineId: 'PM1',
@@ -98,7 +100,10 @@ export const TRAINING_MODULES: Record<TrainingModuleId, MachineTrainingData> = {
       'Suhu silinder Yankee mencapai > 110°C: wajib memakai sarung tangan tahan panas saat menyuap ujung kertas (threading paper tail).',
       'Penggantian kain felt (Top 18,8 M / Bottom 25,0 M): wajib menerapkan prosedur LOTO (Lock Out Tag Out) total dengan pengawasan Kepala Regu.',
       'Lantai di sekitar bak vat cylinder selalu basah oleh air bubur kertas: wajib bersepatu safety anti-slip (SRC approved).'
-    ]
+    ],
+    roleGuides: TISSUE_PM_MASTER_TRAINING.roleGuides,
+    tissueEquipments: TISSUE_PM_MASTER_TRAINING.tissueEquipments,
+    tissueQuizzes: TISSUE_PM_MASTER_TRAINING.tissueQuizzes
   },
 
   PM2: {
@@ -194,7 +199,10 @@ export const TRAINING_MODULES: Record<TrainingModuleId, MachineTrainingData> = {
       'Suhu permukaan Yankee mencapai 120°C: gunakan APD lengan panjang tahan panas saat pemeriksaan area dryer.',
       'Gunakan masker pelindung debu serat halus saat berada di dekat gulungan reel tissue.',
       'Patuhi prosedur keselamatan pergantian felt Top 18,8 M dan Bottom 25,0 M dengan memasang gembok keselamatan LOTO.'
-    ]
+    ],
+    roleGuides: TISSUE_PM_MASTER_TRAINING.roleGuides,
+    tissueEquipments: TISSUE_PM_MASTER_TRAINING.tissueEquipments,
+    tissueQuizzes: TISSUE_PM_MASTER_TRAINING.tissueQuizzes
   },
 
   PM5: {
@@ -291,7 +299,10 @@ export const TRAINING_MODULES: Record<TrainingModuleId, MachineTrainingData> = {
       'Suhu udara panas dalam Air Cap Hood mencapai > 130°C: gunakan APD tahan panas dan kacamata safety saat inspeksi.',
       'Prosedur pemasangan Single Felt 30,0 M berbobot berat: wajib menggunakan crane hoist tersertifikasi dan dipimpin oleh Kepala Regu serta Supervisor K3.',
       'Sistem pencegah kebakaran kabut air di area dryer hood aktif otomatis: patuhi jalur evakuasi saat sirine peringatan berbunyi.'
-    ]
+    ],
+    roleGuides: TISSUE_PM_MASTER_TRAINING.roleGuides,
+    tissueEquipments: TISSUE_PM_MASTER_TRAINING.tissueEquipments,
+    tissueQuizzes: TISSUE_PM_MASTER_TRAINING.tissueQuizzes
   },
   REWINDER: REWINDER_TRAINING_DATA
 };

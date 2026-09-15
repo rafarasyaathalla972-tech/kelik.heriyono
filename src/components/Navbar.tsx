@@ -10,7 +10,9 @@ import {
   Factory,
   ChevronRight,
   Share2,
-  Check
+  Check,
+  Building2,
+  Users
 } from 'lucide-react';
 import { ShiftType } from '../types';
 
@@ -19,6 +21,7 @@ interface NavbarProps {
   onTabChange: (tab: 'form' | 'dashboard' | 'history') => void;
   onOpenSop: () => void;
   onOpenTraining: () => void;
+  onOpenOrgStructure?: () => void;
   onOpenShare?: () => void;
   onPrintAll?: () => void;
   reportCount: number;
@@ -30,6 +33,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onTabChange,
   onOpenSop,
   onOpenTraining,
+  onOpenOrgStructure,
   onOpenShare,
   reportCount,
   isServerConnected = true
@@ -177,6 +181,21 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Quick Guidance Buttons: Always Accessible */}
           <div className="flex items-center gap-2">
+            {onOpenOrgStructure && (
+              <button
+                id="btn-open-org-structure-global"
+                onClick={onOpenOrgStructure}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold bg-indigo-900/90 hover:bg-indigo-800 text-indigo-100 border border-indigo-500/60 transition-colors shadow-sm"
+                title="Bagan Struktur Organisasi, Job Description & Penugasan Helper Seluruh Mesin"
+              >
+                <Building2 className="w-3.5 h-3.5 text-indigo-300" />
+                <span>Struktur & Job Desc</span>
+                <span className="hidden sm:inline-block bg-indigo-950 text-indigo-300 border border-indigo-400/40 text-[10px] px-1.5 py-0.2 rounded font-bold">
+                  PT. PUP
+                </span>
+              </button>
+            )}
+
             <button
               id="btn-open-sop-global"
               onClick={onOpenSop}

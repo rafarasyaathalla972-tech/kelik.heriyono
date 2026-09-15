@@ -1,5 +1,5 @@
 export type MachineId = 'PM1' | 'PM2' | 'PM5';
-export type TrainingModuleId = 'STOCK_PREP' | 'REWINDER' | 'PM1' | 'PM2' | 'PM5';
+export type TrainingModuleId = 'STOCK_PREP' | 'REWINDER' | 'PM1' | 'PM2' | 'PM5' | 'TISSUE_PM';
 export type ShiftType = 'Shift 1' | 'Shift 2' | 'Shift 3' | 'Pagi' | 'Siang' | 'Malam';
 export type QualityGrade = 'A' | 'B' | 'C' | 'Cacat';
 
@@ -31,6 +31,9 @@ export interface ShiftReport {
   date: string; // YYYY-MM-DD
   shift: ShiftType;
   operatorName: string;
+  assistantOperatorName?: string; // Pembantu Operator / Helper Shift
+  karuName?: string;              // Kepala Regu / Wakil PM
+  groupShift?: 'Group 1' | 'Group 2' | 'Group 3';
   machine: MachineId;
 
   // B. Hasil Produksi
@@ -179,8 +182,44 @@ export interface StockPrepEquipmentDetail {
   mediaThumbnail?: string;
 }
 
+export type TissueStageId = 'ALL' | 'WET_END' | 'DRY_END' | 'POPE_REEL';
+
+export interface TissueMachineEquipmentDetail {
+  id: string;
+  number: number;
+  slideRef: string;
+  name: string;
+  stage: 'WET_END' | 'DRY_END' | 'POPE_REEL';
+  stageName: string;
+  categoryTag: string;
+  function: string;
+  workingPrinciple: string;
+  criticalParameters: { label: string; value: string; unit?: string; importance: string }[];
+  operatorKeyPoints: string[];
+  helperDuties: string[];
+  karuInspectionPoints: string[];
+  kepalaPmGovernance: string[];
+  troubleshooting: { fault: string; indication: string; immediateAction: string; permanentFix: string };
+  k3SafetyWarning: string;
+  associatedPhotoTitle?: string;
+  videoTimecode?: string;
+}
+
+export interface TissueMachineQuizItem {
+  number: number;
+  question: string;
+  options: string[];
+  correctAnswer: string;
+  officialSlideAnswer: string;
+  technicalDeepDive: string;
+  operationalImpact: string;
+  stage: 'WET_END' | 'DRY_END' | 'POPE_REEL' | 'CALCULATION';
+  whoMustMaster: string;
+  calculationFormula?: string;
+}
+
 export interface MachineTrainingData {
-  machineId: MachineId | 'REWINDER' | 'STOCK_PREP';
+  machineId: MachineId | 'REWINDER' | 'STOCK_PREP' | 'TISSUE_PM';
   name: string;
   tagline: string;
   technicalSpecs: { label: string; value: string }[];
@@ -200,4 +239,57 @@ export interface MachineTrainingData {
   mediaConfig?: MachineMediaConfig;
   stockPrepEquipments?: StockPrepEquipmentDetail[];
   stockPrepQuizzes?: StockPrepQuizItem[];
+  tissueEquipments?: TissueMachineEquipmentDetail[];
+  tissueQuizzes?: TissueMachineQuizItem[];
 }
+
+// =========================================================================
+// STRUKTUR ORGANISASI & JOB DESCRIPTION PT. PUP
+// =========================================================================
+
+export type PupUnit = 'PM1' | 'PM2' | 'PM5' | 'STOCK_PREP' | 'REWINDER' | 'PULPER' | 'BOILER' | 'MANAGEMENT' | 'ADM';
+export type PupGroup = 'Group 1' | 'Group 2' | 'Group 3' | 'Non-Shift' | 'All';
+
+export interface PupPersonnel {
+  id: string;
+  name: string;
+  role: string;
+  unit: PupUnit;
+  group: PupGroup;
+  status: 'Organik' | 'Outsourcing (Os)' | 'Helper' | 'Pimpinan';
+  badgeTitle?: string;
+  directSupervisor?: string;
+  isHelper?: boolean;
+  notes?: string;
+  shiftPreference?: string;
+}
+
+export interface JobDescriptionDetail {
+  id: string;
+  roleKey: string;
+  title: string;
+  level: 'Pimpinan Divisi' | 'Kepala Unit / Wakil' | 'Operator Utama' | 'Pembantu Operator (Helper)' | 'Administrasi';
+  department: string;
+  reportsTo: string;
+  supervises: string;
+  personnelNames: string[];
+  summary: string;
+  coreResponsibilities: string[];
+  dailyTasks: {
+    phase: 'Fase 1: Pra-Shift & Inspeksi Kesiapan (30 Menit Awal)' | 'Fase 2: Operasional Berjalan & Pengendalian Kualitas (Inti Shift)' | 'Fase 3: Handover, Administrasi & 5S (30 Menit Akhir)';
+    tasks: string[];
+  }[];
+  authorityLimits: {
+    canDo: string[];
+    mustEscalate: string[];
+  };
+  kpis: {
+    indicator: string;
+    target: string;
+    impact: string;
+  }[];
+  k3SafetyRequirements: string[];
+  coordinationWorkflow: string;
+  applicableMachines: string[];
+}
+

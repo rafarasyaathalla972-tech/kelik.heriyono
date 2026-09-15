@@ -14,7 +14,10 @@ import {
   Clock, 
   Layers, 
   Eye,
-  FileText
+  FileText,
+  Users,
+  HardHat,
+  ShieldCheck
 } from 'lucide-react';
 import { ShiftReport, MachineId } from '../types';
 import { PrintReportView } from './PrintReportView';
@@ -286,9 +289,20 @@ export const ReportList: React.FC<ReportListProps> = ({
                     <span className="px-2 py-1 bg-slate-800/90 text-slate-300 text-xs font-semibold rounded-md">
                       {report.shift.startsWith('Shift') ? report.shift : `Shift ${report.shift}`}
                     </span>
+                    {report.groupShift && (
+                      <span className="px-2 py-0.5 bg-cyan-950/80 border border-cyan-700/50 text-cyan-300 text-xs font-semibold rounded-md">
+                        {report.groupShift}
+                      </span>
+                    )}
                     <span className="text-xs font-semibold text-slate-200 pl-1">
-                      Oleh: <strong className="text-white">{report.operatorName}</strong>
+                      Op: <strong className="text-white">{report.operatorName}</strong>
                     </span>
+                    {report.assistantOperatorName && (
+                      <span className="text-xs font-semibold text-amber-300/90 bg-amber-950/50 px-2 py-0.5 rounded border border-amber-800/40 flex items-center gap-1">
+                        <HardHat className="w-3 h-3 text-amber-400" />
+                        Helper: <strong className="text-amber-200">{report.assistantOperatorName}</strong>
+                      </span>
+                    )}
 
                     {/* Audit badge if modified */}
                     {hasAudit && (
@@ -383,6 +397,37 @@ export const ReportList: React.FC<ReportListProps> = ({
                 {isExpanded && (
                   <div className="p-4 border-t border-slate-800 bg-slate-950/80 space-y-4 text-xs animate-fadeIn">
                     
+                    {/* Shift Personnel Team PT. PUP */}
+                    <div className="bg-slate-900/90 border border-slate-800 rounded-lg p-3 flex flex-wrap items-center justify-between gap-3">
+                      <div className="flex items-center gap-2">
+                        <Users className="w-4 h-4 text-blue-400" />
+                        <span className="font-bold text-slate-200">Personel Shift Regu:</span>
+                        <span className="px-2 py-0.5 bg-blue-950 text-blue-300 rounded border border-blue-800/60 font-semibold text-[11px]">
+                          {report.groupShift || 'Group 1'}
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-4 text-[11px]">
+                        <div>
+                          <span className="text-slate-400">Operator Utama: </span>
+                          <strong className="text-white">{report.operatorName}</strong>
+                        </div>
+                        {report.assistantOperatorName && (
+                          <div className="flex items-center gap-1 text-amber-300">
+                            <HardHat className="w-3.5 h-3.5 text-amber-400" />
+                            <span>Pembantu (Helper): </span>
+                            <strong className="text-amber-200">{report.assistantOperatorName}</strong>
+                          </div>
+                        )}
+                        {report.karuName && (
+                          <div className="flex items-center gap-1 text-cyan-300">
+                            <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
+                            <span>Pengawas/Karu: </span>
+                            <strong className="text-cyan-200">{report.karuName}</strong>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
                     {/* Grid: Quality Parameters & Incident List */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       

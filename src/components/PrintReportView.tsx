@@ -67,18 +67,22 @@ export const PrintReportView: React.FC<PrintReportViewProps> = ({ report, onClos
           </div>
 
           {/* Section A: Data Umum */}
-          <div className="grid grid-cols-4 gap-2 bg-slate-100 p-3 rounded border border-slate-300">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 bg-slate-100 p-3 rounded border border-slate-300 text-xs">
             <div>
               <span className="text-[10px] text-slate-500 block uppercase font-bold">Tanggal Laporan</span>
               <span className="font-bold text-slate-900 text-sm font-mono">{report.date}</span>
             </div>
             <div>
-              <span className="text-[10px] text-slate-500 block uppercase font-bold">Shift Kerja</span>
-              <span className="font-bold text-slate-900 text-sm">{report.shift}</span>
+              <span className="text-[10px] text-slate-500 block uppercase font-bold">Shift & Regu</span>
+              <span className="font-bold text-slate-900 text-sm">{report.shift} ({report.groupShift || 'Group 1'})</span>
             </div>
             <div>
-              <span className="text-[10px] text-slate-500 block uppercase font-bold">Petugas Pengisi</span>
+              <span className="text-[10px] text-slate-500 block uppercase font-bold">Operator Utama</span>
               <span className="font-bold text-slate-900 text-sm">{report.operatorName}</span>
+            </div>
+            <div>
+              <span className="text-[10px] text-slate-500 block uppercase font-bold">Pembantu (Helper)</span>
+              <span className="font-bold text-slate-900 text-sm">{report.assistantOperatorName || '-'}</span>
             </div>
             <div>
               <span className="text-[10px] text-slate-500 block uppercase font-bold">Unit Mesin</span>
@@ -246,21 +250,34 @@ export const PrintReportView: React.FC<PrintReportViewProps> = ({ report, onClos
           )}
 
           {/* Signatures Footer */}
-          <div className="pt-6 grid grid-cols-3 gap-4 text-center text-xs">
+          <div className="pt-6 grid grid-cols-4 gap-3 text-center text-xs">
             <div>
-              <div className="text-slate-500 text-[10px] uppercase">Petugas Shift Pengisi</div>
-              <div className="h-14 border-b border-slate-400 mt-2"></div>
-              <div className="font-bold mt-1 text-slate-900">{report.operatorName}</div>
+              <div className="text-slate-500 text-[10px] uppercase font-semibold">Pembantu (Helper)</div>
+              <div className="h-12 border-b border-slate-400 mt-2"></div>
+              <div className="font-bold mt-1 text-slate-900 text-[11px] truncate">
+                {report.assistantOperatorName || '( ........................ )'}
+              </div>
             </div>
             <div>
-              <div className="text-slate-500 text-[10px] uppercase">Kepala Regu (Foreman)</div>
-              <div className="h-14 border-b border-slate-400 mt-2"></div>
-              <div className="font-bold mt-1 text-slate-900">( ..................................... )</div>
+              <div className="text-slate-500 text-[10px] uppercase font-semibold">Operator Utama</div>
+              <div className="h-12 border-b border-slate-400 mt-2"></div>
+              <div className="font-bold mt-1 text-slate-900 text-[11px] truncate">
+                {report.operatorName}
+              </div>
             </div>
             <div>
-              <div className="text-slate-500 text-[10px] uppercase">Superintendent Produksi</div>
-              <div className="h-14 border-b border-slate-400 mt-2"></div>
-              <div className="font-bold mt-1 text-slate-900">( ..................................... )</div>
+              <div className="text-slate-500 text-[10px] uppercase font-semibold">Kepala Regu / Karu</div>
+              <div className="h-12 border-b border-slate-400 mt-2"></div>
+              <div className="font-bold mt-1 text-slate-900 text-[11px] truncate">
+                {report.karuName || '( ........................ )'}
+              </div>
+            </div>
+            <div>
+              <div className="text-slate-500 text-[10px] uppercase font-semibold">Kepala Pabrik / JR Div. Head</div>
+              <div className="h-12 border-b border-slate-400 mt-2"></div>
+              <div className="font-bold mt-1 text-slate-900 text-[11px] truncate">
+                Kelik Heriyono
+              </div>
             </div>
           </div>
 

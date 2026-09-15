@@ -6,7 +6,8 @@ import { ReportList } from './components/ReportList';
 import { SopModal } from './components/SopModal';
 import { TrainingModal } from './components/TrainingModal';
 import { ShareModal } from './components/ShareModal';
-import { ShiftReport, MachineId, EditAuditLog, TrainingModuleId } from './types';
+import { OrgStructureModal } from './components/OrgStructureModal';
+import { ShiftReport, MachineId, EditAuditLog, TrainingModuleId, PupPersonnel } from './types';
 import { INITIAL_SHIFT_REPORTS } from './data/initialReports';
 import { 
   getSharedReports, 
@@ -15,7 +16,7 @@ import {
   deleteSharedReport,
   checkServerHealth 
 } from './services/reportService';
-import { CheckCircle2, Factory, BookOpen, GraduationCap, Share2 } from 'lucide-react';
+import { CheckCircle2, Factory, BookOpen, GraduationCap, Share2, Building2 } from 'lucide-react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<'form' | 'dashboard' | 'history'>('dashboard');
@@ -56,6 +57,7 @@ export default function App() {
   const [isSopOpen, setIsSopOpen] = useState<boolean>(false);
   const [isTrainingOpen, setIsTrainingOpen] = useState<boolean>(false);
   const [isShareOpen, setIsShareOpen] = useState<boolean>(false);
+  const [isOrgStructureOpen, setIsOrgStructureOpen] = useState<boolean>(false);
   const [trainingDefaultMachine, setTrainingDefaultMachine] = useState<TrainingModuleId>('REWINDER');
 
   // Success Notification banner
@@ -218,6 +220,7 @@ export default function App() {
         }}
         onOpenSop={() => setIsSopOpen(true)}
         onOpenTraining={() => handleOpenTraining()}
+        onOpenOrgStructure={() => setIsOrgStructureOpen(true)}
         onOpenShare={() => setIsShareOpen(true)}
         reportCount={reports.length}
         isServerConnected={isServerConnected}
@@ -240,6 +243,7 @@ export default function App() {
             onSaveReport={handleSaveReport}
             onOpenSop={() => setIsSopOpen(true)}
             onOpenTraining={handleOpenTraining}
+            onOpenOrgStructure={() => setIsOrgStructureOpen(true)}
             editingReport={editingReport}
             onCancelEdit={handleCancelEdit}
             existingReports={reports}
@@ -302,6 +306,15 @@ export default function App() {
             </button>
             <span className="text-slate-600">&bull;</span>
             <button
+              onClick={() => setIsOrgStructureOpen(true)}
+              className="text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1"
+              title="Buka Struktur Organisasi & Job Description Personel PT. PUP"
+            >
+              <Building2 className="w-3.5 h-3.5" />
+              <span>Struktur & Job Desc</span>
+            </button>
+            <span className="text-slate-600">&bull;</span>
+            <button
               onClick={() => setIsShareOpen(true)}
               className="text-emerald-400 hover:text-emerald-300 font-semibold flex items-center gap-1"
               title="Buka menu bagikan akses tim"
@@ -326,6 +339,16 @@ export default function App() {
         isOpen={isTrainingOpen}
         onClose={() => setIsTrainingOpen(false)}
         defaultMachine={trainingDefaultMachine}
+      />
+
+      <OrgStructureModal
+        isOpen={isOrgStructureOpen}
+        onClose={() => setIsOrgStructureOpen(false)}
+        onSelectOperatorForReport={(person) => {
+          setIsOrgStructureOpen(false);
+          setActiveTab('form');
+          showToast(`Personel terpilih: ${person.name} (${person.role}) - Unit ${person.unit}`);
+        }}
       />
 
       <ShareModal

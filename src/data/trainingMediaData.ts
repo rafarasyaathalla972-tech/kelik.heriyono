@@ -1,4 +1,5 @@
 import { MachineMediaConfig, TrainingModuleId } from '../types';
+import { TISSUE_MACHINE_MEDIA_CONFIG } from './tissueMachineTrainingData';
 
 // Real generated industrial images
 import rewinderHeroImg from '../assets/images/rewinder_machine_1789447453640.jpg';
@@ -11,6 +12,7 @@ import stockprepCleanersImg from '../assets/images/stockprep_cleaners_1789468841
 import stockprepRefinersImg from '../assets/images/stockprep_refiners_1789468856455.jpg';
 
 export const TRAINING_MEDIA_DATA: Record<TrainingModuleId, MachineMediaConfig> = {
+  TISSUE_PM: TISSUE_MACHINE_MEDIA_CONFIG,
   STOCK_PREP: {
     heroImage: stockprepOverviewImg,
     heroCaption: 'Foto Nyata: Seksi Stock Preparation Pabrik Kertas PT. PUP. Menampilkan instalasi bejana Hydrapulper stainless steel, baterai hydrocyclone cleaners, dan jalur pipa bubur.',
