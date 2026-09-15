@@ -1,5 +1,5 @@
 export type MachineId = 'PM1' | 'PM2' | 'PM5';
-export type TrainingModuleId = 'PM1' | 'PM2' | 'PM5' | 'REWINDER';
+export type TrainingModuleId = 'STOCK_PREP' | 'REWINDER' | 'PM1' | 'PM2' | 'PM5';
 export type ShiftType = 'Shift 1' | 'Shift 2' | 'Shift 3' | 'Pagi' | 'Siang' | 'Malam';
 export type QualityGrade = 'A' | 'B' | 'C' | 'Cacat';
 
@@ -153,8 +153,34 @@ export interface MachineMediaConfig {
   videoTutorials: MachineVideoTutorial[];
 }
 
+export interface StockPrepQuizItem {
+  id: number;
+  question: string;
+  options: string[];
+  correctAnswer: string;
+  explanation: string;
+  calculationFormula?: string;
+  category: string;
+}
+
+export interface StockPrepEquipmentDetail {
+  id: string;
+  stepNumber: number;
+  name: string;
+  category: 'Pulping & Slushing' | 'Centrifugal Cleaning' | 'Coarse Screening' | 'Fine Screening & Fractionation' | 'Washing & Thickening' | 'Fiber Dispersion & Refining' | 'Chemical Additive System';
+  targetConsistency: string;
+  function: string;
+  workingPrinciple: string;
+  keyParameters: { label: string; value: string; unit: string; note: string }[];
+  operatorDuties: string[];
+  karuInspection: string[];
+  kepalaPmFocus: string[];
+  troubleshootingGuide: { fault: string; indication: string; immediateAction: string; permanentFix: string }[];
+  mediaThumbnail?: string;
+}
+
 export interface MachineTrainingData {
-  machineId: MachineId | 'REWINDER';
+  machineId: MachineId | 'REWINDER' | 'STOCK_PREP';
   name: string;
   tagline: string;
   technicalSpecs: { label: string; value: string }[];
@@ -172,4 +198,6 @@ export interface MachineTrainingData {
   competencyQAs?: RewinderCompetencyQA[];
   roleGuides?: RoleResponsibilityGuide[];
   mediaConfig?: MachineMediaConfig;
+  stockPrepEquipments?: StockPrepEquipmentDetail[];
+  stockPrepQuizzes?: StockPrepQuizItem[];
 }

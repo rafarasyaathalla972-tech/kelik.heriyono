@@ -29,11 +29,13 @@ import {
   ExternalLink,
   BookOpen,
   Award,
-  Gauge
+  Gauge,
+  Factory
 } from 'lucide-react';
 import { TRAINING_MODULES } from '../data/trainingData';
 import { TRAINING_MEDIA_DATA } from '../data/trainingMediaData';
 import { TrainingModuleId, MachinePhotoItem, MachineVideoTutorial } from '../types';
+import { StockPrepTrainingView } from './StockPrepTrainingView';
 
 interface TrainingModalProps {
   isOpen: boolean;
@@ -44,7 +46,7 @@ interface TrainingModalProps {
 export const TrainingModal: React.FC<TrainingModalProps> = ({
   isOpen,
   onClose,
-  defaultMachine = 'REWINDER'
+  defaultMachine = 'STOCK_PREP'
 }) => {
   const [selectedMachine, setSelectedMachine] = useState<TrainingModuleId>(defaultMachine);
   const [activeSubTab, setActiveSubTab] = useState<string>('all');
@@ -74,9 +76,10 @@ export const TrainingModal: React.FC<TrainingModalProps> = ({
 
   if (!isOpen) return null;
 
-  const data = TRAINING_MODULES[selectedMachine] || TRAINING_MODULES['REWINDER'];
+  const data = TRAINING_MODULES[selectedMachine] || TRAINING_MODULES['STOCK_PREP'] || TRAINING_MODULES['REWINDER'];
   const media = TRAINING_MEDIA_DATA[selectedMachine];
   const isRewinder = selectedMachine === 'REWINDER';
+  const isStockPrep = selectedMachine === 'STOCK_PREP';
 
   // Determine current active video tutorial
   const currentVideo: MachineVideoTutorial | undefined = media?.videoTutorials.find(v => v.id === activeVideoId) || media?.videoTutorials[0];
@@ -88,7 +91,7 @@ export const TrainingModal: React.FC<TrainingModalProps> = ({
         {/* Header Bar */}
         <div className="px-5 py-3.5 border-b border-slate-800 bg-slate-950/90 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-gradient-to-br from-amber-600 to-amber-800 border border-amber-500/60 rounded-xl text-white shadow-md">
+            <div className="p-2 bg-gradient-to-br from-emerald-600 via-teal-700 to-amber-700 border border-emerald-500/60 rounded-xl text-white shadow-md">
               <GraduationCap className="w-6 h-6" />
             </div>
             <div>
@@ -96,7 +99,7 @@ export const TrainingModal: React.FC<TrainingModalProps> = ({
                 <h2 className="text-base sm:text-lg font-extrabold text-white tracking-wide">
                   Materi Pelatihan Visual & Teknis Mesin Pabrik
                 </h2>
-                <span className="text-[10px] sm:text-[11px] bg-amber-950 border border-amber-600/60 text-amber-300 font-bold px-2 py-0.5 rounded-full">
+                <span className="text-[10px] sm:text-[11px] bg-emerald-950 border border-emerald-600/60 text-emerald-300 font-bold px-2 py-0.5 rounded-full">
                   Dokumentasi Resmi PT. PUP
                 </span>
               </div>
@@ -126,9 +129,28 @@ export const TrainingModal: React.FC<TrainingModalProps> = ({
           </div>
         </div>
 
-        {/* Machine Navigation Tabs (PM1, PM2, PM5, REWINDER) */}
+        {/* Machine Navigation Tabs (STOCK PREP, REWINDER, PM1, PM2, PM5) */}
         <div className="border-b border-slate-800 bg-slate-950/70 px-4 py-2 flex flex-wrap items-center justify-between gap-2 shrink-0">
           <div className="flex items-center gap-1.5 overflow-x-auto py-0.5">
+            {/* Stock Preparation Highlight Tab */}
+            <button
+              id="training-tab-STOCK_PREP"
+              onClick={() => {
+                setSelectedMachine('STOCK_PREP');
+                setActiveSubTab('all');
+                setActiveVideoId('');
+              }}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
+                selectedMachine === 'STOCK_PREP'
+                  ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg ring-2 ring-emerald-400/40'
+                  : 'bg-emerald-950/60 text-emerald-300 hover:bg-emerald-900/60 border border-emerald-700/50'
+              }`}
+            >
+              <Factory className="w-3.5 h-3.5" />
+              <span>MODUL STOCK PREP</span>
+              <span className="text-[10px] bg-white/20 px-1.5 py-0.2 rounded font-black">12 Alat + Kuis</span>
+            </button>
+
             {/* Rewinder Highlight Tab */}
             <button
               id="training-tab-REWINDER"
@@ -210,7 +232,60 @@ export const TrainingModal: React.FC<TrainingModalProps> = ({
             <span className="bg-amber-500/30 text-[9px] px-1 rounded text-amber-200">Media</span>
           </button>
 
-          {isRewinder ? (
+          {isStockPrep ? (
+            <>
+              <button
+                onClick={() => setActiveSubTab('flow')}
+                className={`px-2.5 py-1 rounded-md transition-colors whitespace-nowrap ${
+                  activeSubTab === 'flow'
+                    ? 'bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/40'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                12 Peralatan & Parameter
+              </button>
+              <button
+                onClick={() => setActiveSubTab('junktrap')}
+                className={`px-2.5 py-1 rounded-md transition-colors whitespace-nowrap ${
+                  activeSubTab === 'junktrap'
+                    ? 'bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/40'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                Simulator Junk Trap HDC
+              </button>
+              <button
+                onClick={() => setActiveSubTab('peo')}
+                className={`px-2.5 py-1 rounded-md transition-colors whitespace-nowrap ${
+                  activeSubTab === 'peo'
+                    ? 'bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/40'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                Kimia PEO (17-19 Cps)
+              </button>
+              <button
+                onClick={() => setActiveSubTab('roles')}
+                className={`px-2.5 py-1 rounded-md transition-colors whitespace-nowrap ${
+                  activeSubTab === 'roles'
+                    ? 'bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/40'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                Peran: Operator &bull; Karu &bull; PM
+              </button>
+              <button
+                onClick={() => setActiveSubTab('quiz')}
+                className={`px-2.5 py-1 rounded-md transition-colors whitespace-nowrap ${
+                  activeSubTab === 'quiz'
+                    ? 'bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/40'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                10 Kuis Evaluasi Kompetensi
+              </button>
+            </>
+          ) : isRewinder ? (
             <>
               <button
                 onClick={() => setActiveSubTab('components')}
@@ -348,7 +423,7 @@ export const TrainingModal: React.FC<TrainingModalProps> = ({
           {/* ========================================================= */}
           {/* SPESIFIKASI RESMI PM CYLINDER MOULD (PM-1, PM-2 & PM-5)   */}
           {/* ========================================================= */}
-          {!isRewinder && (
+          {!isRewinder && !isStockPrep && (
             <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950/30 border-2 border-emerald-500/40 rounded-2xl p-4 sm:p-5 shadow-xl space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-3 border-b border-slate-800 gap-2">
                 <div className="flex items-center gap-2.5">
@@ -865,6 +940,24 @@ export const TrainingModal: React.FC<TrainingModalProps> = ({
           )}
 
           {/* ========================================================= */}
+          {/* KHUSUS STOCK PREPARATION: 12 PERALATAN, SIMULATOR, KUIS  */}
+          {/* ========================================================= */}
+          {isStockPrep && data.stockPrepEquipments && data.stockPrepQuizzes && (
+            <StockPrepTrainingView
+              equipments={data.stockPrepEquipments}
+              quizzes={data.stockPrepQuizzes}
+              roleGuides={data.roleGuides}
+              activeSubTab={activeSubTab}
+              onOpenPhoto={(photo) => setSelectedPhoto(photo)}
+              onWatchVideo={(videoId) => {
+                setActiveSubTab('media');
+                if (videoId) setActiveVideoId(videoId);
+              }}
+              galleryPhotos={media?.galleryPhotos || []}
+            />
+          )}
+
+          {/* ========================================================= */}
           {/* KHUSUS REWINDER: 7 KOMPONEN PENTING REWINDER             */}
           {/* ========================================================= */}
           {isRewinder && data.componentsList && (activeSubTab === 'all' || activeSubTab === 'components') && (
@@ -1173,7 +1266,7 @@ export const TrainingModal: React.FC<TrainingModalProps> = ({
           {/* ========================================================= */}
           {/* SPESIFIKASI TEKNIS & KAPASITAS NOMINAL                     */}
           {/* ========================================================= */}
-          {(activeSubTab === 'all' || activeSubTab === 'specs' || !isRewinder) && (
+          {!isRewinder && !isStockPrep && (activeSubTab === 'all' || activeSubTab === 'specs') && data.technicalSpecs && (
             <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-4">
               <h4 className="font-bold text-slate-100 mb-3 flex items-center gap-2 text-sm">
                 <Settings className="w-4 h-4 text-blue-400" />
@@ -1193,7 +1286,7 @@ export const TrainingModal: React.FC<TrainingModalProps> = ({
           {/* ========================================================= */}
           {/* BATAS OPERASI AMAN & DANGER ZONES                         */}
           {/* ========================================================= */}
-          {(activeSubTab === 'all' || activeSubTab === 'limits' || activeSubTab === 'trouble' || !isRewinder) && (
+          {!isRewinder && !isStockPrep && (activeSubTab === 'all' || activeSubTab === 'limits' || activeSubTab === 'trouble') && data.operatingLimits && (
             <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-4">
               <h4 className="font-bold text-rose-400 mb-3 flex items-center gap-2 text-sm">
                 <AlertOctagon className="w-4 h-4" />
@@ -1217,7 +1310,7 @@ export const TrainingModal: React.FC<TrainingModalProps> = ({
           {/* ========================================================= */}
           {/* KATALOG PRODUK / GRADE KERTAS                             */}
           {/* ========================================================= */}
-          {(activeSubTab === 'all' || activeSubTab === 'specs' || !isRewinder) && (
+          {!isRewinder && !isStockPrep && (activeSubTab === 'all' || activeSubTab === 'specs') && data.paperGrades && (
             <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-4">
               <h4 className="font-bold text-emerald-400 mb-3 flex items-center gap-2 text-sm">
                 <Layers className="w-4 h-4" />
@@ -1239,7 +1332,7 @@ export const TrainingModal: React.FC<TrainingModalProps> = ({
           {/* ========================================================= */}
           {/* TITIK PEMERIKSAAN RUTIN HARIAN                            */}
           {/* ========================================================= */}
-          {(activeSubTab === 'all' || activeSubTab === 'checkpoints' || !isRewinder) && (
+          {!isRewinder && !isStockPrep && (activeSubTab === 'all' || activeSubTab === 'checkpoints') && data.dailyCheckpoints && (
             <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-4">
               <h4 className="font-bold text-teal-400 mb-3 flex items-center gap-2 text-sm">
                 <CheckCircle2 className="w-4 h-4" />
@@ -1268,7 +1361,7 @@ export const TrainingModal: React.FC<TrainingModalProps> = ({
           {/* ========================================================= */}
           {/* PARAMETER OPERASI & DCS / MONITOR KONTROL                 */}
           {/* ========================================================= */}
-          {(activeSubTab === 'all' || activeSubTab === 'limits' || !isRewinder) && (
+          {!isRewinder && !isStockPrep && (activeSubTab === 'all' || activeSubTab === 'limits') && data.standardParameters && data.dcsIndicatorsGuide && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Standar Parameter */}
               <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-4">
@@ -1325,7 +1418,7 @@ export const TrainingModal: React.FC<TrainingModalProps> = ({
           {/* ========================================================= */}
           {/* GANGGUAN KHAS & SOLUSI REKAYASA (TROUBLESHOOTING)          */}
           {/* ========================================================= */}
-          {(activeSubTab === 'all' || activeSubTab === 'trouble' || !isRewinder) && (
+          {(activeSubTab === 'all' || activeSubTab === 'trouble') && data.commonFaultsAndSolutions && (
             <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-4">
               <h4 className="font-bold text-amber-400 mb-3 flex items-center gap-2 text-sm">
                 <AlertOctagon className="w-4 h-4" />
@@ -1358,7 +1451,7 @@ export const TrainingModal: React.FC<TrainingModalProps> = ({
           {/* ========================================================= */}
           {/* STANDAR K3 KESELAMATAN KERJA                             */}
           {/* ========================================================= */}
-          {(activeSubTab === 'all' || activeSubTab === 'trouble' || !isRewinder) && (
+          {(activeSubTab === 'all' || activeSubTab === 'trouble') && data.k3SafetyProcedures && (
             <div className="bg-slate-950/60 border border-rose-900/60 rounded-xl p-4">
               <h4 className="font-bold text-rose-300 mb-2.5 flex items-center gap-2 text-sm">
                 <ShieldAlert className="w-4 h-4 text-rose-400" />

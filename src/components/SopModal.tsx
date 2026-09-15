@@ -11,16 +11,19 @@ import {
   Sparkles, 
   Printer, 
   ExternalLink,
-  ChevronRight
+  ChevronRight,
+  GraduationCap
 } from 'lucide-react';
 import { SOP_PROCESS_STEPS } from '../data/sopData';
+import { TrainingModuleId } from '../types';
 
 interface SopModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onOpenTraining?: (machine?: TrainingModuleId) => void;
 }
 
-export const SopModal: React.FC<SopModalProps> = ({ isOpen, onClose }) => {
+export const SopModal: React.FC<SopModalProps> = ({ isOpen, onClose, onOpenTraining }) => {
   const [selectedStepId, setSelectedStepId] = useState<string>('pulper');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
@@ -205,6 +208,38 @@ export const SopModal: React.FC<SopModalProps> = ({ isOpen, onClose }) => {
                   </div>
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* Highlight Banner Khusus Modul Training Stock Preparation */}
+          {(currentStep.id === 'stock-prep' || currentStep.id === 'pulper') && (
+            <div className="bg-gradient-to-r from-emerald-950/80 via-teal-950/60 to-slate-900 border border-emerald-500/40 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-lg">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-emerald-500/20 border border-emerald-500/40 rounded-lg text-emerald-400 shrink-0">
+                  <GraduationCap className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-white text-xs sm:text-sm flex items-center gap-2">
+                    <span>Modul Pelatihan Khusus Stock Preparation & Mesin</span>
+                    <span className="bg-emerald-500/30 text-emerald-300 text-[10px] px-1.5 py-0.2 rounded font-mono">12 Alat + Kuis</span>
+                  </h4>
+                  <p className="text-[11px] text-slate-300 mt-0.5">
+                    Lengkap dengan foto nyata alat, video tutorial, standar PEO (17-19 Cps), Simulator Junk Trap HDC, & 10 soal kuis evaluasi.
+                  </p>
+                </div>
+              </div>
+              {onOpenTraining && (
+                <button
+                  onClick={() => {
+                    onClose();
+                    onOpenTraining('STOCK_PREP');
+                  }}
+                  className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition-all shadow flex items-center gap-1.5 whitespace-nowrap self-stretch sm:self-auto justify-center shrink-0"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span>Buka Modul Training Stock Prep</span>
+                </button>
+              )}
             </div>
           )}
 

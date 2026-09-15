@@ -284,11 +284,21 @@ export default function App() {
             </button>
             <span className="text-slate-600">&bull;</span>
             <button
-              onClick={() => handleOpenTraining('REWINDER')}
-              className="text-amber-400 hover:text-amber-300 font-semibold flex items-center gap-1"
+              onClick={() => handleOpenTraining('STOCK_PREP')}
+              className="text-cyan-400 hover:text-cyan-300 font-semibold flex items-center gap-1"
+              title="Buka Modul Pelatihan Stock Preparation"
             >
               <GraduationCap className="w-3.5 h-3.5" />
-              <span>Materi Training & Rewinder</span>
+              <span>Modul Stock Prep</span>
+            </button>
+            <span className="text-slate-600">&bull;</span>
+            <button
+              onClick={() => handleOpenTraining('REWINDER')}
+              className="text-amber-400 hover:text-amber-300 font-semibold flex items-center gap-1"
+              title="Buka Modul Pelatihan Rewinder & Mesin"
+            >
+              <GraduationCap className="w-3.5 h-3.5" />
+              <span>Training Mesin & Rewinder</span>
             </button>
             <span className="text-slate-600">&bull;</span>
             <button
@@ -309,6 +319,7 @@ export default function App() {
       <SopModal
         isOpen={isSopOpen}
         onClose={() => setIsSopOpen(false)}
+        onOpenTraining={handleOpenTraining}
       />
 
       <TrainingModal

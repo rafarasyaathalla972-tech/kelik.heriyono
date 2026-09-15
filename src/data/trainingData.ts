@@ -1,7 +1,9 @@
 import { MachineTrainingData, TrainingModuleId } from '../types';
 import { REWINDER_TRAINING_DATA } from './rewinderTrainingData';
+import { STOCK_PREP_TRAINING_DATA } from './stockPrepTrainingData';
 
 export const TRAINING_MODULES: Record<TrainingModuleId, MachineTrainingData> = {
+  STOCK_PREP: STOCK_PREP_TRAINING_DATA,
   PM1: {
     machineId: 'PM1',
     name: 'Mesin Kertas PM1 (Cylinder Mould Specialist)',

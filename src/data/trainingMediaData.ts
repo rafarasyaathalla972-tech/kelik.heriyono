@@ -6,8 +6,121 @@ import rewinderPartsImg from '../assets/images/rewinder_parts_1789447473542.jpg'
 import pm1HeroImg from '../assets/images/pm1_machine_1789447494837.jpg';
 import pm2HeroImg from '../assets/images/pm2_machine_1789447511803.jpg';
 import pm5HeroImg from '../assets/images/pm5_machine_1789447532514.jpg';
+import stockprepOverviewImg from '../assets/images/stockprep_overview_1789468824360.jpg';
+import stockprepCleanersImg from '../assets/images/stockprep_cleaners_1789468841675.jpg';
+import stockprepRefinersImg from '../assets/images/stockprep_refiners_1789468856455.jpg';
 
 export const TRAINING_MEDIA_DATA: Record<TrainingModuleId, MachineMediaConfig> = {
+  STOCK_PREP: {
+    heroImage: stockprepOverviewImg,
+    heroCaption: 'Foto Nyata: Seksi Stock Preparation Pabrik Kertas PT. PUP. Menampilkan instalasi bejana Hydrapulper stainless steel, baterai hydrocyclone cleaners, dan jalur pipa bubur.',
+    galleryPhotos: [
+      {
+        id: 'sp-img-1',
+        title: 'Tampak Keseluruhan Plant Stock Preparation PT. PUP',
+        subtitle: 'Seksi Peleburan Bal (Pulper) & Jalur Pembersihan Bubur',
+        imageSrc: stockprepOverviewImg,
+        aspectRatio: '16:9',
+        tags: ['Stock Preparation', 'Hydrapulper', 'Dump Chest', 'Piping System'],
+        description: 'Area utama persiapan stok bubur kertas dan tissue: tempat peleburan bal virgin pulp, pulp curah (broke), dan OCC. Dilengkapi sistem pengadukan berkecepatan tinggi dan pemantauan level otomatis.',
+        keyCallouts: [
+          { label: 'Hydrapulper Vessel', detail: 'Bejana baja anti-karat dengan rotor turbulensi dan baffle pemecah pusaran' },
+          { label: 'Tangki Penampung (Chest)', detail: 'Agitator berputar kontinu menjaga keseragaman suspensi serat' },
+          { label: 'Jalur Distribusi', detail: 'Pipa baja penghubung ke baterai cleaner HDC, MCC, dan LCC' }
+        ]
+      },
+      {
+        id: 'sp-img-2',
+        title: 'Baterai Hydrocyclone Cleaners (HDC, MCC, & LCC)',
+        subtitle: 'Pemisah Pasir, Logam, Staples & Kontaminan Berat',
+        imageSrc: stockprepCleanersImg,
+        aspectRatio: '16:9',
+        tags: ['HDC Cleaner', 'LCC Cone Battery', 'Junk Trap', 'Pressure Gauge'],
+        description: 'Rangkaian pembersih sentrifugal bertekanan: High Density Cleaner (HDC) dengan sistem Junk Trap 2-katup pembuangan staples/batu, serta baterai kerucut Low Consistency Cleaner (LCC) untuk mengeliminasi pasir silika halus.',
+        keyCallouts: [
+          { label: 'HDC Junk Trap', detail: 'Ruang penampung kotoran berat dengan Valve A, B, C, D, E' },
+          { label: 'Pressure Gauges', detail: 'Monitoring tekanan inlet (min 1.5 bar) dan accept (0.5 bar)' },
+          { label: 'LCC Ceramic Cones', detail: 'Pemisah pasir silika berdensitas tinggi pada konsistensi < 1.5%' }
+        ]
+      },
+      {
+        id: 'sp-img-3',
+        title: 'Seksi Penggilingan & Fibrilasi: Double Disc Refiner & Deflaker',
+        subtitle: 'Pengendali Freeness (320-350 CSF) & Pengurai Gumpalan Flakes',
+        imageSrc: stockprepRefinersImg,
+        aspectRatio: '16:9',
+        tags: ['Double Disc Refiner', 'Deflaker', 'Bar & Groove Blade', 'Ampere Meter'],
+        description: 'Unit mekanik presisi tinggi: Deflaker dengan cincin rotor-stator bergigi untuk mengurai whitespot (360-380 CSF), serta DDR berkeping ganda pengontrol freeness lembaran tissue (320-350 CSF) dengan pemantauan Ampere meter.',
+        keyCallouts: [
+          { label: 'Motor Penggerak DDR', detail: 'Motor induksi bertenaga tinggi dengan pembacaan arus beban Ampere' },
+          { label: 'Blade Disc Pattern', detail: 'Pola bar & groove presisi untuk fibrilasi eksternal serat tissue' },
+          { label: 'Handwheel Adjuster', detail: 'Penyetel celah mikrometer keping pisau stator terhadap rotor' }
+        ]
+      }
+    ],
+    videoTutorials: [
+      {
+        id: 'sp-vid-1',
+        title: 'Video Prosedur: Cara Kerja HDC & Siklus Pembuangan Junk Trap',
+        duration: '07:20',
+        youtubeId: '3n0F4nE1g4E',
+        thumbnailUrl: stockprepCleanersImg,
+        category: 'Pembersihan Kontaminan & Hydrocyclone',
+        instructorRole: 'Kepala Regu Stock Prep & Teknisi Proses',
+        description: 'Panduan visual komprehensif mengenai operasi normal HDC (Valve A, C, D tutup; Valve B, E buka) dan urutan flushing pembuangan kotoran staples/batu dari Junk Trap (Valve B, A tutup; Valve C, D, E buka).',
+        chapters: [
+          { time: '00:00 - 02:00', topic: 'Prinsip Gaya Sentrifugal & Pusaran Vorteks HDC', note: 'Mengapa kontaminan berat terlempar ke dinding kerucut dan turun ke junk trap' },
+          { time: '02:01 - 04:30', topic: 'Fungsi Valve E & Air Elutriasi (Min 1.5 bar)', note: 'Mencegah serat pulp bagus ikut terbuang ke dalam ruang kotoran' },
+          { time: '04:31 - 07:20', topic: 'Prosedur Flushing Junk Trap & Pengisian Ulang', note: 'Membuka Valve C drain dan Valve D vacuum breaker agar kotoran jatuh bebas' }
+        ],
+        keyTakeaways: [
+          'Tekanan inlet HDC wajib terjaga minimal 1.5 bar dengan tekanan accept 0.5 bar untuk menciptakan Delta P pemisahan optimal.',
+          'Pada kondisi normal: Valve A, C, D tertutup rapat; Valve B dan E terbuka penuh.',
+          'Saat pembuangan reject: Valve B dan A wajib ditutup terlebih dahulu sebelum Valve C dan D dibuka.'
+        ]
+      },
+      {
+        id: 'sp-vid-2',
+        title: 'Video Edukasi: Mekanika Fibrilasi DDR & Kalibrasi Celah Foil Screen',
+        duration: '09:40',
+        youtubeId: 'Dq6q-o1jN9c',
+        thumbnailUrl: stockprepRefinersImg,
+        category: 'Penggilingan & Fraksinasi Serat',
+        instructorRole: 'Superintendent PM & Ahli Refiner Pulp',
+        description: 'Penjelasan mendalam mengenai mekanisme perataan serat pada Pressure Screen 0.35 mm dengan hydrofoil gap 3.0 mm, serta pengendalian freeness (320-350 CSF) pada DDR menggunakan Ampere meter dan valve throttling.',
+        chapters: [
+          { time: '00:00 - 03:15', topic: 'Pressure Screen Slot 0.35 mm vs Hole 3 mm', note: 'Mengapa model slot menghasilkan accept lebih banyak dan bebas spinning fiber' },
+          { time: '03:16 - 05:45', topic: 'Fungsi Hydrofoil Wings & Kalibrasi Gap 3.0 mm', note: 'Denyut hisap membersihkan kotoran dari saringan basket tanpa menyumbat' },
+          { time: '05:46 - 09:40', topic: 'Operasional DDR & Penyetelan Ampere Freeness', note: 'Korelasi penekanan blade, bukaan valve outlet, dan freeness 320 - 350 CSF' }
+        ],
+        keyTakeaways: [
+          'Jarak gap hydrofoil ke basket pressure screen harus tepat 3.0 mm keliling dan arah putaran tidak boleh terbalik.',
+          'Konsistensi bubur masuk ke DDR dan Thickener wajib minimal 3.5% (3.5% - 4.5%).',
+          'Nilai tekanan gauge inlet DDR harus selalu lebih tinggi daripada outlet DDR sebagai bukti blade prima.'
+        ]
+      },
+      {
+        id: 'sp-vid-3',
+        title: 'Video SOP: Pelarutan Bahan Kimia PEO & Uji Viskositas 17 - 19 Cps',
+        duration: '06:30',
+        youtubeId: '5Z1sT9fU2q4',
+        thumbnailUrl: stockprepOverviewImg,
+        category: 'Preparasi Kimiawi & Aditif Tissue',
+        instructorRole: 'Operator Senior Kimia & Ahli Kualitas Tissue',
+        description: 'Standar Operasional Prosedur penimbangan dan pelarutan serbuk PEO Axfloc (1729, 1730, 7090), pencegahan fish-eye, transfer Tangki 1-2-4 ke Tangki 3, dan pemompaan via Screw Pump.',
+        chapters: [
+          { time: '00:00 - 02:10', topic: 'Tujuan PEO & Penimbangan Serbuk Presisi', note: 'Membantu pembentukan formasi rata dan ikatan serat tissue lembut' },
+          { time: '02:11 - 04:20', topic: 'Teknik Menuang Serbuk & Pengadukan Lambat', note: 'Menuang sedikit demi sedikit ke pusaran air agar tidak terbentuk lendir menggumpal' },
+          { time: '04:21 - 06:30', topic: 'Uji Viskositas Cps & Pompa Distribusi Screw Pump', note: 'Standar TM 17 - 19 Cps dan pemompaan ulir rendah shear' }
+        ],
+        keyTakeaways: [
+          'Serbuk PEO wajib dituang perlahan ke dalam air yang berputar pelan oleh agitator.',
+          'Nilai viskositas wajib memenuhi rentang 17 - 19 Cps sebelum dialirkan ke Tissue Machine.',
+          'Gunakan Screw Pump untuk mendistribusikan PEO agar rantai polimer tidak putus oleh gesekan impeller.'
+        ]
+      }
+    ]
+  },
   REWINDER: {
     heroImage: rewinderHeroImg,
     heroCaption: 'Foto Nyata: Mesin Rewinder & Slitter PT. PUP saat beroperasi memecah Jumbo Roll (JR) menjadi gulungan siap konversi.',
