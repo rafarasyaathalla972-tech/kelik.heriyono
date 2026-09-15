@@ -54,19 +54,22 @@ const COMMON_DEFECT_TYPES = [
 
 const PAPER_GRADE_PRESETS: Record<MachineId, string[]> = {
   PM1: [
-    'CM110 - Corrugating Medium 110 gsm',
-    'CM125 - Corrugating Medium 125 gsm',
-    'CM150 - Corrugating Medium 150 gsm'
+    'Tissue 12-16 gsm (Facial / Soft)',
+    'Tissue 18-22 gsm (Toilet / Napkin)',
+    'MG Paper 24-26 gsm (Machine Glazed)',
+    'Doorslag 36-42 gsm (Pola & Wrapping)'
   ],
   PM2: [
-    'CM150-HECT - Medium High ECT 150 gsm',
-    'TL140 - Testliner Brown 140 gsm',
-    'TL175 - Testliner High Burst 175 gsm'
+    'Tissue 12-16 gsm (Facial / Soft)',
+    'Tissue 18-22 gsm (Toilet / Napkin)',
+    'MG Paper 24-26 gsm (Machine Glazed)',
+    'Doorslag 36-42 gsm (Pola & Wrapping)'
   ],
   PM5: [
-    'WTK140 - White Top Kraft 140 gsm',
-    'WTK175 - White Top Kraft 175 gsm',
-    'KL200 - Heavy Kraft Liner 200 gsm'
+    'Tissue 12-16 gsm (Facial / Soft)',
+    'Tissue 18-22 gsm (Toilet / Napkin)',
+    'MG Paper 24-26 gsm (Machine Glazed)',
+    'Doorslag 36-42 gsm (Pola & Wrapping)'
   ]
 };
 

@@ -88,42 +88,42 @@ export const TRAINING_MEDIA_DATA: Record<TrainingModuleId, MachineMediaConfig> =
 
   PM1: {
     heroImage: pm1HeroImg,
-    heroCaption: 'Foto Nyata: Mesin Kertas PM1 (Medium Paper Specialist) dengan Fourdrinier forming table klasik dan jajaran 28 silinder pengering steam.',
+    heroCaption: 'Foto Nyata: Mesin PM1 (Cylinder Mould) Produksi Tissue, MG Paper & Doorslag. Speed 150 mpm, Lebar Kertas 2,20 M, Lebar Felt 2,4 M, Top Felt 18,8 M & Bottom Felt 25,0 M.',
     galleryPhotos: [
       {
         id: 'pm1-img-1',
-        title: 'Lini Produksi Kertas PM1 (Fourdrinier Table & Press Section)',
-        subtitle: 'Pembentukan Lembaran Kertas Medium Fluting',
+        title: 'Lini Mesin Cylinder Mould PM1 (Speed 150 mpm)',
+        subtitle: 'Produksi Tissue (12-22 gsm), MG Paper (24-26 gsm), & Doorslag (36-42 gsm)',
         imageSrc: pm1HeroImg,
         aspectRatio: '16:9',
-        tags: ['Fourdrinier Wire', 'Press Felt', 'Dryer Cylinders'],
-        description: 'Tampak memanjang area pembentukan lembaran basah di atas wire Fourdrinier berkecepatan 380 - 450 m/menit, dilanjutkan dengan pemerasan air di press roll granit dan silinder pengering uap panas.',
+        tags: ['Cylinder Mould Vat', 'Felt 2,4 M', 'Yankee MG Dryer', 'Lebar Kertas 2,20 M'],
+        description: 'Menampilkan unit mesin Cylinder Mould PM1 dengan bak vat pembentuk serat kertas tipis, kain felt pembawa lebar 2,4 M (Top Felt 18,8 M & Bottom Felt 25,0 M), dan silinder Yankee MG untuk kertas berkecepatan 150 mpm.',
         keyCallouts: [
-          { label: 'Fourdrinier Forming Wire', detail: 'Pelepasan air gravitasi & vacuum suction box keramik' },
-          { label: 'Straight-Through Press', detail: 'Pemerasan mekanik dengan felt penyerap air bertekanan tinggi' },
-          { label: 'Dryer Hood', detail: 'Tudung tertutup uap panas untuk efisiensi termal silinder' }
+          { label: 'Tipe Mesin', detail: 'Cylinder Mould untuk Tissue, MG Paper & Doorslag' },
+          { label: 'Spesifikasi Felt', detail: 'Lebar 2,4 M | Top 18,8 M & Bottom 25,0 M | Life Time 6-8 bln (1000 ton up)' },
+          { label: 'Lebar Kertas & Speed', detail: 'Lebar Kertas 2,20 M | Kecepatan Operasi 150 mpm' }
         ]
       }
     ],
     videoTutorials: [
       {
         id: 'pm1-vid-1',
-        title: 'Video Simulasi: Formasi Serat di Fourdrinier & Press Section PM1',
+        title: 'Video Simulasi: Formasi Cylinder Mould & Perawatan Felt PM1',
         duration: '07:15',
         youtubeId: '3eZzKj7K0d8',
         thumbnailUrl: pm1HeroImg,
-        category: 'Proses Basah & Pengeringan',
-        instructorRole: 'Kepala Regu PM1 & Ahli Kimia Pulp',
-        description: 'Materi visual interaktif mengenai cara mengatur rasio kecepatan jet-to-wire, konsistensi bubur dari headbox, dan efisiensi pengeringan uap silinder dryer.',
+        category: 'Proses Silinder Cetakan & Kain Felt',
+        instructorRole: 'Kepala Regu PM1 & Teknisi Mesin Kertas',
+        description: 'Materi visual interaktif mengenai pembentukan lembaran tipis BW 12-42 gsm di bak cylinder vat, pemeliharaan Top Felt 18,8 M & Bottom Felt 25,0 M, serta pengeringan silinder Yankee pada kecepatan 150 mpm.',
         chapters: [
-          { time: '00:00 - 02:10', topic: 'Aliran Bubur Kertas dari Slice Headbox', note: 'Distribusi serat merata pada kawat saringan Fourdrinier' },
-          { time: '02:11 - 04:30', topic: 'Dewatering & Garis Kering (Dry Line)', note: 'Memantau posisi garis batas air di suction box' },
-          { time: '04:31 - 07:15', topic: 'Pengeringan Uap & Kontrol Kelembaban Akhir', note: 'Menjaga moisture content 7.0% - 8.5% untuk kertas fluting kuat' }
+          { time: '00:00 - 02:10', topic: 'Prinsip Pembentukan di Cylinder Mould Vat', note: 'Penyaringan bubur encer pada silinder kawat berputar tanpa semburan berlebih' },
+          { time: '02:11 - 04:30', topic: 'Penarikan Lembaran oleh Top & Bottom Felt (Lebar 2,4 M)', note: 'Pengaturan tegangan Top Felt 18,8 M dan Bottom Felt 25,0 M agar tidak slip' },
+          { time: '04:31 - 07:15', topic: 'Pengeringan Yankee MG & Pencapaian Target 1.000 Ton Up', note: 'Monitoring usia pakai kain felt (6-8 bulan) dan kontrol kelembaban akhir' }
         ],
         keyTakeaways: [
-          'Posisi garis kering (dry line) adalah indikator utama konsistensi freeness bubur kertas.',
-          'Pastikan tekanan uap steam header tidak melebihi 4.8 bar untuk keamanan silinder.',
-          'Jaga kebersihan doctor blade roll pengering agar lembaran tidak terbakar/menempel.'
+          'Jaga kebersihan kain felt lebar 2,4 M dengan pencucian rutin agar mencapai masa pakai target 6-8 bulan (> 1.000 ton paper up).',
+          'Pastikan tekanan uap silinder Yankee stabil pada standar 1.0 - 3.0 bar pada kecepatan kerja 100 - 150 mpm.',
+          'Kontrol lebar trim lembaran kertas di 2,20 M menggunakan water jet cutter presisi.'
         ]
       }
     ]
@@ -131,42 +131,42 @@ export const TRAINING_MEDIA_DATA: Record<TrainingModuleId, MachineMediaConfig> =
 
   PM2: {
     heroImage: pm2HeroImg,
-    heroCaption: 'Foto Nyata: Mesin Kertas PM2 dengan sistem Twin-Wire Former ganda untuk dewatering dua arah kecepatan tinggi.',
+    heroCaption: 'Foto Nyata: Mesin PM2 (Cylinder Mould High-Speed 180 mpm). Produksi Tissue, MG Paper & Doorslag. Lebar Kertas 2,25 M, Lebar Felt 2,4 M, Top Felt 18,8 M & Bottom Felt 25,0 M.',
     galleryPhotos: [
       {
         id: 'pm2-img-1',
-        title: 'Area Pembentukan Twin-Wire Former PM2',
-        subtitle: 'Dewatering Atas-Bawah untuk Kertas Linerboard Berkualitas',
+        title: 'Lini Mesin Cylinder Mould PM2 (Speed 180 mpm)',
+        subtitle: 'Produksi Kertas Cepat: Tissue (12-22 gsm), MG Paper (24-26 gsm), & Doorslag (36-42 gsm)',
         imageSrc: pm2HeroImg,
         aspectRatio: '16:9',
-        tags: ['Twin-Wire Former', 'Top & Bottom Wire', 'Suction Roll'],
-        description: 'Memperlihatkan teknologi twin-wire modern di mana lembaran bubur dijepit di antara kawat atas dan kawat bawah, menghasilkan dewatering dua arah simetris tanpa perbedaan sisi (two-sidedness).',
+        tags: ['Cylinder Mould High-Speed', 'Felt 2,4 M', 'Lebar 2,25 M', 'Speed 180 mpm'],
+        description: 'Memperlihatkan formasi cylinder mould berkecepatan tinggi 180 mpm di lini PM2 dengan lebar kertas 2,25 M, didukung susunan kain felt lebar 2,4 M (Top Felt 18,8 M dan Bottom Felt 25,0 M) berdaya tahan 6-8 bulan (> 1.000 ton paper up).',
         keyCallouts: [
-          { label: 'Kawat Ganda (Twin-Wire)', detail: 'Menghasilkan lembaran dengan formasi serat sangat padat' },
-          { label: 'Suction Couch Roll', detail: 'Pengisapan air bertenaga tinggi sebelum masuk ke press seksi' },
-          { label: 'Sistem Osilasi Shower', detail: 'Pembersihan kawat wire kontinu dari serat tersumbat' }
+          { label: 'Tipe Mesin', detail: 'Cylinder Mould High-Speed untuk Tissue, MG & Doorslag' },
+          { label: 'Spesifikasi Felt', detail: 'Lebar 2,4 M | Top 18,8 M & Bottom 25,0 M | Umur 6-8 bln (1000 ton up)' },
+          { label: 'Lebar Kertas & Speed', detail: 'Lebar Kertas 2,25 M | Kecepatan Operasi 180 mpm' }
         ]
       }
     ],
     videoTutorials: [
       {
         id: 'pm2-vid-1',
-        title: 'Video Simulasi: Operasional Twin-Wire Former & Pengaturan Caliper PM2',
+        title: 'Video Simulasi: Operasional Cylinder Mould 180 mpm & Manajemen Felt PM2',
         duration: '06:50',
         youtubeId: 'X2t_6WfPz3I',
         thumbnailUrl: pm2HeroImg,
-        category: 'Teknologi Pembentukan Modern',
+        category: 'Kecepatan Tinggi & Kualitas Lembaran',
         instructorRole: 'Kepala Bagian Mesin Kertas PM2',
-        description: 'Penjelasan mendalam mengenai keunggulan twin-wire dalam menghasilkan ketebalan kertas seragam, penanganan drainage vacuum, dan optimasi kecepatan operasi hingga 600 m/min.',
+        description: 'Penjelasan teknis stabilitas operasi pada speed 180 mpm, pengendalian ketebalan kertas MG/Tissue, serta panduan tracking felt Top 18,8 M dan Bottom 25,0 M.',
         chapters: [
-          { time: '00:00 - 02:00', topic: 'Prinsip Twin-Wire Forming & Reduksi Two-Sidedness', note: 'Permukaan atas dan bawah kertas memiliki kehalusan seimbang' },
-          { time: '02:01 - 04:20', topic: 'Pengaturan Tekanan Vakum High-Vacuum Flat Boxes', note: 'Mencegah kawat aus dini sambil memaksimalkan dewatering' },
-          { time: '04:21 - 06:50', topic: 'Inspeksi & Penyetelan Profil Ketebalan (Caliper)', note: 'Menghindari roll menggembung di salah satu sisi' }
+          { time: '00:00 - 02:00', topic: 'Karakteristik Operasi 180 mpm pada Cylinder Vat', note: 'Menjaga aliran bubur stabil agar formasi kertas 12-42 gsm tidak berawan' },
+          { time: '02:01 - 04:20', topic: 'Sinkronisasi Top Felt 18,8 M vs Bottom Felt 25,0 M', note: 'Mencegah gesekan antar felt dan memastikan pemerasan air maksimal' },
+          { time: '04:21 - 06:50', topic: 'Inspeksi & Pemeliharaan Kualitas Lebar Kertas 2,25 M', note: 'Menjaga kerataan penempelan lembaran pada silinder Yankee MG' }
         ],
         keyTakeaways: [
-          'Teknologi twin-wire menghasilkan daya ikat internal (Scott Bond) kertas yang jauh lebih tinggi.',
-          'Pembersihan shower berkala sangat krusial untuk mencegah penyumbatan pori kawat forming.',
-          'Periksa sinkronisasi kecepatan motor kawat atas dan kawat bawah setiap pergantian grade.'
+          'Kecepatan 180 mpm memerlukan pelumasan bearing roll felt dan shower osilasi yang selalu optimal.',
+          'Catat tonase kumulatif produksi per shift untuk memprediksi jadwal penggantian felt (6-8 bulan / 1000 ton up).',
+          'Pastikan tekanan touch roll merata untuk menghasilkan efek kilap MG yang homogen.'
         ]
       }
     ]
@@ -174,42 +174,42 @@ export const TRAINING_MEDIA_DATA: Record<TrainingModuleId, MachineMediaConfig> =
 
   PM5: {
     heroImage: pm5HeroImg,
-    heroCaption: 'Foto Nyata: Mesin Kertas PM5 (State-of-the-Art Line) dilengkapi Shoe Press nip lebar dan jembatan scanner QCS online presisi.',
+    heroCaption: 'Foto Nyata: Mesin PM5 (Cylinder Mould Wide Format). Lebar Kertas 3,30 M, Lebar Felt 3,5 M, Single Felt 30,0 M, Speed 160 mpm. Produksi Tissue, MG Paper & Doorslag.',
     galleryPhotos: [
       {
         id: 'pm5-img-1',
-        title: 'Lini Modern PM5 dengan Shoe Press & Jembatan QCS Scanner',
-        subtitle: 'Unit Produksi Kertas Kraft Liner & White Top Berkecepatan 750 m/menit',
+        title: 'Lini Mesin Cylinder Mould Format Lebar PM5 (Speed 160 mpm)',
+        subtitle: 'Kapasitas Besar: Tissue (12-22 gsm), MG Paper (24-26 gsm), Doorslag (36-42 gsm)',
         imageSrc: pm5HeroImg,
         aspectRatio: '16:9',
-        tags: ['Shoe Press Nip', 'QCS Scanner Bridge', 'High Speed Dryer'],
-        description: 'Tampak unit Shoe Press hidrolik berefisiensi dewatering tertinggi, sistem penutup kap pengering canggih, dan jembatan pemindai QCS (Quality Control System) yang mengukur gramatur, moisture, dan ketebalan secara real-time.',
+        tags: ['Wide Cylinder Mould', 'Single Felt 30 M', 'Lebar 3,30 M', 'Lebar Felt 3,5 M'],
+        description: 'Menampilkan lini terlebar PM5 dengan sistem pembentukan silinder saringan lebar 3,5 M, sistem Single Felt sepanjang 30,0 M berdaya tahan 6-8 bulan (> 1.000 ton paper up), serta silinder Yankee MG format lebar 3,30 M pada kecepatan 160 mpm.',
         keyCallouts: [
-          { label: 'Shoe Press Module', detail: 'Nip kontak lebar 250 mm memberikan kekeringan 48% sebelum dryer' },
-          { label: 'QCS Scanner Bridge', detail: 'Sensor online bergerak bolak-balik memeriksa profil kualitas kertas' },
-          { label: 'Silent Drive Enclosed Hood', detail: 'Efisiensi energi termal maksimal dengan sirkulasi udara terkontrol' }
+          { label: 'Tipe Mesin', detail: 'Cylinder Mould Format Lebar (Wide Cylinder Mould)' },
+          { label: 'Spesifikasi Felt', detail: 'Lebar 3,5 M | Single Felt 30,0 M | Life Time 6-8 bln (1000 ton up)' },
+          { label: 'Lebar Kertas & Speed', detail: 'Lebar Kertas 3,30 M | Kecepatan Operasi 160 mpm' }
         ]
       }
     ],
     videoTutorials: [
       {
         id: 'pm5-vid-1',
-        title: 'Video Simulasi: Prinsip Kerja Shoe Press & Pembacaan Sensor QCS PM5',
+        title: 'Video Simulasi: Operasional Single Felt 30 M & Cylinder Mould Lebar PM5',
         duration: '09:10',
         youtubeId: 'K9J-sE0gT1A',
         thumbnailUrl: pm5HeroImg,
-        category: 'Otomasi Pabrik & Teknologi Canggih',
-        instructorRole: 'Superintendent PM5 & Teknisi QCS Instrumentasi',
-        description: 'Panduan visual eksklusif pengoperasian shoe press hidrolik, pembacaan grafik gramatur profil CD/MD pada monitor DCS, dan prosedur keselamatan radiasi scanner.',
+        category: 'Format Lebar & Single Felt System',
+        instructorRole: 'Superintendent PM5 & Teknisi Ahli Felt',
+        description: 'Panduan visual eksklusif pengoperasian sistem Single Felt 30,0 M selebar 3,5 M, pengaturan tegangan bentang lebar, dan pemeliharaan silinder Yankee 3,30 M pada kecepatan 160 mpm.',
         chapters: [
-          { time: '00:00 - 02:40', topic: 'Cara Kerja Tekanan Sepatu (Shoe Nip) & Sabuk Karet (Belt)', note: 'Waktu kontak tekan lebih lama meningkatkan bulk dan kekuatan serat' },
-          { time: '02:41 - 05:30', topic: 'Pembacaan Layar Kontrol QCS & Pengendalian Berat Dasar', note: 'Korelasi slice lip control otomatis dengan profil gramatur' },
-          { time: '05:31 - 09:10', topic: 'Protokol Keamanan Radiasi Sensor QCS & Anti-Tabrakan', note: 'Aturan keselamatan saat scanner bolak-balik melintasi lembaran' }
+          { time: '00:00 - 02:40', topic: 'Keunggulan Single Felt System 30,0 M', note: 'Transfer lembaran kontinyu tanpa sambungan ganda, meningkatkan efisiensi dewatering' },
+          { time: '02:41 - 05:30', topic: 'Pengendalian Bentang Lebar 3,5 M & Auto-Guiding', note: 'Menjaga kelurusan felt tunggal sepanjang 30 meter di putaran 160 mpm' },
+          { time: '05:31 - 09:10', topic: 'Monitoring Target 1.000 Ton Up & Kualitas Gulungan 3,30 M', note: 'Prosedur pemeliharaan felt agar mencapai masa pakai 6 - 8 bulan' }
         ],
         keyTakeaways: [
-          'Shoe press menghemat konsumsi uap steam hingga 25% karena kadar air lembaran keluar press sudah sangat rendah.',
-          'Jangan pernah mendekati shutter scanner saat lampu indikator radiasi merah aktif.',
-          'Pantau pelumasan sirkulasi oli hidrolik shoe press untuk menjaga keawetan belt karet sintetis.'
+          'Sistem Single Felt 30,0 M dengan lebar 3,5 M memerlukan perhatian khusus pada pemandu otomatis (auto guide) agar felt tidak lari ke samping.',
+          'Pencucian felt bertekanan tinggi (HP shower) dan conditioning kimiawi menjaga permeabilitas felt stabil hingga 1.000 ton paper up.',
+          'Pastikan kestabilan uap silinder Yankee pada standar 1.0 - 3.0 bar untuk mengeringkan lembaran selebar 3,30 M.'
         ]
       }
     ]

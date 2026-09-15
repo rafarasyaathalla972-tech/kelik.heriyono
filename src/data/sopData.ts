@@ -126,53 +126,59 @@ export const SOP_PROCESS_STEPS: SopStep[] = [
   },
   {
     id: 'paper-machine',
-    title: '3. Bagian Paper Machine (Fourdrinier Wire, Press, Dryer, Calender)',
-    purpose: 'Membentuk lembaran kertas basah dari bubur berkonsistensi rendah di forming wire, memeras air secara mekanis di press section, menguapkan sisa air di dryer cylinder, dan menghaluskan permukaan lembaran di calender roll.',
+    title: '3. Bagian Paper Machine (Cylinder Mould Vat, Press Felt, Yankee MG Dryer, Reel)',
+    purpose: 'Membentuk lembaran kertas halus (Tissue, MG Paper, dan Doorslag) dari suspensi bubur serat melalui silinder saringan cylinder mould vat, memeras air secara mekanis di press felt section (Top/Bottom Felt & Single Felt), mengeringkan lembaran di Yankee MG dryer cylinder dengan tudung udara panas, dan menggulung menjadi jumbo roll dengan standar target kecepatan semua PM 100 - 150 MPM.',
     preparation: [
-      'Lakukan pemanasan silinder pengering (Dryer Cylinder Warming-up): buka bypass steam secara bertahap untuk mencegah thermal shock pada silinder besi cor.',
-      'Pastikan shower pembersih wire dan felt (High Pressure Needle Shower & Fan Shower) menyemprot dengan tekanan 15 - 25 bar tanpa ada nozzle buntu.',
-      'Periksa tegangan (tension) forming wire dan press felt dalam batas standar hidrolik/pneumatik.',
-      'Jalankan pelumasan sentral (Central Lubrication System): pastikan sirkulasi oli ke semua bearing dryer dan calender lancar dan bertekanan normal.',
-      'Cek kesiapan rope carrier system / vacuum transfer untuk proses threading (menarik lembaran kertas saat start-up).'
+      'Lakukan pemanasan silinder pengering Yankee (Yankee Dryer Warming-up): buka bypass steam secara bertahap hingga tekanan operasi standar 1.0 - 3.0 bar untuk mencegah thermal shock pada bejana silinder besi cor.',
+      'Pastikan shower pembersih kawat silinder cetakan dan kain felt (High Pressure Needle Shower & Fan Shower) bertekanan stabil 3.0 - 5.0 bar tanpa nozzle tersumbat.',
+      'Periksa tegangan (tension) kain felt: pastikan regangan merata pada Top Felt 18,8 M & Bottom Felt 25,0 M (PM1 & PM2) serta Single Felt 30,0 M (PM5).',
+      'Jalankan pelumasan sentral (Central Lubrication System): pastikan sirkulasi oli ke bearing vat cylinder mould, touch roll, dan silinder Yankee lancar.',
+      'Cek kesiapan air jet / compressed air transfer dan threading rope carrier untuk menyuap ujung lembaran tipis saat start-up.',
+      'Verifikasi target kecepatan operasi mesin pada panel kontrol DCS: disetel pada rentang standar target 100 - 150 MPM dan tekanan uap Yankee pada 1.0 - 3.0 bar.'
     ],
     operationalSteps: [
-      'Nyalakan Fan Pump dan atur laju alir bubur ke Headbox; sesuaikan bukaan slice lip headbox untuk pemerataan basis weight (gramatur).',
-      'Mulai pembentukan lembaran pada Wire Section: atur vacuum suction box (dewatering foils) secara bertahap dari vakum rendah ke vakum tinggi (15 - 45 kPa).',
-      'Pindahkan lembaran basah berkonsistensi ~20% ke Press Section (Pick-up Felt -> 1st Press -> 2nd Press / Shoe Press) dengan tekanan nip hidrolik bertahap hingga konsistensi mencapai 42% - 48%.',
-      'Salurkan lembaran ke Dryer Section (Pre-dryer -> Size Press -> After-dryer): atur gradien tekanan uap steam dari 1.5 bar di awal hingga 4.5 bar di tengah, dan 2.0 bar di silinder akhir.',
-      'Pada Size Press (jika aktif): lapisi lembaran dengan larutan kanji permukaan (Surface Starch) untuk meningkatkan ketahanan permukaan dan kekakuan.',
-      'Lewatkan lembaran melalui Calender Roll: atur tekanan nip hidrolik dan suhu calender untuk mencapai ketebalan (caliper) dan kehalusan (smoothness) sesuai pesanan.',
-      'Gulung lembaran kertas menjadi jumbo roll (Pop Reel) dengan kontrol kekencangan reel drum.'
+      'Nyalakan pompa transfer bubur encer dan atur laju alir ke bak vat cylinder mould; sesuaikan konsistensi kerja (0.25% - 0.40%) untuk pemerataan gramatur (BW 12-16, 18-22, 24-26, 36-42 gsm).',
+      'Mulai pembentukan lembaran pada kawat cylinder mould: atur nosel pemotong tepi basah (edge squirt nozzle) sesuai lebar kertas jadi (PM1: 2,20 M | PM2: 2,25 M | PM5: 3,30 M).',
+      'Pindahkan lembaran basah dari cylinder vat ke kain felt pembawa melalui touch roll penekan bertekanan pneumatik/hidrolik yang seimbang.',
+      'Lakukan pemerasan dan dewatering vakum pada Uhle suction box (-20 s/d -30 kPa) untuk menjaga porositas dan kapasitas serap kain felt.',
+      'Tempelkan lembaran kertas ke permukaan silinder Yankee MG yang panas melalui touch roll utama dengan tekanan nip hidrolik merata.',
+      'Keringkan lembaran di silinder Yankee yang berputar pada standar target kecepatan 100 - 150 MPM dengan tekanan uap standar 1.0 - 3.0 bar dibantu hembusan tudung udara panas (Hot Air Cap Hood).',
+      'Lepaskan lembaran kertas kering dari silinder Yankee dengan bantuan bilah doctor blade (creping/cleaning doctor) berpresisi tinggi.',
+      'Gulung lembaran kertas menjadi jumbo roll (Pop Reel) dengan kontrol kekencangan roll yang presisi dan stabil.'
     ],
     keyParameters: [
-      { name: 'Kecepatan Mesin (Machine Speed)', standard: 'PM1: 350 - 450 m/min | PM2: 450 - 550 m/min | PM5: 600 - 750 m/min', note: 'Sinkronisasi speed draw antar seksi harus dijaga ketat (toleransi draw 0.1% - 0.3%)' },
-      { name: 'Tekanan Nip Press Section', standard: '1st Press: 60-80 kN/m | 2nd Press: 90-120 kN/m | Shoe Press (PM5): 600-800 kN/m', note: 'Pantau kebersihan felt agar tidak timbul tanda air (water mark)' },
-      { name: 'Tekanan Uap Silinder Dryer', standard: 'Pre-dryer: 2.0 - 4.5 bar | After-dryer: 1.5 - 3.5 bar', note: 'Pantau pembuangan kondensat uap melalui siphon dryer' },
-      { name: 'Kadar Kelembapan Kertas Akhir (Moisture)', standard: '7.0% - 8.5% ± 0.5%', note: 'Dipantau online scanner QCS inframerah secara kontinu' },
-      { name: 'Ketebalan Lembaran (Caliper)', standard: 'Sesuai spesifikasi GSM (misal 125 gsm = 165 - 180 µm)', note: 'Kontrol via profil slice lip headbox dan nip calender' }
+      { name: 'Kecepatan Mesin (Machine Speed)', standard: '100 - 150 MPM (Standar Target Semua PM: PM-1, PM-2, PM-5)', note: 'Standar target kecepatan operasi seluruh mesin dijaga stabil pada 100 - 150 MPM disesuaikan dengan gramatur kertas (12-16, 18-22, 24-26, 36-42 gsm)' },
+      { name: 'Tekanan Uap Silinder Yankee MG (Yankee Pressure)', standard: '1.0 - 3.0 bar (Standar Semua Yankee)', note: 'Standar baku tekanan uap silinder Yankee untuk seluruh lini (PM1, PM2, PM5) wajib dijaga stabil pada 1 - 3 bar untuk menjaga kualitas lembaran tanpa kertas overdried/hangus' },
+      { name: 'Tipe Pembentukan (Forming)', standard: 'Cylinder Mould Vat System', note: 'Keseragaman formasi serat tipis Tissue, MG Paper, dan Doorslag' },
+      { name: 'Rentang Basis Weight (BW)', standard: '12-16, 18-22, 24-26, 36-42 gsm', note: 'Kontrol konsistensi bubur vat dan laju aliran stock' },
+      { name: 'Vakum Uhle Box Kain Felt', standard: '-20 s/d -30 kPa', note: 'Pantau kebersihan felt agar daya peras air selalu maksimal' },
+      { name: 'Kadar Kelembapan Kertas Akhir (Moisture)', standard: '5.5% - 7.5% ± 0.5%', note: 'Dipantau online scanner QCS atau uji moisture meter' },
+      { name: 'Lebar Kertas Jadi (Trim Width)', standard: 'PM1: 2,20 M | PM2: 2,25 M | PM5: 3,30 M', note: 'Dipotong oleh nosel edge squirt bertekanan 3.5 - 4.0 bar' },
+      { name: 'Life Time Kain Felt', standard: '6 - 8 Bulan / 1.000 Ton Paper Up', note: 'PM1 & PM2: Top 18,8 M & Bottom 25,0 M (lebar 2,4 M) | PM5: Single Felt 30,0 M (lebar 3,5 M)' }
     ],
     routineChecks: [
-      'Awasi formasi lembaran di atas forming table: pastikan garis kering (dry line) berada pada posisi 2/3 panjang wire.',
-      'Periksa drainase air putih (white water tray) di bawah wire: pastikan tidak ada luapan atau cipratan air ke lembaran kertas.',
-      'Pantau kondisi felt press: lakukan uji porositas dan kebersihan felt; pastikan chemical felt conditioning bekerja normal.',
-      'Cek siphon dryer: pastikan silinder tidak tergenang air kondensat (water logging) yang menyebabkan suhu silinder drop.',
-      'Amati detektor putus kertas (Sheet Break Photoelectric Sensors) pada setiap seksi.'
+      'Pantau display tachometer/DCS: pastikan kecepatan mesin stabil pada standar target 100 - 150 MPM dan tidak terjadi fluktuasi mendadak.',
+      'Awasi formasi lembaran di atas kawat cylinder mould: pastikan level bubur di bak vat tenang tanpa gelombang turbulensi sepihak.',
+      'Periksa kawat saringan cylinder mould: pastikan jarum shower pembersih berosilasi kontinu menyemprot sisa serat.',
+      'Pantau kondisi kain felt: ukur porositas felt dan pastikan sistem auto-guide menjaga felt tepat di tengah lintasan roll.',
+      'Cek siphon Yankee dryer: pastikan silinder tidak tergenang kondensat uap (water logging) yang dapat menurunkan suhu silinder.',
+      'Periksa ketajaman bilah doctor blade Yankee dan kerataan kontak ujung pisau terhadap permukaan silinder.'
     ],
     troubleshooting: [
       {
-        issue: 'Kertas Sering Putus (Sheet Break) di Press atau Dryer Awal',
-        cause: 'Tegangan tarikan (draw) terlalu kencang, adanya serpihan kotoran/shive dari stock prep, atau pinggiran lembaran koyak (edge crack).',
-        solution: 'Kurangi draw speed 0.1%, periksa ketajaman squirt cutter penata tepi di wire, tingkatkan pembersihan needle shower pada press felt.'
+        issue: 'Kertas Sering Putus (Sheet Break) Saat Mesin Dijalankan',
+        cause: 'Kecepatan mesin di luar standar target 100 - 150 MPM, draw felt terlalu kencang, atau pinggiran lembaran basah tidak rata.',
+        solution: 'Kembalikan kecepatan mesin ke standar target 100 - 150 MPM, kurangi draw speed felt 0.1 - 0.2%, dan periksa kelancaran nosel edge squirt cutter.'
       },
       {
-        issue: 'Profil Kelembapan / Gramatur Tidak Merata (Moisture Streaks)',
-        cause: 'Bukaan slice lip headbox bengkok lokal, nozzle shower felt tersumbat menyebabkan felt basah setempat, atau siphon dryer buntu.',
-        solution: 'Atur spindle actuator headbox pada zona bersangkutan, bersihkan nozzle shower felt yang buntu, cek suhu permukaan silinder dengan termometer inframerah tembak.'
+        issue: 'Profil Kelembapan / Kilap MG Tidak Merata (Moisture Streaks & Dull Surface)',
+        cause: 'Tekanan touch roll tidak rata kiri-kanan atau nozzle shower kain felt buntu menyebabkan felt basah sebagian.',
+        solution: 'Kalibrasi tekanan hidrolik/pneumatik touch roll, bersihkan nozzle shower felt yang buntu, cek suhu permukaan silinder Yankee.'
       },
       {
-        issue: 'Permukaan Kertas Berbintik Gelap / Cacat Lubang (Pinholes)',
-        cause: 'Busa mikro di headbox, serpihan kerak lendir bakteri (slime build-up) yang jatuh dari hood dryer.',
-        solution: 'Injeksi defoamer pada headbox feed line, lakukan pembersihan slime board, tingkatkan dosis biocide pada sirkuit air putih pendek (short loop).'
+        issue: 'Bintik Lubang Jarum (Pinholes) pada Kertas Tissue / MG',
+        cause: 'Busa mikro di bak vat cylinder mould atau kerak serat kering yang menempel pada permukaan kawat silinder.',
+        solution: 'Injeksi defoamer pada feed line bubur encer, tingkatkan tekanan shower pencuci kawat cylinder mould ke 4 bar.'
       }
     ],
     shutdownAndCleaning: [

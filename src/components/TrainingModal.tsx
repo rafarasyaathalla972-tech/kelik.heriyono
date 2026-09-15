@@ -28,7 +28,8 @@ import {
   Film,
   ExternalLink,
   BookOpen,
-  Award
+  Award,
+  Gauge
 } from 'lucide-react';
 import { TRAINING_MODULES } from '../data/trainingData';
 import { TRAINING_MEDIA_DATA } from '../data/trainingMediaData';
@@ -343,6 +344,243 @@ export const TrainingModal: React.FC<TrainingModalProps> = ({
               </div>
             )}
           </div>
+
+          {/* ========================================================= */}
+          {/* SPESIFIKASI RESMI PM CYLINDER MOULD (PM-1, PM-2 & PM-5)   */}
+          {/* ========================================================= */}
+          {!isRewinder && (
+            <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950/30 border-2 border-emerald-500/40 rounded-2xl p-4 sm:p-5 shadow-xl space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-3 border-b border-slate-800 gap-2">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 bg-emerald-500/20 border border-emerald-500/50 rounded-xl text-emerald-400 shadow-sm">
+                    <Gauge className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-extrabold text-white text-base tracking-wide">
+                        Standar Spesifikasi Mesin Paper Machine (PM-1, PM-2 & PM-5)
+                      </h4>
+                      <span className="bg-emerald-500 text-slate-950 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
+                        Official Spec
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-300 mt-0.5">
+                      Spesifikasi teknis acuan wajib untuk seluruh Operator, Kepala Regu, dan Kepala PM
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1.5 self-start sm:self-auto bg-slate-900/90 px-3 py-1.5 rounded-xl border border-slate-700">
+                  <span className="text-[11px] text-slate-400">Unit Aktif:</span>
+                  <span className="text-xs font-black text-amber-300">{data.machineId}</span>
+                  <span className="text-[10px] text-emerald-400 bg-emerald-950 px-1.5 py-0.2 rounded font-mono font-bold">
+                    Cylinder Mould
+                  </span>
+                </div>
+              </div>
+
+              {/* 8 Main Parameters Highlight Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 text-xs">
+                {/* 1. Tipe Mesin */}
+                <div className="bg-slate-900/90 border border-slate-700/80 rounded-xl p-3 hover:border-emerald-500/50 transition-colors">
+                  <span className="text-slate-400 text-[11px] block">● Tipe Mesin</span>
+                  <div className="text-white font-black text-sm mt-0.5 flex items-center gap-1.5">
+                    <span className="text-emerald-400 font-bold">Cylinder Mould</span>
+                  </div>
+                  <span className="text-[10px] text-slate-400 mt-1 block">PM-1, PM-2 & PM-5 Seragam</span>
+                </div>
+
+                {/* 2. Produksi */}
+                <div className="bg-slate-900/90 border border-slate-700/80 rounded-xl p-3 hover:border-emerald-500/50 transition-colors">
+                  <span className="text-slate-400 text-[11px] block">● Jenis Produksi</span>
+                  <div className="text-amber-300 font-bold text-xs mt-0.5 leading-snug">
+                    Tissue, MG Paper, Doorslag
+                  </div>
+                  <span className="text-[10px] text-slate-400 mt-1 block">Kertas halus & wrapping</span>
+                </div>
+
+                {/* 3. Basis Weight (BW) */}
+                <div className="bg-slate-900/90 border border-slate-700/80 rounded-xl p-3 hover:border-emerald-500/50 transition-colors">
+                  <span className="text-slate-400 text-[11px] block">● Rentang BW (Gramatur)</span>
+                  <div className="text-cyan-300 font-mono font-black text-xs mt-0.5 leading-snug">
+                    12-16, 18-22, 24-26, 36-42 gsm
+                  </div>
+                  <span className="text-[10px] text-slate-400 mt-1 block">4 grade gramatur standar</span>
+                </div>
+
+                {/* 4. Speed Mesin */}
+                <div className="bg-slate-900/90 border border-slate-700/80 rounded-xl p-3 hover:border-emerald-500/50 transition-colors">
+                  <span className="text-slate-400 text-[11px] block">● Speed Mesin (SOP)</span>
+                  <div className="text-emerald-400 font-mono font-black text-sm mt-0.5">
+                    100 - 150 mpm
+                  </div>
+                  <span className="text-[10px] text-amber-300 font-semibold mt-1 block">
+                    Standar Target SOP: 100-150 mpm ({selectedMachine}: maks {selectedMachine === 'PM1' ? '150' : selectedMachine === 'PM2' ? '180' : '160'} mpm)
+                  </span>
+                </div>
+
+                {/* 5. Lebar Felt */}
+                <div className="bg-slate-900/90 border border-slate-700/80 rounded-xl p-3 hover:border-emerald-500/50 transition-colors">
+                  <span className="text-slate-400 text-[11px] block">● Lebar Felt</span>
+                  <div className="text-white font-mono font-black text-sm mt-0.5">
+                    {selectedMachine === 'PM5' ? '3,5 M (3.500 mm)' : '2,4 M (2.400 mm)'}
+                  </div>
+                  <span className="text-[10px] text-slate-400 mt-1 block">PM1 & PM2: 2,4 M | PM5: 3,5 M</span>
+                </div>
+
+                {/* 6. Panjang Felt */}
+                <div className="bg-slate-900/90 border border-slate-700/80 rounded-xl p-3 hover:border-emerald-500/50 transition-colors">
+                  <span className="text-slate-400 text-[11px] block">● Panjang Felt</span>
+                  <div className="text-amber-300 font-mono font-bold text-xs mt-0.5 leading-snug">
+                    {selectedMachine === 'PM5' ? '30,0 M (Single Felt)' : 'Top: 18,8 M | Bottom: 25,0 M'}
+                  </div>
+                  <span className="text-[10px] text-slate-400 mt-1 block">
+                    {selectedMachine === 'PM5' ? 'Single felt continuous system' : 'Dual felt top/bottom configuration'}
+                  </span>
+                </div>
+
+                {/* 7. Life Time Felt */}
+                <div className="bg-slate-900/90 border border-slate-700/80 rounded-xl p-3 hover:border-emerald-500/50 transition-colors">
+                  <span className="text-slate-400 text-[11px] block">● Life Time Felt</span>
+                  <div className="text-rose-300 font-bold text-xs mt-0.5">
+                    6 - 8 Bulan
+                  </div>
+                  <span className="text-[10px] text-emerald-400 font-mono font-bold mt-1 block">1.000 ton paper up</span>
+                </div>
+
+                {/* 8. Lebar Kertas */}
+                <div className="bg-slate-900/90 border border-slate-700/80 rounded-xl p-3 hover:border-emerald-500/50 transition-colors">
+                  <span className="text-slate-400 text-[11px] block">● Lebar Kertas (Trim)</span>
+                  <div className="text-teal-300 font-mono font-black text-sm mt-0.5">
+                    {selectedMachine === 'PM1' ? '2,20 M' : selectedMachine === 'PM2' ? '2,25 M' : '3,30 M'}
+                  </div>
+                  <span className="text-[10px] text-slate-400 mt-1 block">PM1: 2,20 M | PM2: 2,25 M | PM5: 3,30 M</span>
+                </div>
+              </div>
+
+              {/* Matriks Komparasi Lengkap Seluruh Mesin (PM-1 vs PM-2 vs PM-5) */}
+              <div className="bg-slate-950/90 rounded-xl border border-slate-800 overflow-hidden">
+                <div className="bg-slate-900/90 px-3.5 py-2 border-b border-slate-800 flex items-center justify-between">
+                  <span className="font-bold text-xs text-white flex items-center gap-1.5">
+                    <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
+                    Tabel Matriks Perbandingan Spesifikasi PM-1, PM-2 & PM-5
+                  </span>
+                  <span className="text-[10px] text-slate-400">Pembaruan Resmi Departemen Produksi</span>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs text-left">
+                    <thead className="bg-slate-900 text-slate-300 border-b border-slate-800">
+                      <tr>
+                        <th className="p-2.5 font-bold">Parameter Spesifikasi</th>
+                        <th className={`p-2.5 font-bold text-center ${selectedMachine === 'PM1' ? 'bg-amber-950/40 text-amber-300 border-b-2 border-amber-500' : ''}`}>
+                          PM-1
+                        </th>
+                        <th className={`p-2.5 font-bold text-center ${selectedMachine === 'PM2' ? 'bg-amber-950/40 text-amber-300 border-b-2 border-amber-500' : ''}`}>
+                          PM-2
+                        </th>
+                        <th className={`p-2.5 font-bold text-center ${selectedMachine === 'PM5' ? 'bg-amber-950/40 text-amber-300 border-b-2 border-amber-500' : ''}`}>
+                          PM-5
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800/80 text-slate-200">
+                      <tr className="hover:bg-slate-900/50">
+                        <td className="p-2.5 text-slate-400 font-medium">Tipe Mesin</td>
+                        <td className="p-2.5 text-center font-bold text-emerald-400">Cylinder Mould</td>
+                        <td className="p-2.5 text-center font-bold text-emerald-400">Cylinder Mould</td>
+                        <td className="p-2.5 text-center font-bold text-emerald-400">Cylinder Mould</td>
+                      </tr>
+                      <tr className="hover:bg-slate-900/50 bg-slate-900/30">
+                        <td className="p-2.5 text-slate-400 font-medium">Jenis Produksi</td>
+                        <td className="p-2.5 text-center text-slate-200">Tissue, MG Paper, Doorslag</td>
+                        <td className="p-2.5 text-center text-slate-200">Tissue, MG Paper, Doorslag</td>
+                        <td className="p-2.5 text-center text-slate-200">Tissue, MG Paper, Doorslag</td>
+                      </tr>
+                      <tr className="hover:bg-slate-900/50">
+                        <td className="p-2.5 text-slate-400 font-medium">Pilihan Gramatur (BW)</td>
+                        <td className="p-2.5 text-center font-mono text-cyan-300" colSpan={3}>
+                          12-16, 18-22, 24-26 gsm, 36-42 gsm
+                        </td>
+                      </tr>
+                      <tr className="hover:bg-slate-900/50 bg-slate-900/30">
+                        <td className="p-2.5 text-slate-400 font-medium">Standar Target SOP Speed</td>
+                        <td className="p-2.5 text-center font-mono font-bold text-emerald-400">
+                          100 - 150 mpm
+                        </td>
+                        <td className="p-2.5 text-center font-mono font-bold text-emerald-400">
+                          100 - 150 mpm
+                        </td>
+                        <td className="p-2.5 text-center font-mono font-bold text-emerald-400">
+                          100 - 150 mpm
+                        </td>
+                      </tr>
+                      <tr className="hover:bg-slate-900/50">
+                        <td className="p-2.5 text-slate-400 font-medium">Tekanan Uap Silinder Yankee (SOP)</td>
+                        <td className="p-2.5 text-center font-mono font-bold text-amber-300">
+                          1 - 3 bar
+                        </td>
+                        <td className="p-2.5 text-center font-mono font-bold text-amber-300">
+                          1 - 3 bar
+                        </td>
+                        <td className="p-2.5 text-center font-mono font-bold text-amber-300">
+                          1 - 3 bar
+                        </td>
+                      </tr>
+                      <tr className="hover:bg-slate-900/50 bg-slate-900/30">
+                        <td className="p-2.5 text-slate-400 font-medium">Speed Maksimal Mesin</td>
+                        <td className={`p-2.5 text-center font-mono ${selectedMachine === 'PM1' ? 'text-amber-300 font-bold bg-amber-950/30' : 'text-slate-300'}`}>
+                          150 mpm
+                        </td>
+                        <td className={`p-2.5 text-center font-mono ${selectedMachine === 'PM2' ? 'text-amber-300 font-bold bg-amber-950/30' : 'text-slate-300'}`}>
+                          180 mpm
+                        </td>
+                        <td className={`p-2.5 text-center font-mono ${selectedMachine === 'PM5' ? 'text-amber-300 font-bold bg-amber-950/30' : 'text-slate-300'}`}>
+                          160 mpm
+                        </td>
+                      </tr>
+                      <tr className="hover:bg-slate-900/50">
+                        <td className="p-2.5 text-slate-400 font-medium">Lebar Felt</td>
+                        <td className="p-2.5 text-center font-mono font-bold text-slate-100">2,4 M</td>
+                        <td className="p-2.5 text-center font-mono font-bold text-slate-100">2,4 M</td>
+                        <td className="p-2.5 text-center font-mono font-bold text-cyan-300">3,5 M</td>
+                      </tr>
+                      <tr className="hover:bg-slate-900/50 bg-slate-900/30">
+                        <td className="p-2.5 text-slate-400 font-medium">Panjang Felt</td>
+                        <td className="p-2.5 text-center font-mono text-slate-200">
+                          Top: 18,8 M<br />Bottom: 25,0 M
+                        </td>
+                        <td className="p-2.5 text-center font-mono text-slate-200">
+                          Top: 18,8 M<br />Bottom: 25,0 M
+                        </td>
+                        <td className="p-2.5 text-center font-mono font-bold text-amber-300">
+                          30,0 M<br /><span className="text-[10px] text-slate-400 font-normal">(Single Felt)</span>
+                        </td>
+                      </tr>
+                      <tr className="hover:bg-slate-900/50">
+                        <td className="p-2.5 text-slate-400 font-medium">Life Time Felt</td>
+                        <td className="p-2.5 text-center text-rose-300 font-semibold" colSpan={3}>
+                          6 - 8 Bulan (atau 1.000 ton paper up)
+                        </td>
+                      </tr>
+                      <tr className="hover:bg-slate-900/50 bg-slate-900/30">
+                        <td className="p-2.5 text-slate-400 font-medium">Lebar Kertas (Trim Width)</td>
+                        <td className={`p-2.5 text-center font-mono font-bold ${selectedMachine === 'PM1' ? 'text-amber-300 bg-amber-950/30' : 'text-teal-300'}`}>
+                          2,20 M
+                        </td>
+                        <td className={`p-2.5 text-center font-mono font-bold ${selectedMachine === 'PM2' ? 'text-amber-300 bg-amber-950/30' : 'text-teal-300'}`}>
+                          2,25 M
+                        </td>
+                        <td className={`p-2.5 text-center font-mono font-bold ${selectedMachine === 'PM5' ? 'text-amber-300 bg-amber-950/30' : 'text-teal-300'}`}>
+                          3,30 M
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* ========================================================= */}
           {/* HERO VISUAL SHOWCASE CARD (FOTO NYATA MESIN)              */}

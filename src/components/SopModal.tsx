@@ -120,6 +120,94 @@ export const SopModal: React.FC<SopModalProps> = ({ isOpen, onClose }) => {
         {/* SOP Content Body */}
         <div className="flex-1 overflow-y-auto p-5 space-y-6 text-sm">
           
+          {/* Highlight Banner Khusus Standar Target Kecepatan Semua PM (100 - 150 MPM) */}
+          {currentStep.id === 'paper-machine' && (
+            <div className="bg-gradient-to-r from-emerald-950/90 via-slate-900 to-cyan-950/90 border-2 border-emerald-500/50 rounded-2xl p-4 sm:p-5 shadow-xl space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 bg-emerald-500/20 border border-emerald-500/50 rounded-xl text-emerald-400">
+                    <Gauge className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h4 className="text-white font-extrabold text-sm sm:text-base tracking-wide">
+                        Standar Target Kecepatan Operasi Semua Mesin PM
+                      </h4>
+                      <span className="bg-emerald-500 text-slate-950 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
+                        SOP Resmi
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-300 mt-0.5">
+                      Standar baku kecepatan kerja seluruh lini Paper Machine (PM-1, PM-2 & PM-5)
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+                  <div className="flex items-center gap-2 bg-slate-950/90 px-3.5 py-1.5 rounded-xl border border-emerald-500/40">
+                    <span className="text-[11px] text-slate-400 font-medium">Target Speed:</span>
+                    <span className="text-base sm:text-lg font-black text-emerald-300 font-mono tracking-wider">
+                      100 - 150 MPM
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 bg-slate-950/90 px-3.5 py-1.5 rounded-xl border border-amber-500/40">
+                    <span className="text-[11px] text-slate-400 font-medium">Yankee Pressure:</span>
+                    <span className="text-base sm:text-lg font-black text-amber-300 font-mono tracking-wider">
+                      1 - 3 BAR
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
+                <div className="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800 hover:border-emerald-500/40 transition-colors space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-white font-bold">PM-1</span>
+                    <span className="text-[10px] text-slate-400 font-mono">Cylinder Mould</span>
+                  </div>
+                  <div className="flex items-baseline justify-between">
+                    <span className="text-slate-400 text-[11px]">Target Speed:</span>
+                    <span className="text-emerald-300 font-mono font-black text-xs">100 - 150 MPM</span>
+                  </div>
+                  <div className="flex items-baseline justify-between pt-1 border-t border-slate-800/80">
+                    <span className="text-slate-400 text-[11px]">Yankee Pressure:</span>
+                    <span className="text-amber-300 font-mono font-black text-xs">1 - 3 BAR</span>
+                  </div>
+                </div>
+
+                <div className="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800 hover:border-emerald-500/40 transition-colors space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-white font-bold">PM-2</span>
+                    <span className="text-[10px] text-slate-400 font-mono">Cylinder Mould</span>
+                  </div>
+                  <div className="flex items-baseline justify-between">
+                    <span className="text-slate-400 text-[11px]">Target Speed:</span>
+                    <span className="text-emerald-300 font-mono font-black text-xs">100 - 150 MPM</span>
+                  </div>
+                  <div className="flex items-baseline justify-between pt-1 border-t border-slate-800/80">
+                    <span className="text-slate-400 text-[11px]">Yankee Pressure:</span>
+                    <span className="text-amber-300 font-mono font-black text-xs">1 - 3 BAR</span>
+                  </div>
+                </div>
+
+                <div className="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800 hover:border-emerald-500/40 transition-colors space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-white font-bold">PM-5</span>
+                    <span className="text-[10px] text-slate-400 font-mono">Cylinder Mould</span>
+                  </div>
+                  <div className="flex items-baseline justify-between">
+                    <span className="text-slate-400 text-[11px]">Target Speed:</span>
+                    <span className="text-emerald-300 font-mono font-black text-xs">100 - 150 MPM</span>
+                  </div>
+                  <div className="flex items-baseline justify-between pt-1 border-t border-slate-800/80">
+                    <span className="text-slate-400 text-[11px]">Yankee Pressure:</span>
+                    <span className="text-amber-300 font-mono font-black text-xs">1 - 3 BAR</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Section 1: Title & Purpose */}
           <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-4">
             <h3 className="text-base font-bold text-emerald-400 mb-2 flex items-center gap-2">
