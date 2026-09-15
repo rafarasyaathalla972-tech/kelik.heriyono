@@ -1,6 +1,7 @@
-import { MachineTrainingData } from '../types';
+import { MachineTrainingData, TrainingModuleId } from '../types';
+import { REWINDER_TRAINING_DATA } from './rewinderTrainingData';
 
-export const TRAINING_MODULES: Record<string, MachineTrainingData> = {
+export const TRAINING_MODULES: Record<TrainingModuleId, MachineTrainingData> = {
   PM1: {
     machineId: 'PM1',
     name: 'Mesin Kertas PM1 (Medium Paper Specialist)',
@@ -239,5 +240,6 @@ export const TRAINING_MODULES: Record<string, MachineTrainingData> = {
       'Kecepatan operasi sangat tinggi (hingga 750 m/min): dilarang keras melintasi jalur gulungan kertas tanpa pelindung atau saat threading otomatis berlangsung.',
       'Sistem pencegah kebakaran kabut air (Water Mist Deluge Fire Protection) di area dryer hood aktif otomatis: pahami jalur evakuasi darurat saat sirine alarm berbunyi.'
     ]
-  }
+  },
+  REWINDER: REWINDER_TRAINING_DATA
 };

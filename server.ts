@@ -9,7 +9,9 @@ const PORT = 3000;
 app.use(express.json({ limit: '10mb' }));
 
 // Ensure data directory and reports.json exist
-const DATA_DIR = path.join(process.cwd(), 'data');
+const DATA_DIR = process.env.VERCEL
+  ? path.join('/tmp', 'pup_data')
+  : path.join(process.cwd(), 'data');
 const DATA_FILE = path.join(DATA_DIR, 'reports.json');
 
 function ensureDataFile() {

@@ -14,7 +14,10 @@ import {
   Users,
   Database,
   Download,
-  Upload
+  Upload,
+  GitBranch,
+  Github,
+  Globe
 } from 'lucide-react';
 import { ShiftReport } from '../types';
 
@@ -283,6 +286,64 @@ Terima kasih.`;
             <pre className="text-[11px] font-sans text-slate-300 bg-slate-900 border border-slate-800 rounded-lg p-3 whitespace-pre-wrap leading-relaxed max-h-36 overflow-y-auto">
               {waMessage}
             </pre>
+          </div>
+
+          {/* Hubungkan ke GitHub & Vercel */}
+          <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950/40 border border-indigo-500/40 rounded-xl p-4">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <Globe className="w-4 h-4 text-indigo-400" />
+                <span className="text-xs font-bold text-indigo-200 flex items-center gap-1.5">
+                  <span>Hubungkan ke GitHub & Vercel</span>
+                  <span className="text-[10px] bg-indigo-950 border border-indigo-500/40 text-indigo-300 font-semibold px-2 py-0.2 rounded-full">
+                    Konfigurasi Otomatis Siap
+                  </span>
+                </span>
+              </div>
+              <span className="text-[10px] text-slate-400">vercel.json & /api Aktif</span>
+            </div>
+
+            <p className="text-xs text-slate-300 mb-3 leading-relaxed">
+              Penyebab sebelumnya tidak bisa dibuka di Vercel telah diperbaiki: file konfigurasi <strong>vercel.json</strong> (routing SPA) dan <strong>Serverless Backend (/api/index.ts)</strong> kini sudah otomatis terpasang.
+            </p>
+
+            <div className="bg-slate-950/90 rounded-xl p-3 border border-indigo-900/40 space-y-2 text-xs mb-3">
+              <p className="font-semibold text-indigo-300 flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-indigo-400" />
+                Langkah 1-Klik Menghubungkan ke GitHub & Vercel:
+              </p>
+              <ol className="list-decimal list-inside space-y-1 text-slate-300 ml-1">
+                <li>
+                  Di Google AI Studio, klik menu titik tiga <strong className="text-white">(⋮)</strong> atau <strong>Settings</strong> di pojok kanan atas &rarr; pilih <strong className="text-emerald-300">"Export to GitHub"</strong>.
+                </li>
+                <li>
+                  Buka dashboard <strong>Vercel</strong> &rarr; klik <strong className="text-indigo-300">"Add New..."</strong> &rarr; <strong className="text-indigo-300">"Project"</strong> &rarr; pilih repository GitHub tersebut &rarr; klik <strong className="text-emerald-300">"Deploy"</strong>.
+                </li>
+              </ol>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <a
+                href="https://vercel.com/new"
+                target="_blank"
+                rel="noreferrer"
+                className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs rounded-lg flex items-center gap-1.5 transition-all shadow"
+              >
+                <Globe className="w-3.5 h-3.5" />
+                <span>Buka Vercel New Project</span>
+                <ExternalLink className="w-3 h-3 opacity-75" />
+              </a>
+
+              <a
+                href="https://github.com/new"
+                target="_blank"
+                rel="noreferrer"
+                className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs rounded-lg flex items-center gap-1.5 border border-slate-700 transition-all"
+              >
+                <Github className="w-3.5 h-3.5" />
+                <span>Buka GitHub</span>
+              </a>
+            </div>
           </div>
 
           {/* Backup & Restore Data (JSON) for Team Safety */}

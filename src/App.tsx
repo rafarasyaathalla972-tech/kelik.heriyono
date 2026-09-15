@@ -6,7 +6,7 @@ import { ReportList } from './components/ReportList';
 import { SopModal } from './components/SopModal';
 import { TrainingModal } from './components/TrainingModal';
 import { ShareModal } from './components/ShareModal';
-import { ShiftReport, MachineId, EditAuditLog } from './types';
+import { ShiftReport, MachineId, EditAuditLog, TrainingModuleId } from './types';
 import { INITIAL_SHIFT_REPORTS } from './data/initialReports';
 import { 
   getSharedReports, 
@@ -56,7 +56,7 @@ export default function App() {
   const [isSopOpen, setIsSopOpen] = useState<boolean>(false);
   const [isTrainingOpen, setIsTrainingOpen] = useState<boolean>(false);
   const [isShareOpen, setIsShareOpen] = useState<boolean>(false);
-  const [trainingDefaultMachine, setTrainingDefaultMachine] = useState<MachineId>('PM1');
+  const [trainingDefaultMachine, setTrainingDefaultMachine] = useState<TrainingModuleId>('REWINDER');
 
   // Success Notification banner
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -193,7 +193,7 @@ export default function App() {
     showToast(`Data berhasil dipulihkan: ${importedList.length} laporan shift aktif.`);
   };
 
-  const handleOpenTraining = (machine?: MachineId) => {
+  const handleOpenTraining = (machine?: TrainingModuleId) => {
     if (machine) {
       setTrainingDefaultMachine(machine);
     }
@@ -284,11 +284,11 @@ export default function App() {
             </button>
             <span className="text-slate-600">&bull;</span>
             <button
-              onClick={() => handleOpenTraining('PM1')}
+              onClick={() => handleOpenTraining('REWINDER')}
               className="text-amber-400 hover:text-amber-300 font-semibold flex items-center gap-1"
             >
               <GraduationCap className="w-3.5 h-3.5" />
-              <span>Materi Training Operator</span>
+              <span>Materi Training & Rewinder</span>
             </button>
             <span className="text-slate-600">&bull;</span>
             <button

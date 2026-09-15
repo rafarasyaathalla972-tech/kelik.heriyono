@@ -1,4 +1,5 @@
 export type MachineId = 'PM1' | 'PM2' | 'PM5';
+export type TrainingModuleId = 'PM1' | 'PM2' | 'PM5' | 'REWINDER';
 export type ShiftType = 'Shift 1' | 'Shift 2' | 'Shift 3' | 'Pagi' | 'Siang' | 'Malam';
 export type QualityGrade = 'A' | 'B' | 'C' | 'Cacat';
 
@@ -84,8 +85,76 @@ export interface SopStep {
   shutdownAndCleaning: string[];
 }
 
+export interface RewinderComponentDetail {
+  id: string;
+  name: string;
+  category: 'Unwind' | 'Web Guidance' | 'Calendering' | 'Slitting' | 'Spreading' | 'Winding' | 'Auxiliary';
+  function: string;
+  constructionDetails: string;
+  operationTips: string;
+  roleAttention: string;
+}
+
+export interface RewinderWorkflowStep {
+  stepNumber: number;
+  title: string;
+  phase: string;
+  description: string;
+  operatorAction: string;
+  karuCheck: string;
+  safetyCaution: string;
+}
+
+export interface RewinderCompetencyQA {
+  number: number;
+  question: string;
+  quickAnswer: string;
+  deepDiveExplanation: string;
+  operationalImpact: string;
+  whoMustMaster: string;
+}
+
+export interface RoleResponsibilityGuide {
+  role: 'Operator Pelaksana' | 'Kepala Regu (Karu)' | 'Kepala PM & Superintendent';
+  badgeColor: string;
+  summary: string;
+  dailyFocus: string[];
+  decisionAuthority: string[];
+}
+
+export interface MachinePhotoItem {
+  id: string;
+  title: string;
+  subtitle: string;
+  imageSrc: string;
+  aspectRatio: string;
+  tags: string[];
+  description: string;
+  keyCallouts: { label: string; detail: string }[];
+}
+
+export interface MachineVideoTutorial {
+  id: string;
+  title: string;
+  duration: string;
+  youtubeId?: string;
+  thumbnailUrl: string;
+  category: string;
+  instructorRole: string;
+  description: string;
+  chapters: { time: string; topic: string; note: string }[];
+  keyTakeaways: string[];
+}
+
+export interface MachineMediaConfig {
+  heroImage: string;
+  heroCaption: string;
+  galleryPhotos: MachinePhotoItem[];
+  videoTutorials: MachineVideoTutorial[];
+}
+
 export interface MachineTrainingData {
-  machineId: MachineId;
+  machineId: MachineId | 'REWINDER';
   name: string;
   tagline: string;
   technicalSpecs: { label: string; value: string }[];
@@ -98,4 +167,9 @@ export interface MachineTrainingData {
   differencesFromOthers?: string;
   commonFaultsAndSolutions: { fault: string; indication: string; cause?: string; immediateAction: string; permanentFix: string }[];
   k3SafetyProcedures: string[];
+  componentsList?: RewinderComponentDetail[];
+  workflowSteps?: RewinderWorkflowStep[];
+  competencyQAs?: RewinderCompetencyQA[];
+  roleGuides?: RoleResponsibilityGuide[];
+  mediaConfig?: MachineMediaConfig;
 }

@@ -191,10 +191,13 @@ export const Navbar: React.FC<NavbarProps> = ({
               id="btn-open-training-global"
               onClick={onOpenTraining}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold bg-amber-700/80 hover:bg-amber-600 text-amber-100 border border-amber-600 transition-colors shadow-sm"
-              title="Materi Pelatihan Kerja PM1, PM2, PM5"
+              title="Materi Pelatihan Kerja PM1, PM2, PM5 & Rewinder Finishing"
             >
               <GraduationCap className="w-3.5 h-3.5 text-amber-200" />
               <span>Materi Training Mesin</span>
+              <span className="hidden sm:inline-block bg-amber-900/90 text-amber-200 border border-amber-400/40 text-[10px] px-1.5 py-0.2 rounded font-bold">
+                + Rewinder
+              </span>
             </button>
           </div>
         </div>
