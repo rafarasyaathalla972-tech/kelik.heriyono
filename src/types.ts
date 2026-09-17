@@ -118,7 +118,7 @@ export interface RewinderCompetencyQA {
 }
 
 export interface RoleResponsibilityGuide {
-  role: 'Operator Pelaksana' | 'Kepala Regu (Karu)' | 'Kepala PM & Superintendent';
+  role: 'Pembantu Operator (Helper)' | 'Operator Pelaksana' | 'Kepala Regu (Karu)' | 'Kepala PM & Superintendent' | string;
   badgeColor: string;
   summary: string;
   dailyFocus: string[];
@@ -133,7 +133,7 @@ export interface MachinePhotoItem {
   aspectRatio: string;
   tags: string[];
   description: string;
-  keyCallouts: { label: string; detail: string }[];
+  keyCallouts: { label: string; detail?: string; value?: string }[];
 }
 
 export interface MachineVideoTutorial {
@@ -141,6 +141,8 @@ export interface MachineVideoTutorial {
   title: string;
   duration: string;
   youtubeId?: string;
+  videoUrl?: string;
+  simulatedType?: 'rewinder_core' | 'slitter_k3' | 'stockprep_hdc' | 'stockprep_ddr' | 'peo_dissolving' | 'cylinder_forming' | 'yankee_creping' | 'pope_reeling';
   thumbnailUrl: string;
   category: string;
   instructorRole: string;
@@ -199,7 +201,7 @@ export interface TissueMachineEquipmentDetail {
   helperDuties: string[];
   karuInspectionPoints: string[];
   kepalaPmGovernance: string[];
-  troubleshooting: { fault: string; indication: string; immediateAction: string; permanentFix: string };
+  troubleshooting: { fault: string; indication: string; immediateAction: string; permanentFix?: string; permanentSolution?: string };
   k3SafetyWarning: string;
   associatedPhotoTitle?: string;
   videoTimecode?: string;
@@ -230,7 +232,7 @@ export interface MachineTrainingData {
   dcsIndicatorsGuide: { code: string; meaning: string; normalState: string; actionIfAbnormal: string }[];
   specialCharacteristics?: string;
   differencesFromOthers?: string;
-  commonFaultsAndSolutions: { fault: string; indication: string; cause?: string; immediateAction: string; permanentFix: string }[];
+  commonFaultsAndSolutions: { fault: string; indication: string; cause?: string; immediateAction: string; permanentFix?: string; permanentSolution?: string }[];
   k3SafetyProcedures: string[];
   componentsList?: RewinderComponentDetail[];
   workflowSteps?: RewinderWorkflowStep[];

@@ -1083,7 +1083,7 @@ export const TISSUE_MACHINE_MEDIA_CONFIG: MachineMediaConfig = {
       tags: ['Pope Reel', 'Jumbo Roll', 'Speed Ratio', 'Debu Trim', 'Flagging Joint'],
       description: 'Dokumentasi area penggulungan akhir (pope reel). Tampak lembaran tissue putih mulus meluncur di atas drum pope reel digulung kontinu pada spool core. Operator mengawasi agar tidak ada debu trim yang masuk, tidak ada koyak samping, dan selalu menempelkan bendera penanda (flagging marker) jika terdapat sambungan.',
       keyCallouts: [
-        { label: 'Rasio Kecepatan Pope Reel', value: 'Speed Yankee 150 mpm -> Pope Reel 127.5 mpm (rumus creping 15%)' },
+        { label: 'Rasio Kecepatan Pope Reel', detail: 'Speed Yankee 150 mpm -> Pope Reel 127.5 mpm (rumus creping 15%)' },
         { label: 'Bebas Debu Trim & Koyak', detail: 'Memastikan kualitas gulungan padat seragam untuk mesin Rewinder' },
         { label: 'Marker Bendera Joint', detail: 'Wajib dipasang di setiap sambungan agar tidak putus di mesin converting' }
       ]

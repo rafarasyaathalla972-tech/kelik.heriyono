@@ -37,6 +37,7 @@ import { TRAINING_MEDIA_DATA } from '../data/trainingMediaData';
 import { TrainingModuleId, MachinePhotoItem, MachineVideoTutorial } from '../types';
 import { StockPrepTrainingView } from './StockPrepTrainingView';
 import { TissueMachineTrainingView } from './TissueMachineTrainingView';
+import { IndustrialVideoPlayer } from './IndustrialVideoPlayer';
 
 interface TrainingModalProps {
   isOpen: boolean;
@@ -775,8 +776,17 @@ export const TrainingModal: React.FC<TrainingModalProps> = ({
 
                       {media.videoTutorials.length > 0 && (
                         <button
-                          onClick={() => setActiveSubTab('media')}
-                          className="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 shadow"
+                          onClick={() => {
+                            setActiveSubTab('media');
+                            if (!activeVideoId && media.videoTutorials[0]) {
+                              setActiveVideoId(media.videoTutorials[0].id);
+                            }
+                            setTimeout(() => {
+                              const el = document.getElementById('industrial-video-player');
+                              if (el) el.scrollIntoView({ behavior: 'smooth' });
+                            }, 100);
+                          }}
+                          className="px-3.5 py-1.5 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 shadow-lg ring-2 ring-amber-400/30"
                         >
                           <Play className="w-3.5 h-3.5 fill-current" />
                           <span>Tonton Video Tutorial</span>
@@ -881,133 +891,19 @@ export const TrainingModal: React.FC<TrainingModalProps> = ({
               </div>
 
               {/* 2. Video Tutorial Interaktif & Simulator Pembelajaran */}
-              {media.videoTutorials.length > 0 && (
-                <div className="pt-3 border-t border-slate-800">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
-                    <h5 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-                      <Video className="w-4 h-4 text-amber-400" />
-                      <span>Video Tutorial Operasional & Penjelasan Ahli</span>
-                    </h5>
-
-                    {/* Selector if multiple videos */}
-                    {media.videoTutorials.length > 1 && (
-                      <div className="flex items-center gap-1.5">
-                        {media.videoTutorials.map((vid, vIdx) => (
-                          <button
-                            key={vid.id}
-                            onClick={() => {
-                              setActiveVideoId(vid.id);
-                              setActiveChapterIndex(0);
-                            }}
-                            className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-all ${
-                              (activeVideoId === vid.id || (!activeVideoId && vIdx === 0))
-                                ? 'bg-amber-600 text-white'
-                                : 'bg-slate-800 text-slate-300 hover:text-white'
-                            }`}
-                          >
-                            Video {vIdx + 1}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {currentVideo && (
-                    <div className="bg-slate-900/90 border border-slate-800 rounded-xl overflow-hidden p-4 space-y-4">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-800">
-                        <div>
-                          <span className="text-[10px] bg-amber-950 text-amber-300 border border-amber-800 px-2 py-0.5 rounded font-bold">
-                            {currentVideo.category}
-                          </span>
-                          <h6 className="text-base font-extrabold text-white mt-1">
-                            {currentVideo.title}
-                          </h6>
-                        </div>
-                        <div className="flex items-center gap-2 text-xs text-slate-400 shrink-0">
-                          <span className="bg-slate-800 px-2 py-1 rounded text-slate-300 font-mono">
-                            Durasi: {currentVideo.duration}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Video Frame or Interactive Video Player */}
-                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                        {/* Video Player Display */}
-                        <div className="lg:col-span-2 space-y-2">
-                          <div className="relative aspect-video rounded-xl overflow-hidden bg-black border border-slate-800 shadow-inner">
-                            {currentVideo.youtubeId ? (
-                              <iframe
-                                src={`https://www.youtube-nocookie.com/embed/${currentVideo.youtubeId}?rel=0&modestbranding=1`}
-                                title={currentVideo.title}
-                                referrerPolicy="no-referrer"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                allowFullScreen
-                                className="w-full h-full border-0"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-gradient-to-br from-slate-900 to-black">
-                                <Play className="w-12 h-12 text-amber-500 mb-2" />
-                                <span className="font-bold text-white text-sm">Simulasi Interaktif Pemutaran Video</span>
-                                <span className="text-xs text-slate-400 mt-1 max-w-sm">
-                                  Menampilkan tutorial visual proses mekanik mesin kertas secara komprehensif.
-                                </span>
-                              </div>
-                            )}
-                          </div>
-
-                          <p className="text-xs text-slate-300 leading-relaxed bg-slate-950/60 p-2.5 rounded-lg border border-slate-800/80">
-                            <strong className="text-slate-100">Instruktur / Penyusun: </strong>
-                            <span className="text-amber-300">{currentVideo.instructorRole}</span> &bull; {currentVideo.description}
-                          </p>
-                        </div>
-
-                        {/* Interactive Chapter & Key Takeaway Sidebar */}
-                        <div className="flex flex-col justify-between space-y-3">
-                          <div className="bg-slate-950/80 rounded-xl p-3 border border-slate-800 space-y-2">
-                            <span className="text-xs font-bold text-cyan-300 flex items-center gap-1.5 pb-1.5 border-b border-slate-800">
-                              <BookOpen className="w-3.5 h-3.5" />
-                              <span>Daftar Bab & Timestamp Pembelajaran:</span>
-                            </span>
-
-                            <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
-                              {currentVideo.chapters.map((ch, cIdx) => (
-                                <button
-                                  key={cIdx}
-                                  onClick={() => setActiveChapterIndex(cIdx)}
-                                  className={`w-full text-left p-2 rounded-lg text-xs transition-all flex flex-col gap-0.5 ${
-                                    activeChapterIndex === cIdx
-                                      ? 'bg-amber-500/20 border border-amber-500/50 text-amber-200'
-                                      : 'hover:bg-slate-800/70 text-slate-300'
-                                  }`}
-                                >
-                                  <div className="flex items-center justify-between">
-                                    <span className="font-bold text-white text-[11px]">{ch.topic}</span>
-                                    <span className="font-mono text-[10px] text-amber-400 bg-black/40 px-1.5 rounded">{ch.time}</span>
-                                  </div>
-                                  <span className="text-[10px] text-slate-400 leading-tight">{ch.note}</span>
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-
-                          <div className="bg-emerald-950/30 border border-emerald-900/50 rounded-xl p-3 space-y-1.5">
-                            <span className="text-xs font-bold text-emerald-400 flex items-center gap-1">
-                              <CheckCircle2 className="w-3.5 h-3.5" />
-                              <span>Poin Kunci Edukasi (Key Takeaways):</span>
-                            </span>
-                            <ul className="space-y-1 text-[11px] text-slate-200">
-                              {currentVideo.keyTakeaways.map((point, pIdx) => (
-                                <li key={pIdx} className="flex items-start gap-1.5 leading-tight">
-                                  <span className="text-emerald-400 font-bold">&bull;</span>
-                                  <span>{point}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+              {media.videoTutorials.length > 0 && currentVideo && (
+                <div id="industrial-video-container" className="pt-3 border-t border-slate-800">
+                  <IndustrialVideoPlayer
+                    video={currentVideo}
+                    allVideos={media.videoTutorials}
+                    onSelectVideo={(vidId) => {
+                      setActiveVideoId(vidId);
+                      setActiveChapterIndex(0);
+                    }}
+                    activeChapterIndex={activeChapterIndex}
+                    onSelectChapter={(cIdx) => setActiveChapterIndex(cIdx)}
+                    machineName={data.name}
+                  />
                 </div>
               )}
             </div>
@@ -1047,6 +943,64 @@ export const TrainingModal: React.FC<TrainingModalProps> = ({
               }}
               galleryPhotos={media?.galleryPhotos || []}
             />
+          )}
+
+          {/* ========================================================= */}
+          {/* BANNER VIDEO TUTORIAL REWINDER & SLITTER KHUSUS          */}
+          {/* ========================================================= */}
+          {isRewinder && media && media.videoTutorials.length > 0 && (
+            <div className="bg-gradient-to-r from-amber-950/70 via-slate-900 to-orange-950/70 border border-amber-500/40 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xl">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-amber-500/20 border border-amber-500/40 rounded-xl text-amber-300 shrink-0">
+                  <Video className="w-6 h-6 text-amber-400" />
+                </div>
+                <div>
+                  <h4 className="font-extrabold text-white text-sm sm:text-base flex items-center gap-2">
+                    <span>Video Tutorial Praktik Mesin Rewinder & Slitter</span>
+                    <span className="text-[10px] bg-amber-500 text-black font-black px-2 py-0.5 rounded-full">
+                      Tersedia 2 Video
+                    </span>
+                  </h4>
+                  <p className="text-xs text-slate-300 mt-0.5">
+                    Putar video simulasi interaktif & alur kerja lengkap (Slitter Knives, Banana Bowed Roll, & SOP K3 LOTO)
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2 shrink-0">
+                <button
+                  onClick={() => {
+                    setActiveSubTab('media');
+                    setActiveVideoId('rew-vid-1');
+                    setActiveChapterIndex(0);
+                    setTimeout(() => {
+                      const el = document.getElementById('industrial-video-player');
+                      if (el) el.scrollIntoView({ behavior: 'smooth' });
+                    }, 100);
+                  }}
+                  className="px-3 py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-black font-extrabold text-xs rounded-xl shadow-md transition-all flex items-center gap-1.5 whitespace-nowrap"
+                >
+                  <Play className="w-3.5 h-3.5 fill-current" />
+                  <span>Putar Video 1 (Slitter & Banana Roll)</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setActiveSubTab('media');
+                    setActiveVideoId('rew-vid-2');
+                    setActiveChapterIndex(0);
+                    setTimeout(() => {
+                      const el = document.getElementById('industrial-video-player');
+                      if (el) el.scrollIntoView({ behavior: 'smooth' });
+                    }, 100);
+                  }}
+                  className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold text-xs rounded-xl border border-amber-500/40 transition-all flex items-center gap-1.5 whitespace-nowrap"
+                >
+                  <Play className="w-3.5 h-3.5 fill-current text-rose-400" />
+                  <span>Putar Video 2 (K3 & LOTO)</span>
+                </button>
+              </div>
+            </div>
           )}
 
           {/* ========================================================= */}

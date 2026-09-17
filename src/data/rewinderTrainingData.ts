@@ -168,6 +168,25 @@ export const REWINDER_COMPETENCY_QAS: RewinderCompetencyQA[] = [
 
 export const REWINDER_ROLE_GUIDES: RoleResponsibilityGuide[] = [
   {
+    role: 'Pembantu Operator (Helper)',
+    badgeColor: 'purple',
+    summary: 'Asisten teknis lapangan yang bertugas mempersiapkan material core, membantu loading Jumbo Roll, doffing gulungan jadi, serta pemeliharaan 5S dan saluran trim.',
+    dailyFocus: [
+      'Menyiapkan pipa core karton sesuai spesifikasi order: memotong panjang presisi, mengecek core tidak penyok atau basah.',
+      'Membantu Operator dalam proses pemuatan (loading) Jumbo Roll ke Unwind stand dan memastikan core chuck terkunci rapat.',
+      'Membantu proses pelepasan gulungan jadi (doffing) dari drum roll ke lantai konveyor/meja penerima.',
+      'Melakukan penimbangan berat gulungan jadi, pengukuran diameter luar, dan penempelan label identitas/barcode roll.',
+      'Memantau corong hisap trim blower: segera lapor jika ada sumbatan trim kertas yang menumpuk.',
+      'Membantu pengumpanan ujung kertas (threading paper tail) saat kecepatan merayap (crawl speed) dengan mematuhi jarak aman K3.',
+      'Melaksanakan program 5S: membersihkan debu serat kertas di sekitar rel doffer, mengangkut sisa broke ke pulper broke, dan merapikan area kerja.'
+    ],
+    decisionAuthority: [
+      'Berhak menolak memasang pipa core yang cacat fisik, retak, atau lembab karena membahayakan penggulungan.',
+      'Berhak mengingatkan rekan kerja dan menekan tombol STOP darurat jika melihat orang atau benda asing di area doffing/nip roll.',
+      'Menghentikan pembuangan broke jika menemukan kontaminan plastik/logam yang berisiko merusak pulper broke.'
+    ]
+  },
+  {
     role: 'Operator Pelaksana',
     badgeColor: 'emerald',
     summary: 'Penanggung jawab teknis langsung di lantai mesin yang mengendalikan operasional harian rewinder dari muat Jumbo Roll hingga gulungan jadi.',
