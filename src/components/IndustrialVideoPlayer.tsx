@@ -20,9 +20,17 @@ import {
   Layers,
   Settings,
   Flame,
-  Info
+  BookOpen,
+  ChevronDown,
+  ChevronUp,
+  Cpu
 } from 'lucide-react';
 import { MachineVideoTutorial } from '../types';
+import { SlitterRewinderRealisticSimulation, CameraViewMode } from './SlitterRewinderRealisticSimulation';
+import { K3SafetyRealisticSimulation } from './K3SafetyRealisticSimulation';
+import { StockPrepRealisticSimulation } from './StockPrepRealisticSimulation';
+import { PaperMachineRealisticSimulation } from './PaperMachineRealisticSimulation';
+import { industrialAudio } from '../utils/industrialAudioEngine';
 
 interface IndustrialVideoPlayerProps {
   video: MachineVideoTutorial;
@@ -47,40 +55,38 @@ export const IndustrialVideoPlayer: React.FC<IndustrialVideoPlayerProps> = ({
   const [playbackSpeed, setPlaybackSpeed] = useState<number>(1);
   const [isMuted, setIsMuted] = useState<boolean>(false);
   const [isVoiceNarrationActive, setIsVoiceNarrationActive] = useState<boolean>(true);
+  const [speechRate, setSpeechRate] = useState<number>(1.0);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [playerMode, setPlayerMode] = useState<'simulator' | 'youtube'>('simulator');
-  const [webSpeedTelemetry, setWebSpeedTelemetry] = useState<number>(420);
+  const [isDetailsExpanded, setIsDetailsExpanded] = useState<boolean>(true);
+  const [, setActiveCameraView] = useState<CameraViewMode>('overview');
+
+  // Telemetry simulation jitter
+  const [webSpeedTelemetry, setWebSpeedTelemetry] = useState<number>(650);
   const [tensionTelemetry, setTensionTelemetry] = useState<number>(185);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const animationFrameRef = useRef<number | null>(null);
   const lastTickTimeRef = useRef<number>(Date.now());
+  const lastSpokenChapterIndexRef = useRef<number>(-1);
 
-  // Parse duration string "MM:SS" into total seconds
+  // Parse total duration from "MM:SS"
   const totalDurationSec = React.useMemo(() => {
     if (!video?.duration) return 300;
-    const parts = video.duration.split(':');
+    const parts = video.duration.split(':').map((p) => parseInt(p, 10));
     if (parts.length === 2) {
-      return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+      return (parts[0] || 0) * 60 + (parts[1] || 0);
     }
     return 300;
   }, [video?.duration]);
 
-  // Convert seconds into "MM:SS" format
-  const formatTime = (sec: number): string => {
-    const m = Math.floor(sec / 60);
-    const s = Math.floor(sec % 60);
-    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-  };
-
-  // Determine current chapter from currentTimeSec
+  // Compute active chapter based on currentTimeSec
   const currentChapter = React.useMemo(() => {
     if (!video?.chapters || video.chapters.length === 0) return null;
-    const chapterCount = video.chapters.length;
-    const timePerChapter = totalDurationSec / chapterCount;
+    const timePerChapter = totalDurationSec / video.chapters.length;
     const calculatedIndex = Math.min(
-      Math.floor(currentTimeSec / timePerChapter),
-      chapterCount - 1
+      video.chapters.length - 1,
+      Math.max(0, Math.floor(currentTimeSec / timePerChapter))
     );
     return {
       index: calculatedIndex,
@@ -95,37 +101,38 @@ export const IndustrialVideoPlayer: React.FC<IndustrialVideoPlayerProps> = ({
     }
   }, [currentChapter?.index]);
 
-  // Optional Indonesian voice narration synthesis using Web Speech API
+  // Handle Voice Narration with zero-stutter industrial audio engine
   useEffect(() => {
     if (!isPlaying || isMuted || !isVoiceNarrationActive) {
-      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-      }
+      industrialAudio.stopSpeech();
+      industrialAudio.stopMachineHum();
       return;
     }
 
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window && currentChapter?.data) {
-      window.speechSynthesis.cancel(); // Cancel previous speech
-      const text = `${currentChapter.data.topic}. ${currentChapter.data.note}`;
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'id-ID';
-      utterance.rate = playbackSpeed;
-      utterance.pitch = 1.0;
-      
-      // Try to select Indonesian voice if available
-      const voices = window.speechSynthesis.getVoices();
-      const idVoice = voices.find(v => v.lang.startsWith('id') || v.lang.includes('ID'));
-      if (idVoice) utterance.voice = idVoice;
+    // Start background running hum
+    industrialAudio.startMachineHum(0.06);
 
-      window.speechSynthesis.speak(utterance);
+    // Speak chapter narration when chapter index changes
+    if (currentChapter && currentChapter.index !== lastSpokenChapterIndexRef.current) {
+      lastSpokenChapterIndexRef.current = currentChapter.index;
+
+      // Play soft transition chime
+      industrialAudio.playChapterChime(0.18);
+
+      const chapterData = currentChapter.data;
+      // Prefer spokenNarration if present, otherwise detailedExplanation, or note
+      const narrationText = chapterData.spokenNarration || chapterData.detailedExplanation || `${chapterData.topic}. ${chapterData.note}`;
+      industrialAudio.speakIndonesian(narrationText, speechRate);
     }
+  }, [currentChapter?.index, isPlaying, isMuted, isVoiceNarrationActive, speechRate]);
 
+  // Stop audio on unmount or pause
+  useEffect(() => {
     return () => {
-      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-      }
+      industrialAudio.stopSpeech();
+      industrialAudio.stopMachineHum();
     };
-  }, [currentChapter?.index, isPlaying, isMuted, isVoiceNarrationActive, playbackSpeed]);
+  }, []);
 
   // Playback timer loop with requestAnimationFrame
   useEffect(() => {
@@ -145,6 +152,8 @@ export const IndustrialVideoPlayer: React.FC<IndustrialVideoPlayerProps> = ({
         const next = prev + deltaSec;
         if (next >= totalDurationSec) {
           setIsPlaying(false);
+          industrialAudio.stopMachineHum();
+          industrialAudio.stopSpeech();
           return totalDurationSec;
         }
         return next;
@@ -153,11 +162,11 @@ export const IndustrialVideoPlayer: React.FC<IndustrialVideoPlayerProps> = ({
       // Fluctuate telemetry slightly for realism
       setWebSpeedTelemetry((prev) => {
         const jitter = (Math.random() - 0.5) * 4;
-        return Math.min(500, Math.max(380, Math.round(prev + jitter)));
+        return Math.min(850, Math.max(500, Math.round(prev + jitter)));
       });
       setTensionTelemetry((prev) => {
         const jitter = (Math.random() - 0.5) * 2;
-        return Math.min(220, Math.max(160, Math.round(prev + jitter)));
+        return Math.min(210, Math.max(165, Math.round(prev + jitter)));
       });
 
       animationFrameRef.current = requestAnimationFrame(loop);
@@ -180,9 +189,18 @@ export const IndustrialVideoPlayer: React.FC<IndustrialVideoPlayerProps> = ({
   const jumpToChapter = (idx: number) => {
     if (!video?.chapters || video.chapters.length === 0) return;
     const timePerChapter = totalDurationSec / video.chapters.length;
-    const targetSec = idx * timePerChapter;
+    const targetSec = idx * timePerChapter + 0.1;
     setCurrentTimeSec(targetSec);
+    lastSpokenChapterIndexRef.current = -1; // Reset to force re-reading
     onSelectChapter(idx);
+  };
+
+  // Manual replay narration button
+  const handleReplayNarration = () => {
+    if (!currentChapter) return;
+    const chapterData = currentChapter.data;
+    const narrationText = chapterData.spokenNarration || chapterData.detailedExplanation || `${chapterData.topic}. ${chapterData.note}`;
+    industrialAudio.speakIndonesian(narrationText, speechRate);
   };
 
   // Fullscreen toggle
@@ -208,6 +226,12 @@ export const IndustrialVideoPlayer: React.FC<IndustrialVideoPlayerProps> = ({
   const isStockPrep = video.id.includes('sp') || video.title.toLowerCase().includes('hdc') || video.title.toLowerCase().includes('ddr') || video.title.toLowerCase().includes('peo');
   const isTissuePm = video.id.includes('tm') || video.id.includes('pm') || video.title.toLowerCase().includes('cylinder') || video.title.toLowerCase().includes('tissue');
 
+  const formatTime = (sec: number) => {
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60);
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
   return (
     <div 
       ref={containerRef}
@@ -220,7 +244,7 @@ export const IndustrialVideoPlayer: React.FC<IndustrialVideoPlayerProps> = ({
           <div className="flex items-center gap-2">
             <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide bg-amber-500/20 text-amber-300 border border-amber-500/40">
               <Radio className={`w-3 h-3 text-amber-400 ${isPlaying ? 'animate-pulse text-emerald-400' : ''}`} />
-              {isPlaying ? 'Video Sedang Berputar' : 'Video Siap Ditonton'}
+              {isPlaying ? 'Video Simulasi Sedang Berputar' : 'Video Siap Ditonton'}
             </span>
             <span className="text-slate-400 text-xs font-semibold">
               {video.category}
@@ -243,7 +267,7 @@ export const IndustrialVideoPlayer: React.FC<IndustrialVideoPlayerProps> = ({
               }`}
             >
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Player Interaktif (100% Lancar)</span>
+              <span>Simulasi Nyata & Narasi</span>
             </button>
 
             <button
@@ -265,255 +289,53 @@ export const IndustrialVideoPlayer: React.FC<IndustrialVideoPlayerProps> = ({
       <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-gradient-to-b from-slate-950 via-slate-900 to-black border-2 border-slate-800/90 shadow-2xl flex flex-col justify-between group">
         {playerMode === 'simulator' ? (
           /* NATIVE INTERACTIVE SIMULATOR & PROCESS CANVAS */
-          <div className="relative w-full h-full flex flex-col justify-between p-4 overflow-hidden select-none">
-            {/* Background Grid Pattern */}
-            <div 
-              className="absolute inset-0 opacity-15 pointer-events-none"
-              style={{
-                backgroundImage: 'radial-gradient(circle at 1px 1px, #06b6d4 1px, transparent 0)',
-                backgroundSize: '24px 24px'
-              }}
-            />
-
-            {/* Dynamic Telemetry HUD on Top */}
-            <div className="relative z-10 flex items-center justify-between gap-2 text-xs">
-              <div className="flex items-center gap-2">
-                <div className="bg-black/70 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-700/80 flex items-center gap-2">
-                  <Gauge className="w-3.5 h-3.5 text-cyan-400" />
-                  <span className="text-[11px] text-slate-300 font-mono">
-                    Kecepatan Web: <strong className="text-cyan-300 font-bold">{webSpeedTelemetry} mpm</strong>
-                  </span>
-                </div>
-
-                <div className="bg-black/70 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-700/80 flex items-center gap-2">
-                  <Radio className="w-3.5 h-3.5 text-amber-400" />
-                  <span className="text-[11px] text-slate-300 font-mono">
-                    Tension: <strong className="text-amber-300 font-bold">{tensionTelemetry} N/m</strong>
-                  </span>
-                </div>
+          <div className="relative w-full h-full flex flex-col justify-between overflow-hidden select-none">
+            {/* REALISTIC SLITTER REWINDER SIMULATION COMPONENT */}
+            {isRewinder && !isK3Safety ? (
+              <div className="w-full h-full">
+                <SlitterRewinderRealisticSimulation
+                  isPlaying={isPlaying}
+                  playbackSpeed={playbackSpeed}
+                  currentChapterIndex={currentChapter?.index || 0}
+                  activeChapterData={currentChapter?.data}
+                  onSelectCameraView={(view) => setActiveCameraView(view)}
+                />
               </div>
-
-              <div className="bg-black/70 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-700/80 flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
-                <span className="text-[11px] text-emerald-300 font-bold">
-                  SOP Terverifikasi: {machineName}
-                </span>
+            ) : isK3Safety ? (
+              /* K3 SAFETY & LOTO INTERACTIVE REALISTIC SIMULATION */
+              <div className="w-full h-full">
+                <K3SafetyRealisticSimulation
+                  isPlaying={isPlaying}
+                  playbackSpeed={playbackSpeed}
+                  currentChapterIndex={currentChapter?.index || 0}
+                  activeChapterData={currentChapter?.data}
+                />
               </div>
-            </div>
-
-            {/* Visual Mechanical Simulation Center Stage */}
-            <div className="relative z-10 my-auto flex flex-col items-center justify-center text-center px-4">
-              {isRewinder && !isK3Safety && (
-                /* REWINDER & SLITTER ANIMATED VISUALIZATION */
-                <div className="w-full max-w-2xl bg-slate-900/80 border border-amber-500/30 rounded-2xl p-4 backdrop-blur-md shadow-2xl space-y-3">
-                  <div className="flex items-center justify-between text-xs pb-2 border-b border-slate-800 text-amber-300 font-bold">
-                    <div className="flex items-center gap-2">
-                      <Scissors className="w-4 h-4 text-amber-400" />
-                      <span>Simulasi Mekanisme Pemotongan Slitter & Banana Roll</span>
-                    </div>
-                    <span className="bg-amber-950/80 px-2 py-0.5 rounded text-[10px] text-amber-200 border border-amber-800">
-                      Canting: 0.5° &bull; Overlap: 1.2 mm
-                    </span>
-                  </div>
-
-                  {/* Mechanical Schematic Diagram */}
-                  <div className="grid grid-cols-4 gap-2 text-center text-xs py-2">
-                    <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800 space-y-1">
-                      <span className="text-[10px] text-slate-400 uppercase font-extrabold block">1. Unwinder Stand</span>
-                      <div className={`h-12 rounded-lg bg-amber-950/40 border border-amber-800/60 flex items-center justify-center font-mono text-amber-300 text-xs ${isPlaying ? 'animate-pulse' : ''}`}>
-                        Jumbo Roll
-                      </div>
-                      <span className="text-[9px] text-slate-400">Pneumatic Disc Brake</span>
-                    </div>
-
-                    <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800 space-y-1">
-                      <span className="text-[10px] text-slate-400 uppercase font-extrabold block">2. Slitter Shear Cut</span>
-                      <div className={`h-12 rounded-lg bg-cyan-950/40 border border-cyan-800/60 flex items-center justify-center font-mono text-cyan-300 text-xs ${isPlaying ? 'ring-2 ring-cyan-400' : ''}`}>
-                        Top & Bottom Slitter
-                      </div>
-                      <span className="text-[9px] text-cyan-400">Pisau Cincin Karbida</span>
-                    </div>
-
-                    <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800 space-y-1">
-                      <span className="text-[10px] text-slate-400 uppercase font-extrabold block">3. Banana Bowed Roll</span>
-                      <div className={`h-12 rounded-lg bg-emerald-950/40 border border-emerald-800/60 flex items-center justify-center font-mono text-emerald-300 text-xs ${isPlaying ? 'animate-bounce' : ''}`}>
-                        Lengkung Apex Aktif
-                      </div>
-                      <span className="text-[9px] text-emerald-400">Pemisah Celah Roll</span>
-                    </div>
-
-                    <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800 space-y-1">
-                      <span className="text-[10px] text-slate-400 uppercase font-extrabold block">4. Drum Roll Winder</span>
-                      <div className={`h-12 rounded-lg bg-purple-950/40 border border-purple-800/60 flex items-center justify-center font-mono text-purple-300 text-xs ${isPlaying ? 'animate-pulse' : ''}`}>
-                        Rider Roll Press
-                      </div>
-                      <span className="text-[9px] text-purple-400">Gulungan Siap Doffing</span>
-                    </div>
-                  </div>
-
-                  <div className="text-[11px] bg-slate-950/90 text-slate-300 p-2 rounded-lg border border-slate-800 flex items-center justify-between">
-                    <span>
-                      <strong className="text-amber-400">Status Aksi: </strong>
-                      {currentChapter?.data.topic || 'Operasi Mesin Rewinder Normal'}
-                    </span>
-                    <span className="text-emerald-400 font-bold font-mono">
-                      Bebas Interweaving &bull; Tension Terkendali
-                    </span>
-                  </div>
-                </div>
-              )}
-
-              {isK3Safety && (
-                /* K3 SAFETY & LOTO VISUALIZATION */
-                <div className="w-full max-w-2xl bg-slate-900/80 border border-rose-500/40 rounded-2xl p-4 backdrop-blur-md shadow-2xl space-y-3">
-                  <div className="flex items-center justify-between text-xs pb-2 border-b border-slate-800 text-rose-400 font-bold">
-                    <div className="flex items-center gap-2">
-                      <ShieldCheck className="w-4 h-4 text-rose-400" />
-                      <span>Prosedur Keselamatan Kerja K3 & Lock Out Tag Out (LOTO)</span>
-                    </div>
-                    <span className="bg-rose-950 px-2 py-0.5 rounded text-[10px] text-rose-300 border border-rose-800">
-                      Zero Energy Rule
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-2.5 text-xs text-center py-2">
-                    <div className="bg-slate-950 p-3 rounded-xl border border-slate-800">
-                      <AlertTriangle className="w-6 h-6 text-amber-400 mx-auto mb-1" />
-                      <span className="font-bold text-white block">Titik Jepit Roll</span>
-                      <span className="text-[10px] text-slate-400">Dilarang membersihkan roll manual saat berputar</span>
-                    </div>
-
-                    <div className="bg-slate-950 p-3 rounded-xl border border-rose-900/60 bg-rose-950/20">
-                      <ShieldCheck className="w-6 h-6 text-rose-400 mx-auto mb-1" />
-                      <span className="font-bold text-rose-300 block">Kunci LOTO Terpasang</span>
-                      <span className="text-[10px] text-rose-200">Gembok isolasi saklar utama saat ganti pisau</span>
-                    </div>
-
-                    <div className="bg-slate-950 p-3 rounded-xl border border-slate-800">
-                      <CheckCircle2 className="w-6 h-6 text-emerald-400 mx-auto mb-1" />
-                      <span className="font-bold text-emerald-300 block">Emergency Pull-Wire</span>
-                      <span className="text-[10px] text-slate-400">Kabel kawat darurat berfungsi 100% responsif</span>
-                    </div>
-                  </div>
-
-                  <div className="text-[11px] bg-rose-950/60 text-rose-200 p-2 rounded-lg border border-rose-900/70 flex items-center justify-between">
-                    <span>
-                      <strong>Instruksi K3: </strong>
-                      {currentChapter?.data.note || 'Wajib APD sarung tangan anti-potong level 5.'}
-                    </span>
-                    <span className="font-bold text-amber-300">Wajib Dipatuhi</span>
-                  </div>
-                </div>
-              )}
-
-              {isStockPrep && (
-                /* STOCK PREPARATION SIMULATOR */
-                <div className="w-full max-w-2xl bg-slate-900/80 border border-emerald-500/40 rounded-2xl p-4 backdrop-blur-md shadow-2xl space-y-3">
-                  <div className="flex items-center justify-between text-xs pb-2 border-b border-slate-800 text-emerald-400 font-bold">
-                    <div className="flex items-center gap-2">
-                      <Settings className="w-4 h-4 text-emerald-400" />
-                      <span>Alur Sirkulasi Stock Prep: HDC, DDR, & Larutan PEO</span>
-                    </div>
-                    <span className="bg-emerald-950 px-2 py-0.5 rounded text-[10px] text-emerald-300 border border-emerald-800">
-                      Freeness: 320 - 350 CSF
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-2.5 text-xs text-center py-2">
-                    <div className="bg-slate-950 p-3 rounded-xl border border-slate-800">
-                      <span className="font-bold text-cyan-300 block">HDC Cleaner</span>
-                      <span className="text-[10px] text-slate-400 block mt-1">Inlet 1.5 bar &bull; Accept 0.5 bar</span>
-                      <span className="text-[10px] text-emerald-400 font-mono">Delta P: 1.0 bar</span>
-                    </div>
-
-                    <div className="bg-slate-950 p-3 rounded-xl border border-slate-800">
-                      <span className="font-bold text-amber-300 block">DDR Refiner</span>
-                      <span className="text-[10px] text-slate-400 block mt-1">Konsistensi: 3.5 - 4.5%</span>
-                      <span className="text-[10px] text-amber-300 font-mono">Fibrilasi Terkendali</span>
-                    </div>
-
-                    <div className="bg-slate-950 p-3 rounded-xl border border-slate-800">
-                      <span className="font-bold text-purple-300 block">Larutan PEO Axfloc</span>
-                      <span className="text-[10px] text-slate-400 block mt-1">Standar Viskositas:</span>
-                      <span className="text-[10px] text-purple-300 font-mono font-bold">17 - 19 Cps</span>
-                    </div>
-                  </div>
-
-                  <div className="text-[11px] bg-emerald-950/60 text-emerald-200 p-2 rounded-lg border border-emerald-900/70 flex items-center justify-between">
-                    <span>
-                      <strong>Proses Aktif: </strong>
-                      {currentChapter?.data.topic || 'Siklus Pembersihan & Pencampuran'}
-                    </span>
-                    <span className="font-bold text-cyan-300 font-mono">Kualitas Bubur Prima</span>
-                  </div>
-                </div>
-              )}
-
-              {isTissuePm && (
-                /* TISSUE MACHINE (PM) SIMULATOR */
-                <div className="w-full max-w-2xl bg-slate-900/80 border border-blue-500/40 rounded-2xl p-4 backdrop-blur-md shadow-2xl space-y-3">
-                  <div className="flex items-center justify-between text-xs pb-2 border-b border-slate-800 text-blue-400 font-bold">
-                    <div className="flex items-center gap-2">
-                      <Layers className="w-4 h-4 text-blue-400" />
-                      <span>Forming Cylinder Mould &rarr; Yankee 85-90°C &rarr; Pope Reel 127.5 mpm</span>
-                    </div>
-                    <span className="bg-blue-950 px-2 py-0.5 rounded text-[10px] text-blue-300 border border-blue-800">
-                      Creping Ratio: 15%
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-2.5 text-xs text-center py-2">
-                    <div className="bg-slate-950 p-3 rounded-xl border border-slate-800">
-                      <span className="font-bold text-cyan-300 block">Wet End Forming</span>
-                      <span className="text-[10px] text-slate-400 block mt-1">Cylinder Vat Mould</span>
-                      <span className="text-[10px] text-cyan-300 font-mono">Kain Felt 2.4 M</span>
-                    </div>
-
-                    <div className="bg-slate-950 p-3 rounded-xl border border-slate-800">
-                      <span className="font-bold text-amber-300 block flex items-center justify-center gap-1">
-                        <Flame className="w-3 h-3 text-amber-400" />
-                        Yankee MG Dryer
-                      </span>
-                      <span className="text-[10px] text-slate-400 block mt-1">Uap Steam 1.0 - 3.0 bar</span>
-                      <span className="text-[10px] text-amber-300 font-mono">Suhu 85 - 90°C</span>
-                    </div>
-
-                    <div className="bg-slate-950 p-3 rounded-xl border border-slate-800">
-                      <span className="font-bold text-purple-300 block">Pope Reel & Creping</span>
-                      <span className="text-[10px] text-slate-400 block mt-1">Doctor Blade Creping</span>
-                      <span className="text-[10px] text-purple-300 font-mono font-bold">Speed 127.5 mpm</span>
-                    </div>
-                  </div>
-
-                  <div className="text-[11px] bg-blue-950/60 text-blue-200 p-2 rounded-lg border border-blue-900/70 flex items-center justify-between">
-                    <span>
-                      <strong>Fase Pembelajaran: </strong>
-                      {currentChapter?.data.topic || 'Kontinuitas Pembentukan & Pengeringan Lembaran'}
-                    </span>
-                    <span className="font-bold text-emerald-300 font-mono">BW: 12 - 42 gsm</span>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Subtitle & Narration Display Box */}
-            <div className="relative z-10 bg-black/85 backdrop-blur-md rounded-xl p-3 border border-slate-800 text-xs space-y-1 shadow-lg">
-              <div className="flex items-center justify-between text-[11px] text-slate-400 pb-1 border-b border-slate-800/80">
-                <span className="font-bold text-amber-400 flex items-center gap-1">
-                  <Info className="w-3.5 h-3.5 text-amber-400" />
-                  Bab {currentChapter ? currentChapter.index + 1 : 1}: {currentChapter?.data.topic || 'Pendahuluan Materi'}
-                </span>
-                <span className="font-mono text-slate-300">
-                  {currentChapter?.data.time || '00:00'}
-                </span>
+            ) : isStockPrep ? (
+              /* STOCK PREPARATION INTERACTIVE REALISTIC SIMULATION */
+              <div className="w-full h-full">
+                <StockPrepRealisticSimulation
+                  isPlaying={isPlaying}
+                  playbackSpeed={playbackSpeed}
+                  currentChapterIndex={currentChapter?.index || 0}
+                  activeChapterData={currentChapter?.data}
+                />
               </div>
-              <p className="text-white font-medium leading-relaxed text-xs sm:text-sm">
-                "{currentChapter?.data.note || video.description}"
-              </p>
-            </div>
+            ) : (
+              /* PAPER MACHINE (PM1, PM2, PM5, TISSUE PM) INTERACTIVE REALISTIC SIMULATION */
+              <div className="w-full h-full">
+                <PaperMachineRealisticSimulation
+                  isPlaying={isPlaying}
+                  playbackSpeed={playbackSpeed}
+                  currentChapterIndex={currentChapter?.index || 0}
+                  activeChapterData={currentChapter?.data}
+                  machineId={video.id.includes('pm1') ? 'PM1' : video.id.includes('pm2') ? 'PM2' : video.id.includes('pm5') ? 'PM5' : 'TISSUE_PM'}
+                />
+              </div>
+            )}
           </div>
         ) : (
-          /* YOUTUBE STREAMING MODE WITH DIRECT WORKING LINK */
+          /* YOUTUBE STREAMING MODE WITH DIRECT WORKING LINK & RESILIENT FALLBACK */
           <div className="relative w-full h-full bg-black flex flex-col items-center justify-center">
             {video.youtubeId ? (
               <iframe
@@ -524,19 +346,44 @@ export const IndustrialVideoPlayer: React.FC<IndustrialVideoPlayerProps> = ({
                 allowFullScreen
                 className="w-full h-full border-0"
               />
-            ) : null}
+            ) : (
+              <div className="text-center p-6 text-slate-400 space-y-3">
+                <AlertTriangle className="w-10 h-10 text-amber-400 mx-auto" />
+                <p className="text-sm font-medium">ID Video YouTube belum dikonfigurasi untuk modul ini.</p>
+                <button
+                  onClick={() => setPlayerMode('simulator')}
+                  className="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold rounded-xl"
+                >
+                  Beralih ke Simulasi Nyata
+                </button>
+              </div>
+            )}
 
-            {/* External Direct Watch Overlay if iframe blocked */}
-            <div className="absolute top-3 right-3 z-20">
-              <a
-                href={youtubeSearchUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-3.5 py-1.5 bg-red-600 hover:bg-red-500 text-white text-xs font-bold rounded-xl shadow-lg flex items-center gap-1.5 transition-all transform hover:scale-105"
-              >
-                <ExternalLink className="w-3.5 h-3.5" />
-                <span>Tonton di YouTube (Tab Baru)</span>
-              </a>
+            {/* Notification & Quick Navigation Banner if iframe is restricted */}
+            <div className="absolute top-2 left-2 right-2 z-20 flex flex-wrap items-center justify-between gap-2 p-2.5 bg-slate-950/90 backdrop-blur-md rounded-xl border border-slate-800/90 shadow-xl">
+              <div className="flex items-center gap-2 text-xs text-slate-300">
+                <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                <span className="font-semibold text-white">Streaming YouTube:</span>
+                <span className="hidden sm:inline text-slate-400">Jika video dibatasi hak siar atau jaringan pabrik:</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setPlayerMode('simulator')}
+                  className="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold rounded-lg shadow-md flex items-center gap-1.5 transition-all transform hover:scale-105"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Buka Simulasi Nyata (100% Aktif)</span>
+                </button>
+                <a
+                  href={youtubeSearchUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-1.5 bg-red-600 hover:bg-red-500 text-white text-xs font-bold rounded-lg shadow-md flex items-center gap-1.5 transition-all transform hover:scale-105"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span>Buka di YouTube (Tab Baru)</span>
+                </a>
+              </div>
             </div>
           </div>
         )}
@@ -545,16 +392,16 @@ export const IndustrialVideoPlayer: React.FC<IndustrialVideoPlayerProps> = ({
         {playerMode === 'simulator' && !isPlaying && (
           <div 
             onClick={() => setIsPlaying(true)}
-            className="absolute inset-0 z-20 bg-black/40 backdrop-blur-[2px] flex flex-col items-center justify-center cursor-pointer transition-all hover:bg-black/30"
+            className="absolute inset-0 z-30 bg-black/50 backdrop-blur-[2px] flex flex-col items-center justify-center cursor-pointer transition-all hover:bg-black/40"
           >
             <div className="p-5 bg-gradient-to-tr from-amber-600 to-orange-500 rounded-full shadow-2xl text-white transform group-hover:scale-110 transition-transform flex items-center justify-center ring-4 ring-amber-400/40">
               <Play className="w-10 h-10 fill-current translate-x-0.5" />
             </div>
             <span className="text-white font-black text-sm sm:text-base mt-3 drop-shadow">
-              Klik untuk Memutar Video Tutorial & Simulasi
+              Klik untuk Memutar Simulasi Mesin & Narasi Suara
             </span>
             <span className="text-xs text-amber-300 mt-1 font-semibold">
-              Bisa ditonton langsung 100% tanpa hambatan jaringan
+              Dilengkapi animasi mekanik nyata dan penjelasan teknis mendalam
             </span>
           </div>
         )}
@@ -639,8 +486,13 @@ export const IndustrialVideoPlayer: React.FC<IndustrialVideoPlayerProps> = ({
             {/* Voice Audio Narration Toggle */}
             <button
               onClick={() => {
-                setIsVoiceNarrationActive(!isVoiceNarrationActive);
-                setIsMuted(false);
+                const nextState = !isVoiceNarrationActive;
+                setIsVoiceNarrationActive(nextState);
+                if (!nextState) {
+                  industrialAudio.stopSpeech();
+                } else if (isPlaying) {
+                  handleReplayNarration();
+                }
               }}
               className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
                 isVoiceNarrationActive && !isMuted
@@ -650,19 +502,49 @@ export const IndustrialVideoPlayer: React.FC<IndustrialVideoPlayerProps> = ({
               title="Narasi Suara Otomatis"
             >
               {isVoiceNarrationActive && !isMuted ? <Volume2 className="w-3.5 h-3.5 text-emerald-400" /> : <VolumeX className="w-3.5 h-3.5" />}
-              <span>Narasi Audio</span>
+              <span>Narasi Audio Suara</span>
+            </button>
+
+            {/* Replay Narration Audio */}
+            <button
+              onClick={handleReplayNarration}
+              className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-amber-300 rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors"
+              title="Ulangi Narasi Audio Bab Ini"
+            >
+              <RotateCcw className="w-3 h-3" />
+              <span>Baca Ulang Suara</span>
             </button>
           </div>
 
-          {/* Right: Speed controls, Fullscreen, Video Playlist Selector */}
+          {/* Right: Speech Speed, Video Speed, Fullscreen */}
           <div className="flex items-center gap-2">
-            {/* Speed Selector */}
+            {/* Speech Rate Selector */}
+            <div className="hidden sm:flex items-center bg-slate-950 rounded-lg p-0.5 border border-slate-800 text-xs">
+              <span className="text-[10px] text-slate-400 px-1.5">Suara:</span>
+              {[0.85, 1.0, 1.15].map((rate) => (
+                <button
+                  key={rate}
+                  onClick={() => setSpeechRate(rate)}
+                  className={`px-1.5 py-0.5 rounded text-[10px] font-semibold transition-all ${
+                    speechRate === rate
+                      ? 'bg-emerald-600 text-white font-bold'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                  title={`Kecepatan Suara ${rate}x`}
+                >
+                  {rate}x
+                </button>
+              ))}
+            </div>
+
+            {/* Video Speed Selector */}
             <div className="flex items-center bg-slate-950 rounded-lg p-0.5 border border-slate-800 text-xs">
+              <span className="text-[10px] text-slate-400 px-1.5">Video:</span>
               {[0.75, 1, 1.25, 1.5].map((speed) => (
                 <button
                   key={speed}
                   onClick={() => setPlaybackSpeed(speed)}
-                  className={`px-2 py-0.5 rounded text-[11px] font-semibold transition-all ${
+                  className={`px-1.5 py-0.5 rounded text-[10px] font-semibold transition-all ${
                     playbackSpeed === speed
                       ? 'bg-amber-500 text-white font-bold'
                       : 'text-slate-400 hover:text-white'
@@ -684,6 +566,74 @@ export const IndustrialVideoPlayer: React.FC<IndustrialVideoPlayerProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Subtitle & Deep Technical Explanation Card */}
+      {currentChapter && (
+        <div className="bg-slate-900/95 border border-amber-500/30 rounded-xl p-4 space-y-3 shadow-xl">
+          <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+            <div className="flex items-center gap-2">
+              <span className="bg-amber-500 text-black text-[10px] font-black px-2 py-0.5 rounded uppercase">
+                Bab {currentChapter.index + 1}
+              </span>
+              <h5 className="text-sm sm:text-base font-black text-white">
+                {currentChapter.data.topic}
+              </h5>
+            </div>
+            <button
+              onClick={() => setIsDetailsExpanded(!isDetailsExpanded)}
+              className="text-xs text-amber-400 hover:text-amber-300 flex items-center gap-1 font-semibold"
+            >
+              <span>{isDetailsExpanded ? 'Tutup Spesifikasi' : 'Buka Spesifikasi Lengkap'}</span>
+              {isDetailsExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </button>
+          </div>
+
+          {/* Spoken Text Highlight */}
+          <div className="bg-slate-950/80 p-3 rounded-lg border border-slate-800">
+            <span className="text-[10px] text-amber-400 font-extrabold uppercase tracking-wide block mb-1 flex items-center gap-1">
+              <Volume2 className="w-3.5 h-3.5 text-emerald-400" />
+              Narasi Suara Pelatihan:
+            </span>
+            <p className="text-white text-xs sm:text-sm font-medium leading-relaxed">
+              "{currentChapter.data.spokenNarration || currentChapter.data.detailedExplanation || currentChapter.data.note}"
+            </p>
+          </div>
+
+          {/* Expandable In-Depth Engineering Details & Specs */}
+          {isDetailsExpanded && (
+            <div className="space-y-3 pt-2 border-t border-slate-800/80">
+              {currentChapter.data.detailedExplanation && (
+                <div className="space-y-1">
+                  <span className="text-[11px] font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1">
+                    <BookOpen className="w-3.5 h-3.5 text-cyan-400" />
+                    Penjelasan Teori & Mekanika Mesin:
+                  </span>
+                  <p className="text-xs text-slate-300 leading-relaxed bg-slate-950/50 p-3 rounded-lg border border-slate-800/70">
+                    {currentChapter.data.detailedExplanation}
+                  </p>
+                </div>
+              )}
+
+              {currentChapter.data.technicalSpecs && currentChapter.data.technicalSpecs.length > 0 && (
+                <div className="space-y-1.5">
+                  <span className="text-[11px] font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1">
+                    <Cpu className="w-3.5 h-3.5 text-amber-400" />
+                    Standar Teknis & Batas Toleransi Pabrik:
+                  </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {currentChapter.data.technicalSpecs.map((spec, sIdx) => (
+                      <div key={sIdx} className="bg-slate-950 p-2.5 rounded-lg border border-slate-800 flex items-center justify-between text-xs">
+                        <span className="text-slate-400">{spec.label}:</span>
+                        <strong className="text-amber-300 font-mono text-[11px]">{spec.val}</strong>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Interactive Chapter Grid & Playlist */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 pt-2">
@@ -742,33 +692,40 @@ export const IndustrialVideoPlayer: React.FC<IndustrialVideoPlayerProps> = ({
             </div>
 
             <div className="space-y-1.5">
-              {allVideos.map((vid, vIdx) => {
+              {allVideos.map((vid) => {
                 const isActive = vid.id === video.id;
                 return (
                   <button
                     key={vid.id}
                     onClick={() => {
                       onSelectVideo(vid.id);
-                      setCurrentTimeSec(0);
                       setIsPlaying(true);
+                      lastSpokenChapterIndexRef.current = -1;
                     }}
                     className={`w-full text-left p-2 rounded-xl text-xs transition-all border flex items-center gap-2.5 ${
                       isActive
-                        ? 'bg-cyan-950/60 border-cyan-500/80 text-white ring-1 ring-cyan-400/40'
-                        : 'bg-slate-950/40 border-slate-800 hover:border-slate-700 text-slate-400 hover:text-slate-200'
+                        ? 'bg-amber-500/20 border-amber-500 text-white'
+                        : 'bg-slate-950/60 border-slate-800/60 hover:border-slate-700 text-slate-300'
                     }`}
                   >
-                    <div className={`p-1.5 rounded-lg text-white font-bold text-xs shrink-0 ${
-                      isActive ? 'bg-cyan-600' : 'bg-slate-800'
-                    }`}>
-                      {vIdx + 1}
+                    <div className="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center shrink-0 overflow-hidden relative">
+                      <img
+                        src={vid.thumbnailUrl}
+                        alt=""
+                        className="w-full h-full object-cover"
+                        referrerPolicy="no-referrer"
+                      />
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                        <Play className="w-3.5 h-3.5 text-white fill-current" />
+                      </div>
                     </div>
-                    <div className="overflow-hidden">
-                      <span className="font-bold block truncate text-slate-200 text-xs">
+
+                    <div className="flex-1 min-w-0">
+                      <span className="font-bold text-white truncate block text-[11px]">
                         {vid.title}
                       </span>
-                      <span className="text-[10px] text-slate-500 font-mono">
-                        Durasi: {vid.duration}
+                      <span className="text-[10px] text-slate-400 block font-mono">
+                        {vid.duration} &bull; {vid.instructorRole}
                       </span>
                     </div>
                   </button>
@@ -777,18 +734,22 @@ export const IndustrialVideoPlayer: React.FC<IndustrialVideoPlayerProps> = ({
             </div>
           </div>
 
-          {/* External Fallback Links */}
-          <div className="pt-2 border-t border-slate-800 mt-2">
-            <a
-              href={youtubeSearchUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full text-center py-2 px-3 bg-red-950/60 hover:bg-red-900/60 border border-red-800/60 rounded-xl text-red-300 text-xs font-bold transition-all flex items-center justify-center gap-1.5"
-            >
-              <ExternalLink className="w-3.5 h-3.5" />
-              <span>Buka Video YouTube di Tab Baru</span>
-            </a>
-          </div>
+          {/* Key Takeaways Card */}
+          {video.keyTakeaways && video.keyTakeaways.length > 0 && (
+            <div className="mt-3 p-2.5 bg-amber-500/10 border border-amber-500/30 rounded-xl space-y-1.5">
+              <span className="text-[10px] font-black uppercase tracking-wider text-amber-300 flex items-center gap-1">
+                <CheckCircle2 className="w-3 h-3 text-amber-400" />
+                Poin Kunci Wajib Diingat:
+              </span>
+              <ul className="space-y-1 text-[11px] text-slate-300 list-disc list-inside leading-tight">
+                {video.keyTakeaways.map((takeaway, tIdx) => (
+                  <li key={tIdx} className="text-slate-300">
+                    <span className="text-slate-200">{takeaway}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       </div>
     </div>

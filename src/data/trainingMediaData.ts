@@ -160,41 +160,152 @@ export const TRAINING_MEDIA_DATA: Record<TrainingModuleId, MachineMediaConfig> =
       {
         id: 'rew-vid-1',
         title: 'Video Edukasi: Prinsip Kerja Slitter Rewinder & Pengaturan Banana Roll',
-        duration: '08:45',
+        duration: '10:30',
         youtubeId: '7IP0Ch1Va44',
         thumbnailUrl: rewinderPartsImg,
         category: 'Operasional Inti & Mekanika Mesin',
-        instructorRole: 'Kepala Regu Finishing & Teknisi Mesin',
-        description: 'Panduan video lengkap mengenai cara kerja pisau slitter, pengaturan tegangan unwinder rem disk, serta fungsi vital banana roll dalam memisahkan jalur potongan lembaran kertas/tissue.',
+        instructorRole: 'Kepala Regu Finishing & Teknisi Ahli Slitter Rewinder PT. PUP',
+        description: 'Panduan video komprehensif mengenai prinsip mekanis mesin slitter rewinder: pemuatan jumbo roll, rem cakram pneumatik closed-loop, nip calender rubber-steel, pisau shear-cut overlap 1.2 mm, prinsip fisika banana bowed roll mencegah interweaving, serta penggulungan two-drum winder dengan programmed rider roll relief.',
         chapters: [
-          { time: '00:00 - 01:30', topic: 'Pengenalan Unwinder & Pemuatan Jumbo Roll', note: 'Cara memposisikan core chuck dan verifikasi kelurusan spool' },
-          { time: '01:31 - 03:45', topic: 'Mekanisme Pemotongan Pisau Slitter Atas & Bawah', note: 'Penyetelan overlap pisau 1.0 - 1.5 mm dan sudut canting 0.5°' },
-          { time: '03:46 - 05:50', topic: 'Fungsi Banana Roll Mencegah Interweaving', note: 'Mengapa roll berbentuk lengkung dan cara mengatur arah puncak lengkung (apex)' },
-          { time: '05:51 - 08:45', topic: 'Penggulungan pada Drum Roll & Ejeksi Doffing', note: 'Pengendalian tapered tension rider roll hingga roll siap kirim' }
+          {
+            time: '00:00 - 01:45',
+            topic: '1. Pemuatan Jumbo Roll, Core Chuck Pneumatik & Rem Unwind',
+            note: 'Penguncian spool jumbo roll 3-4.5 ton, tekanan chuck 5.5 bar, serta modulasi pengereman multi-disc brake terhubung load cell.',
+            detailedExplanation: 'Proses diawali dari Unwind Stand di mana Jumbo Roll dari Paper Machine dimuat. Spool besi dikunci dengan Core Chuck pneumatik pada tekanan 5.5 bar di kedua sisi agar tidak slip saat rotasi cepat. Rem cakram multi-disc pneumatik dikendalikan secara otomatis oleh load cell dan dancer roll untuk mempertahankan tegangan web pada rentang ideal 160 - 200 N/m. Seiring menyusutnya diameter jumbo roll dari Ø 2.200 mm ke bawah, torsi pengereman diturunkan secara proporsional agar lembaran tissue tipis tidak mengalami hentakan yang memicu web break.',
+            technicalSpecs: [
+              { label: 'Tekanan Udara Core Chuck', val: '5.5 bar (Pneumatic Lock)' },
+              { label: 'Target Web Tension Unwind', val: '160 - 200 N/m' },
+              { label: 'Suhu Piringan Rem Multi-Disc', val: 'Maks. 70°C (Water/Air Cooled)' },
+              { label: 'Diameter Maksimal Jumbo Roll', val: 'Ø 2.200 mm (Berat s/d 4.5 Ton)' }
+            ],
+            spokenNarration: 'Tahap pertama adalah pemuatan Jumbo Roll pada Unwind Stand. Pastikan kedua Core Chuck pneumatik mengunci erat spool dengan tekanan udara lima koma lima bar. Sistem rem cakram multi-disc bekerja otomatis berdasarkan sinyal load cell untuk menjaga kestabilan tarikan kertas pada kisaran seratus delapan puluh Newton per meter, mencegah kertas kendor maupun robek saat kecepatan mesin bertambah.'
+          },
+          {
+            time: '01:46 - 03:20',
+            topic: '2. Unit Calender (Rubber Roll & Steel Roll) Penghalus Serat',
+            note: 'Penyetelan nip calender roll atas berbahan rubber dan roll bawah berbahan steel untuk mengontrol kehalusan dan ketebalan kertas.',
+            detailedExplanation: 'Lembaran tissue melintasi unit Calender 2-Roll yang terdiri dari Calender Rubber Roll di bagian atas (diameter 400 mm) dan Calender Steel Roll berkrom halus di bagian bawah (diameter 450 mm). Tekanan linier nip disetel antara 15 hingga 30 N/mm. Calendering berfungsi meratakan ketebalan (caliper profile), meningkatkan kelembutan permukaan serat tissue, serta mengontrol kerapatan lembaran tanpa mematikan daya serap (bulk preservation). Operator wajib memastikan tidak ada serpihan kertas atau kotoran menempel pada roll yang dapat melubangi tissue.',
+            technicalSpecs: [
+              { label: 'Konfigurasi Roll', val: 'Top Rubber (Ø 400 mm) + Bottom Steel (Ø 450 mm)' },
+              { label: 'Tekanan Linier Nip Calender', val: '15 - 30 N/mm' },
+              { label: 'Efek Terhadap Produk', val: 'Meningkatkan Kehalusan & Kerataan Caliper' },
+              { label: 'Pemeriksaan Wajib', val: 'Permukaan Rubber Bebas Cacat & Benda Asing' }
+            ],
+            spokenNarration: 'Selanjutnya kertas melewati unit Calender Roll yang memadukan roll karet atas dengan roll baja krom bawah. Tekanan nip dikontrol antara lima belas hingga tiga puluh Newton per milimeter. Proses ini bertujuan menghaluskan permukaan serat dan menyamaratakan ketebalan lembaran tissue dengan tetap menjaga kelembutan dan daya serap alaminya.'
+          },
+          {
+            time: '03:21 - 05:30',
+            topic: '3. Pemotongan Pisau Slitter Shear-Cut & Hisapan Trim Blower',
+            note: 'Mekanisme Circular Shear-Cut: Top Slitter canting 0.5° - 1.0°, overlap 1.0 - 1.5 mm, Bottom Slitter cincin karbida bermotor, dan hisapan sisa trim.',
+            detailedExplanation: 'Unit pemotong menggunakan sistem Circular Shear-Cut presisi tinggi. Pisau atas (Top Slitter) berbentuk piringan cekung (dished blade) ditekan pneumatik dengan sudut kemiringan (canting angle) 0.5° hingga 1.0° dan overlap kedalaman 1.0 - 1.5 mm terhadap pisau bawah. Pisau bawah (Bottom Slitter) adalah cincin tungsten karbida yang berputar dengan motor independen pada kecepatan 10% lebih cepat (over-speed 1.1x) dari kecepatan linier kertas untuk menghasilkan potongan bersih bebas debu (dust-free cut edge). Potongan pinggir kiri dan kanan (trim 20-50 mm) langsung dihisap oleh corong vakum bertekanan 0.45 bar menuju Broke Pulper.',
+            technicalSpecs: [
+              { label: 'Sudut Kemiringan Pisau (Canting)', val: '0.5° - 1.0° (Dished Blade)' },
+              { label: 'Kedalaman Overlap Pisau', val: '1.0 - 1.5 mm Presisi' },
+              { label: 'Tekanan Penjepit Pisau Top', val: '1.8 - 2.2 bar' },
+              { label: 'Kecepatan Pisau Bawah', val: '1.1x Kecepatan Web (Over-speed Motor)' },
+              { label: 'Blower Hisap Trim', val: 'Vakum 0.45 bar ke Broke Pulper' }
+            ],
+            spokenNarration: 'Memasuki tahap pemotongan slitter, digunakan metode circular shear cut. Pisau atas piringan disetel dengan sudut canting nol koma lima derajat dan overlap satu koma dua milimeter terhadap cincin pisau karbida bawah yang berputar sedikit lebih cepat. Pengaturan presisi ini menjamin tepi potongan sangat rapi tanpa debu serat, sementara sisa potongan pinggir langsung dihisap blower menuju broke pulper.'
+          },
+          {
+            time: '05:31 - 07:45',
+            topic: '4. Fisika & Penyetelan Banana Bowed Roll Mencegah Interweaving',
+            note: 'Penjelasan mendalam: mengapa roll melengkung, orientasi sudut puncak (apex), gaya pemisah lateral (spreading force), dan eliminasi cacat roll gandeng.',
+            detailedExplanation: 'Setelah dipotong oleh pisau slitter menjadi 3 atau 4 jalur pita lembaran, celah fisik antar potongan pada awalnya adalah nol milimeter (0 mm). Jika pita lembaran langsung digulung bersamaan pada drum roll, getaran mikro dan variasi tegangan akan menyebabkan tepi gulungan saling bergesekan, bertumpukan, dan saling mengunci menjadi satu rol yang rusak total (cacat fatal interweaving / roll gandeng). Roll Banana (Bowed Spreader Roll) memiliki poros lengkung stasioner dengan selubung karet bersegmen putar. Puncak kelengkungan (apex) diarahkan membentuk sudut 15° - 30° searah tarikan lembaran. Gaya vektor lateral F = T * sin(θ) merentangkan dan membuka celah antar jalur potongan selebar 2 hingga 4 mm sebelum masuk ke drum roll, menjamin roll terpisah sempurna saat doffing!',
+            technicalSpecs: [
+              { label: 'Struktur Poros Roll', val: 'Poros Baja Lengkung Statis dengan Bantalan Segmen' },
+              { label: 'Arah Puncak Lengkungan (Apex)', val: '15° - 30° Menghadap Arah Tarikan Lembaran' },
+              { label: 'Pelebaran Celah Potongan', val: '2.0 - 4.0 mm Celah Pemisah Antar Pita' },
+              { label: 'Cacat yang Dieliminasi', val: 'Interweaving Roll (Roll Gandeng / Saling Kunci)' },
+              { label: 'Dampak Salah Setel Apex', val: 'Kerutan Tengah (Over-bowed) atau Gandeng (Under-bowed)' }
+            ],
+            spokenNarration: 'Inilah fungsi terpenting Banana Bowed Roll. Lembaran yang baru dipotong memiliki celah nol milimeter sehingga rawan bertumpuk dan saling mengunci jika langsung digulung. Poros lengkung Banana Roll dengan puncak lengkung yang diarahkan ke depan menciptakan gaya dorong ke arah samping. Hal ini merentangkan lembaran dan membuka celah dua sampai empat milimeter, sehingga gulungan kertas tidak akan pernah saling menempel atau terjadi cacat interweaving.'
+          },
+          {
+            time: '07:46 - 09:20',
+            topic: '5. Penggulungan Two-Drum Surface Winder & Programmed Rider Roll',
+            note: 'Pengendalian diferensial kecepatan drum roll, programmed nip relief rider roll, dan kurva tapered tension untuk gulungan padat anti-meledak.',
+            detailedExplanation: 'Lembaran pita yang telah terpisah diarahkan menuju Two-Drum Surface Winder (Front Drum dan Rear Drum Ø 400 mm beralur spiral untuk membuang lapisan udara). Kerapatan gulungan dikendalikan oleh 3 faktor (TNT: Tension, Nip, Torque). Perbedaan torsi dan kecepatan antara drum depan dan belakang (0.5 - 1.5%) mengatur kekerasan awal pada core. Rider Roll (roll penekan atas berbeban pneumatik/hidrolik) menerapkan Programmed Nip Relief: menekan kuat pada diameter awal (3.0 - 4.5 kN/m), kemudian secara otomatis mengurangi tekanan seiring bertambahnya bobot gulungan hingga Ø 1.250 mm. Hal ini mencegah kerusakan inti pipa karton (core crushing) dan pecah lipatan tissue (crepe burst).',
+            technicalSpecs: [
+              { label: 'Tipe Mesin Penggulung', val: 'Two-Drum Surface Winder (Ø 400 mm Fluted Drums)' },
+              { label: 'Prinsip Kontrol Winding', val: 'T-N-T (Tension, Nip Load, Torque Differential)' },
+              { label: 'Tekanan Rider Roll Awal', val: '3.0 - 4.5 kN/m (Beban Awal Tight Core)' },
+              { label: 'Program Penurunan Tekanan', val: 'Programmed Nip Relief Linier terhadap Diameter' },
+              { label: 'Diameter Maksimal Roll Jadi', val: 'Ø 1.250 - 1.500 mm Sesuai Order' }
+            ],
+            spokenNarration: 'Pada bagian akhir, lembaran digulung oleh sistem Two Drum Winder. Tekanan awal diberikan oleh Rider Roll untuk mengunci lapisan kertas pada pipa karton. Seiring membesarnya diameter gulungan, komputer secara cerdas mengurangi tekanan Rider Roll agar bagian dalam gulungan tetap kokoh tanpa menghancurkan pipa core, menghasilkan gulungan yang padat sempurna dan aman disimpan di gudang.'
+          },
+          {
+            time: '09:21 - 10:30',
+            topic: '6. Doffing Hidrolik, Pengecekan Kualitas Roll & Standar 5S',
+            note: 'Penurunan gulungan jadi ke konveyor, pengujian kekerasan roll (Schmidt Hammer), inspeksi tepi potongan bebas debu, dan 5S area kerja.',
+            detailedExplanation: 'Ketika diameter target tercapai, operator memotong lembaran pada kecepatan rendah (crawl speed) dan mengaktifkan rem drum. Lengan doffing hidrolik bergerak mengangkat dan menurunkan gulungan jadi secara mulus ke meja penerima konveyor. Operator dan Helper melakukan penimbangan bobot aktual, pengujian kekerasan gulungan (roll hardness) menggunakan Schmidt hammer (target 28-36 unit), inspeksi ketajaman tepi potongan, serta penempelan label barcode identitas. Area kerja di sekeliling slitter dibersihkan dari serbuk debu menggunakan kuas bertangkai panjang dan blower udara aman sesuai standar 5S pabrik.',
+            technicalSpecs: [
+              { label: 'Mekanisme Doffing', val: 'Hydraulic Cradle Arm dengan Cushion Damper' },
+              { label: 'Standar Hardness Roll', val: '28 - 36 Unit (Schmidt Hammer Test)' },
+              { label: 'Inspeksi Tepi Gulungan', val: 'Tegak Lurus 90°, Bebas Debu & Kerutan Tepi' },
+              { label: 'Tugas Helper & Operator', val: 'Penimbangan, Labeling Barcode, dan 5S Pembersihan Area' }
+            ],
+            spokenNarration: 'Setelah ukuran tercapai, gulungan diturunkan secara halus menggunakan lengan hidrolik doffer. Lakukan pengujian kekerasan gulungan, pastikan tepi potongan rata tegak lurus, timbang beratnya, dan tempelkan label identitas. Selalu bersihkan serbuk kertas di area mesin demi keselamatan kerja dan standar kebersihan pabrik.'
+          }
         ],
         keyTakeaways: [
-          'Jangan pernah membiarkan pisau slitter berputar dalam kondisi tumpul karena memicu debu berlebih dan tepi sobek.',
-          'Banana roll harus selalu diselaraskan arah lengkungannya terhadap tarikan web lembaran.',
-          'Tegangan lembaran harus turun secara bertahap (tapered) seiring membesarnya diameter gulungan.'
+          'Pisau Slitter wajib memiliki overlap 1.0 - 1.5 mm dengan sudut canting 0.5° - 1.0° agar potongan bebas debu serat.',
+          'Puncak lengkungan (apex) Banana Roll wajib diarahkan 15° - 30° searah tarikan lembaran untuk memisahkan celah pita potongan sebesar 2 - 4 mm guna mengeliminasi cacat interweaving.',
+          'Rider Roll harus menggunakan Programmed Nip Relief: tekanan kuat di awal (3.0 - 4.5 kN/m) lalu menurun proporsional seiring membesarnya diameter gulungan.',
+          'Kepatuhan SOP K3: dilarang menyentuh roll atau pisau yang sedang berputar dan selalu pasang gembok LOTO saat pembersihan atau penggantian pisau.'
         ]
       },
       {
         id: 'rew-vid-2',
         title: 'Simulasi Prosedur K3 & SOP Penanganan Pisau Slitter',
-        duration: '05:30',
+        duration: '06:45',
         youtubeId: '2H_Jb2HZZv0',
         thumbnailUrl: rewinderHeroImg,
         category: 'Keselamatan Kerja (K3) & LOTO',
-        instructorRole: 'Supervisor K3 Pabrik & Kepala PM',
+        instructorRole: 'Supervisor K3 Pabrik & Kepala PM PT. PUP',
         description: 'Demonstrasi penerapan Lock Out Tag Out (LOTO) saat membersihkan serbuk kertas, penggantian mata pisau top slitter, dan titik bahaya jepit (pinch point) drum roll.',
         chapters: [
-          { time: '00:00 - 01:20', topic: 'Identifikasi Titik Jepit Nip Roll & Bahaya Inersia', note: 'Larangan membersihkan roll berputar dengan kain lap manual' },
-          { time: '01:21 - 03:15', topic: 'Prosedur LOTO & Penggantian Pisau Slitter', note: 'Wajib sarung tangan anti-potong level 5 dan kunci pemutus daya' },
-          { time: '03:16 - 05:30', topic: 'Evakuasi & Pengoperasian Tali Emergency Stop', note: 'Uji respons tarikan kabel kawat darurat (pull-wire switch)' }
+          {
+            time: '00:00 - 02:00',
+            topic: '1. Identifikasi Titik Jepit Nip Roll & Bahaya Inersia Putaran',
+            note: 'Zona bahaya nip roll berputar: drum roll, calender roll, dan larangan membersihkan roll secara manual saat mesin hidup.',
+            detailedExplanation: 'Titik jepit (nip point) antara drum winder, calender rubber-steel, dan roll unwinder memiliki gaya tarik inersia hingga ribuan Newton. Zero Tolerance: operator dilarang keras menyentuh roll berputar dengan tangan, kain lap, atau sarung tangan karena kain dapat terlilit dan menarik anggota tubuh ke dalam celah nip dalam hitungan milidetik.',
+            technicalSpecs: [
+              { label: 'Zona Bahaya Kritis', val: 'Nip Drum Roll, Calender Nip, dan Infeed Slitter' },
+              { label: 'Larangan Mutlak', val: 'Dilarang Menyeka Roll Berputar dengan Lap Manual' },
+              { label: 'Prosedur Pembersihan', val: 'Mesin Wajib Mati Total / Gunakan Stick Pembersih Panjang' }
+            ],
+            spokenNarration: 'Keselamatan adalah prioritas utama. Titik jepit antara roll penekan dan drum roll berputar dengan tenaga sangat besar. Dilarang keras membersihkan roll dengan kain lap saat mesin berjalan. Segala bentuk pembersihan harus dilakukan setelah mesin berhenti total.'
+          },
+          {
+            time: '02:01 - 04:30',
+            topic: '2. Prosedur LOTO & Penggantian Pisau Top & Bottom Slitter',
+            note: 'Penerapan Lock Out Tag Out 6 langkah, pemutusan saklar daya utama, verifikasi Zero Energy, dan APD sarung tangan anti-potong level 5.',
+            detailedExplanation: 'Sebelum mendekati unit slitter untuk menyetel atau mengganti pisau: (1) Matikan panel kendali, (2) Putus saklar pemutus daya utama (isoloator switch), (3) Pasang gembok LOTO pribadi dan tag identitas, (4) Buang sisa tekanan pneumatik dengan membuka exhaust valve, (5) Uji tombol start untuk memastikan Zero Energy State, (6) Kenakan sarung tangan anti-potong level 5 (Kevlar/HPPE) saat memegang pisau carbide.',
+            technicalSpecs: [
+              { label: 'Standar APD Wajib', val: 'Sarung Tangan Anti-Potong Level 5 (Cut Resistant Level 5)' },
+              { label: 'Verifikasi Zero Energy', val: 'Cek Tekanan Udara 0 bar & Saklar Listrik Tergembok' },
+              { label: 'Wadah Pisau Khusus', val: 'Gunakan Kotak Magnetik Khusus Pengangkut Pisau Slitter' }
+            ],
+            spokenNarration: 'Saat melakukan penggantian pisau slitter, wajib terapkan prosedur Lock Out Tag Out. Matikan saklar utama, pasang gembok pengunci dan tanda peringatan, serta buang sisa tekanan udara. Wajib kenakan sarung tangan anti potong level lima sebelum memegang mata pisau karbida.'
+          },
+          {
+            time: '04:31 - 06:45',
+            topic: '3. Pengujian Tali Emergency Stop (Pull-Wire) & Evakuasi Darurat',
+            note: 'Uji respons tarikan kawat darurat keliling mesin, tombol E-Stop di setiap stasiun, dan simulasi penghentian cepat.',
+            detailedExplanation: 'Di sepanjang jalur mesin Rewinder terpasang tali kawat darurat (Emergency Pull-Wire Switch). Dalam keadaan darurat, tarikan pada tali ini di titik mana pun akan memutus sirkuit pengaman dan mengaktifkan rem pneumatik instan dalam waktu kurang dari 2.5 detik. Uji coba tarikan tali E-Stop wajib dilakukan setiap pergantian shift untuk memastikan saklar tidak macet dan lampu indikator alarm berfungsi.',
+            technicalSpecs: [
+              { label: 'Waktu Respon Rem Darurat', val: '< 2.5 Detik dari Kecepatan 800 mpm ke Berhenti' },
+              { label: 'Jadwal Uji Tarik E-Stop', val: 'Dilakukan Rutin Setiap Awal Shift Kerja' },
+              { label: 'Reset E-Stop', val: 'Hanya oleh Kepala Regu setelah Area Diverifikasi Aman' }
+            ],
+            spokenNarration: 'Tali kawat darurat membentang di sepanjang mesin untuk menghentikan putaran seketika jika terjadi insiden. Lakukan pengetesan respon tarikan kawat darurat setiap awal shift dan pastikan seluruh jalur evakuasi di sekitar mesin selalu bersih dan bebas dari tumpukan limbah kertas.'
+          }
         ],
         keyTakeaways: [
           'Patuhi Zero Tolerance untuk titik jepit: matikan mesin total sebelum menyentuh roll.',
-          'Gunakan kuas bertangkai panjang dan blower udara aman bertekanan rendah untuk membersihkan debu serat.',
+          'Gunakan sarung tangan anti-potong level 5 saat menangani pisau slitter dan selalu kunci gembok LOTO.',
           'Pastikan area rolling zone bersih sebelum mengaktifkan hidrolik penurun roll (doffer).'
         ]
       }

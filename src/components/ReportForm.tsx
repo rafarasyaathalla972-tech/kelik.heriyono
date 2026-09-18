@@ -45,7 +45,7 @@ interface ReportFormProps {
   onSaveReport: (report: ShiftReport, editReason?: string, editorName?: string) => void;
   onOpenSop: () => void;
   onOpenTraining: (machine?: MachineId) => void;
-  onOpenOrgStructure?: () => void;
+  onOpenOrgStructure?: (initialTab?: 'chart' | 'jobdesc' | 'roster' | 'helpers' | 'matrix') => void;
   editingReport?: ShiftReport | null;
   onCancelEdit?: () => void;
   existingReports?: ShiftReport[];
@@ -1011,15 +1011,27 @@ export const ReportForm: React.FC<ReportFormProps> = ({
                   </button>
 
                   {onOpenOrgStructure && (
-                    <button
-                      type="button"
-                      onClick={onOpenOrgStructure}
-                      className="px-2.5 py-1 text-xs font-semibold bg-indigo-950/80 hover:bg-indigo-900 text-indigo-200 border border-indigo-600/50 rounded-lg flex items-center gap-1.5 transition-colors"
-                      title="Buka Bagan Struktur Lengkap & SOP Job Desc Tiap Jabatan"
-                    >
-                      <Building2 className="w-3.5 h-3.5 text-indigo-400" />
-                      <span>Job Desc & Bagan</span>
-                    </button>
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => onOpenOrgStructure('jobdesc')}
+                        className="px-2.5 py-1 text-xs font-semibold bg-indigo-950/80 hover:bg-indigo-900 text-indigo-200 border border-indigo-600/50 rounded-lg flex items-center gap-1.5 transition-colors"
+                        title="Buka Bagan Struktur Lengkap & SOP Job Desc Tiap Jabatan"
+                      >
+                        <Building2 className="w-3.5 h-3.5 text-indigo-400" />
+                        <span>Job Desc & Bagan</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => onOpenOrgStructure('matrix')}
+                        className="px-2.5 py-1 text-xs font-semibold bg-emerald-950/80 hover:bg-emerald-900 text-emerald-200 border border-emerald-600/50 rounded-lg flex items-center gap-1.5 transition-colors"
+                        title="Buka Matriks Tanggung Jawab Operasional & RACI Matrix Shift"
+                      >
+                        <Sliders className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>Matriks RACI</span>
+                      </button>
+                    </>
                   )}
                 </div>
               </div>

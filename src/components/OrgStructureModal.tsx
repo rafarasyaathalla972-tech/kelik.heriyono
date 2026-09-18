@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   X, 
   Users, 
@@ -22,31 +22,58 @@ import {
   Sparkles,
   HelpCircle,
   HardHat,
-  Filter
+  Filter,
+  Check,
+  ChevronDown,
+  ChevronUp,
+  Info,
+  Grid,
+  List
 } from 'lucide-react';
 import { 
   PUP_PERSONNEL_ROSTER, 
   PUP_JOB_DESCRIPTIONS, 
   PT_PUP_METADATA 
 } from '../data/orgStructureData';
+import { 
+  RESPONSIBILITY_MATRIX_DATA, 
+  MATRIX_ROLES, 
+  ResponsibilityItem, 
+  MatrixRole 
+} from '../data/responsibilityMatrixData';
 import { PupUnit, PupGroup, JobDescriptionDetail, PupPersonnel } from '../types';
 
 interface OrgStructureModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSelectOperatorForReport?: (personnel: PupPersonnel) => void;
+  initialTab?: 'chart' | 'jobdesc' | 'roster' | 'helpers' | 'matrix';
 }
 
 export const OrgStructureModal: React.FC<OrgStructureModalProps> = ({
   isOpen,
   onClose,
-  onSelectOperatorForReport
+  onSelectOperatorForReport,
+  initialTab = 'chart'
 }) => {
-  const [activeTab, setActiveTab] = useState<'chart' | 'jobdesc' | 'roster' | 'helpers'>('chart');
+  const [activeTab, setActiveTab] = useState<'chart' | 'jobdesc' | 'roster' | 'helpers' | 'matrix'>(initialTab);
   const [selectedUnit, setSelectedUnit] = useState<string>('ALL');
   const [selectedGroup, setSelectedGroup] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedJobDescId, setSelectedJobDescId] = useState<string>('jd-helper-pm');
+
+  // Matrix Filter States
+  const [matrixAreaFilter, setMatrixAreaFilter] = useState<string>('ALL');
+  const [matrixRoleHighlight, setMatrixRoleHighlight] = useState<string>('ALL');
+  const [matrixViewMode, setMatrixViewMode] = useState<'table' | 'cards'>('table');
+  const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
+
+  // Sync active tab with initialTab when opened
+  useEffect(() => {
+    if (isOpen && initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [isOpen, initialTab]);
 
   // Filtered roster based on search and filters
   const filteredRoster = useMemo(() => {
@@ -73,6 +100,31 @@ export const OrgStructureModal: React.FC<OrgStructureModalProps> = ({
   const currentJobDesc = useMemo(() => {
     return PUP_JOB_DESCRIPTIONS.find(j => j.id === selectedJobDescId) || PUP_JOB_DESCRIPTIONS[0];
   }, [selectedJobDescId]);
+
+  // Filtered RACI Matrix Data
+  const filteredMatrix = useMemo(() => {
+    return RESPONSIBILITY_MATRIX_DATA.filter(item => {
+      const matchArea = matrixAreaFilter === 'ALL' || item.area === matrixAreaFilter;
+      const q = searchQuery.toLowerCase().trim();
+      const matchQuery = !q || 
+        item.taskTitle.toLowerCase().includes(q) ||
+        item.areaName.toLowerCase().includes(q) ||
+        item.sopReference.toLowerCase().includes(q) ||
+        item.criticalStandard.toLowerCase().includes(q) ||
+        item.operationalNotes.helperDuties.toLowerCase().includes(q) ||
+        item.operationalNotes.operatorDuties.toLowerCase().includes(q) ||
+        item.operationalNotes.karuAccountability.toLowerCase().includes(q);
+
+      let matchRole = true;
+      if (matrixRoleHighlight !== 'ALL') {
+        const roleKey = matrixRoleHighlight as keyof ResponsibilityItem['raci'];
+        const roleVal = item.raci[roleKey];
+        matchRole = roleVal === 'R' || roleVal === 'A';
+      }
+
+      return matchArea && matchQuery && matchRole;
+    });
+  }, [matrixAreaFilter, matrixRoleHighlight, searchQuery]);
 
   if (!isOpen) return null;
 
@@ -168,6 +220,18 @@ export const OrgStructureModal: React.FC<OrgStructureModalProps> = ({
               <span className="bg-amber-400 text-slate-950 text-[10px] px-1.5 py-0.2 rounded-full font-black">
                 {allHelpers.length}
               </span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('matrix')}
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
+                activeTab === 'matrix'
+                  ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-sm'
+                  : 'text-emerald-300 hover:text-white hover:bg-emerald-950/50'
+              }`}
+            >
+              <Sliders className="w-3.5 h-3.5 text-emerald-300" />
+              <span>Matriks Tanggung Jawab (RACI Matrix)</span>
             </button>
 
             <button
@@ -1261,6 +1325,414 @@ export const OrgStructureModal: React.FC<OrgStructureModalProps> = ({
             {filteredRoster.length === 0 && (
               <div className="text-center py-12 text-slate-400 text-xs">
                 Tidak ada personel yang cocok dengan filter pencarian.
+              </div>
+            )}
+
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* TAB 5: MATRIKS TANGGUNG JAWAB (RACI MATRIX) */}
+        {/* ========================================================================= */}
+        {activeTab === 'matrix' && (
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 bg-slate-950/40">
+            
+            {/* Header & RACI Definition Banner */}
+            <div className="bg-gradient-to-r from-emerald-950/90 via-slate-900 to-teal-950/90 border border-emerald-500/40 rounded-2xl p-4 sm:p-5 shadow-lg">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="px-2.5 py-0.5 rounded-md bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-xs font-mono font-bold uppercase">
+                      STANDAR RACI RESMI PT. PUP
+                    </span>
+                    <span className="text-xs text-slate-400">&bull; Standar Operasional Rev 03</span>
+                  </div>
+                  <h3 className="text-base sm:text-lg font-black text-white mt-1 uppercase tracking-wide">
+                    MATRIKS TANGGUNG JAWAB & PEMBAGIAN TUGAS OPERASIONAL (RACI MATRIX)
+                  </h3>
+                  <p className="text-xs text-slate-300 mt-1 max-w-3xl">
+                    Memetakan secara tegas peran <strong className="text-amber-300">Pembantu Operator (Helper)</strong>, <strong className="text-blue-300">Operator Utama</strong>, <strong className="text-cyan-300">Kepala Regu (Karu)</strong>, dan Manajemen pada setiap titik kritis pengoperasian mesin dan penanganan kendala shift.
+                  </p>
+                </div>
+
+                {/* RACI Legend Badges */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 shrink-0">
+                  <div className="bg-slate-900/90 border border-blue-500/50 p-2 rounded-xl text-center">
+                    <span className="inline-block w-6 h-6 rounded bg-blue-600 text-white font-black text-xs leading-6 shadow">
+                      R
+                    </span>
+                    <div className="text-[11px] font-bold text-blue-300 mt-1">Responsible</div>
+                    <div className="text-[10px] text-slate-400">Pelaksana Fisik</div>
+                  </div>
+
+                  <div className="bg-slate-900/90 border border-emerald-500/50 p-2 rounded-xl text-center">
+                    <span className="inline-block w-6 h-6 rounded bg-emerald-600 text-white font-black text-xs leading-6 shadow">
+                      A
+                    </span>
+                    <div className="text-[11px] font-bold text-emerald-300 mt-1">Accountable</div>
+                    <div className="text-[10px] text-slate-400">Penanggung Jawab</div>
+                  </div>
+
+                  <div className="bg-slate-900/90 border border-amber-500/50 p-2 rounded-xl text-center">
+                    <span className="inline-block w-6 h-6 rounded bg-amber-600 text-slate-950 font-black text-xs leading-6 shadow">
+                      C
+                    </span>
+                    <div className="text-[11px] font-bold text-amber-300 mt-1">Consulted</div>
+                    <div className="text-[10px] text-slate-400">Konsultasi / Ahli</div>
+                  </div>
+
+                  <div className="bg-slate-900/90 border border-slate-600/50 p-2 rounded-xl text-center">
+                    <span className="inline-block w-6 h-6 rounded bg-slate-600 text-slate-200 font-black text-xs leading-6 shadow">
+                      I
+                    </span>
+                    <div className="text-[11px] font-bold text-slate-300 mt-1">Informed</div>
+                    <div className="text-[10px] text-slate-400">Diberitahu Status</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Filter & View Mode Controls */}
+            <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-3.5 space-y-3">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                {/* Area Filter Buttons */}
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5 lg:pb-0">
+                  <span className="text-xs text-slate-400 font-semibold shrink-0 mr-1 flex items-center gap-1">
+                    <Filter className="w-3.5 h-3.5 text-emerald-400" /> Area:
+                  </span>
+                  {[
+                    { id: 'ALL', label: 'Semua Area' },
+                    { id: 'STOCK_PREP', label: 'Stock Prep' },
+                    { id: 'WET_END', label: 'Wet End' },
+                    { id: 'DRY_END', label: 'Dry End' },
+                    { id: 'POPE_REEL', label: 'Pope Reel' },
+                    { id: 'REWINDER', label: 'Rewinder' },
+                    { id: 'BOILER', label: 'Boiler' },
+                    { id: 'K3_SAFETY', label: 'K3 & LOTO' },
+                    { id: 'REPORTING', label: 'Laporan Shift' }
+                  ].map((area) => (
+                    <button
+                      key={area.id}
+                      onClick={() => setMatrixAreaFilter(area.id)}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
+                        matrixAreaFilter === area.id
+                          ? 'bg-emerald-600 text-white shadow'
+                          : 'bg-slate-800/80 hover:bg-slate-800 text-slate-300'
+                      }`}
+                    >
+                      {area.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* View Mode & Role Highlight */}
+                <div className="flex items-center gap-2 shrink-0">
+                  {/* Highlight Role */}
+                  <select
+                    value={matrixRoleHighlight}
+                    onChange={(e) => setMatrixRoleHighlight(e.target.value)}
+                    className="bg-slate-950 border border-slate-700 text-slate-200 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-emerald-500"
+                  >
+                    <option value="ALL">Semua Peran RACI</option>
+                    <option value="helperOperator">Fokus: Helper PM</option>
+                    <option value="operatorUtama">Fokus: Operator Utama PM</option>
+                    <option value="karuShift">Fokus: Karu Shift</option>
+                    <option value="helperRewinder">Fokus: Helper Rewinder</option>
+                    <option value="operatorRewinder">Fokus: Operator Rewinder</option>
+                    <option value="helperBoiler">Fokus: Helper Boiler</option>
+                    <option value="operatorBoiler">Fokus: Operator Boiler</option>
+                  </select>
+
+                  {/* Toggle Table vs Cards */}
+                  <div className="flex items-center bg-slate-950 border border-slate-700 rounded-lg p-0.5">
+                    <button
+                      onClick={() => setMatrixViewMode('table')}
+                      className={`p-1.5 rounded text-xs transition-colors ${
+                        matrixViewMode === 'table' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'
+                      }`}
+                      title="Tampilan Tabel Grid RACI"
+                    >
+                      <Grid className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => setMatrixViewMode('cards')}
+                      className={`p-1.5 rounded text-xs transition-colors ${
+                        matrixViewMode === 'cards' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'
+                      }`}
+                      title="Tampilan Kartu Rincian SOP"
+                    >
+                      <List className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Total items badge */}
+              <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-800/80">
+                <span>
+                  Menampilkan <strong>{filteredMatrix.length}</strong> aktivitas operasional kritis
+                  {matrixRoleHighlight !== 'ALL' && ' (disaring berdasarkan peran terpilih)'}
+                </span>
+                <span className="text-emerald-400 font-mono">Klik baris untuk melihat rincian tugas spesifik</span>
+              </div>
+            </div>
+
+            {/* VIEW MODE 1: RACI TABLE GRID */}
+            {matrixViewMode === 'table' && (
+              <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead>
+                      <tr className="bg-slate-950 border-b border-slate-800 text-slate-300 font-bold uppercase tracking-wider">
+                        <th className="py-3 px-3.5 min-w-[240px] sticky left-0 bg-slate-950 z-10">
+                          Aktivitas / Titik Kritis SOP
+                        </th>
+                        <th className="py-3 px-3 min-w-[190px]">Standar Kritis / Nilai</th>
+                        {MATRIX_ROLES.map((role) => (
+                          <th
+                            key={role.id}
+                            className={`py-3 px-2 text-center min-w-[65px] ${
+                              matrixRoleHighlight === role.id ? 'bg-emerald-950/80 text-emerald-200' : ''
+                            }`}
+                            title={`${role.name}: ${role.description}`}
+                          >
+                            <div className="font-mono text-[11px] font-black">{role.shortCode}</div>
+                            <div className="text-[9px] font-normal text-slate-400 truncate max-w-[60px] mx-auto">
+                              {role.name.split(' ')[0]}
+                            </div>
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800/80 font-sans">
+                      {filteredMatrix.map((item) => {
+                        const isExpanded = expandedTaskId === item.id;
+                        return (
+                          <React.Fragment key={item.id}>
+                            <tr
+                              onClick={() => setExpandedTaskId(isExpanded ? null : item.id)}
+                              className={`cursor-pointer transition-colors ${
+                                isExpanded
+                                  ? 'bg-slate-800/90'
+                                  : 'hover:bg-slate-800/50 bg-slate-900/40'
+                              }`}
+                            >
+                              {/* Task Title & Area */}
+                              <td className="py-3 px-3.5 sticky left-0 bg-slate-900 z-10">
+                                <div className="flex items-center gap-2">
+                                  <span className="p-1 rounded bg-slate-800 text-slate-300">
+                                    {isExpanded ? (
+                                      <ChevronUp className="w-3.5 h-3.5 text-emerald-400" />
+                                    ) : (
+                                      <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                                    )}
+                                  </span>
+                                  <div>
+                                    <div className="font-bold text-white text-xs">{item.taskTitle}</div>
+                                    <div className="flex items-center gap-1.5 mt-0.5 text-[10px]">
+                                      <span className="text-emerald-400 font-mono font-semibold">
+                                        {item.sopReference}
+                                      </span>
+                                      <span className="text-slate-600">&bull;</span>
+                                      <span className="text-slate-400">{item.areaName}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </td>
+
+                              {/* Critical Standard */}
+                              <td className="py-3 px-3 text-[11px] text-slate-300 font-mono leading-relaxed">
+                                {item.criticalStandard}
+                              </td>
+
+                              {/* RACI Matrix Cells */}
+                              {MATRIX_ROLES.map((role) => {
+                                const val = item.raci[role.id as keyof ResponsibilityItem['raci']];
+                                const isHighlightedRole = matrixRoleHighlight === role.id;
+                                let badgeStyle = 'bg-slate-800 text-slate-500';
+                                if (val === 'R') badgeStyle = 'bg-blue-600 text-white font-black shadow ring-1 ring-blue-400/50';
+                                else if (val === 'A') badgeStyle = 'bg-emerald-600 text-white font-black shadow ring-1 ring-emerald-400/50';
+                                else if (val === 'C') badgeStyle = 'bg-amber-600/90 text-slate-950 font-black shadow';
+                                else if (val === 'I') badgeStyle = 'bg-slate-700/80 text-slate-300 font-semibold';
+
+                                return (
+                                  <td
+                                    key={role.id}
+                                    className={`py-3 px-2 text-center ${
+                                      isHighlightedRole ? 'bg-emerald-950/40' : ''
+                                    }`}
+                                  >
+                                    <span
+                                      className={`inline-block w-6 h-6 rounded text-xs leading-6 ${badgeStyle}`}
+                                      title={`${role.name}: ${
+                                        val === 'R' ? 'Responsible (Pelaksana Langsung)' :
+                                        val === 'A' ? 'Accountable (Penanggung Jawab Mutlak)' :
+                                        val === 'C' ? 'Consulted (Pihak Rujukan/Tim Ahli)' :
+                                        'Informed (Penerima Informasi)'
+                                      }`}
+                                    >
+                                      {val}
+                                    </span>
+                                  </td>
+                                );
+                              })}
+                            </tr>
+
+                            {/* EXPANDED ACCORDION: DETAIL TUGAS HELPER, OPERATOR, KARU & K3 */}
+                            {isExpanded && (
+                              <tr className="bg-slate-950/90 border-b border-emerald-500/40">
+                                <td colSpan={2 + MATRIX_ROLES.length} className="p-4">
+                                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                                    {/* 1. Tugas Pembantu Operator (Helper) */}
+                                    <div className="bg-amber-950/30 border border-amber-500/40 rounded-xl p-3.5 space-y-1.5">
+                                      <div className="flex items-center gap-2 text-amber-300 font-bold text-xs">
+                                        <HardHat className="w-4 h-4 text-amber-400" />
+                                        <span>Tugas Helper (Pembantu Operator)</span>
+                                      </div>
+                                      <p className="text-[11px] text-amber-100/90 leading-relaxed">
+                                        {item.operationalNotes.helperDuties}
+                                      </p>
+                                    </div>
+
+                                    {/* 2. Tugas Operator Utama */}
+                                    <div className="bg-blue-950/30 border border-blue-500/40 rounded-xl p-3.5 space-y-1.5">
+                                      <div className="flex items-center gap-2 text-blue-300 font-bold text-xs">
+                                        <Sliders className="w-4 h-4 text-blue-400" />
+                                        <span>Tugas Operator Utama Mesin</span>
+                                      </div>
+                                      <p className="text-[11px] text-blue-100/90 leading-relaxed">
+                                        {item.operationalNotes.operatorDuties}
+                                      </p>
+                                    </div>
+
+                                    {/* 3. Akuntabilitas Kepala Regu (Karu Shift) */}
+                                    <div className="bg-cyan-950/30 border border-cyan-500/40 rounded-xl p-3.5 space-y-1.5">
+                                      <div className="flex items-center gap-2 text-cyan-300 font-bold text-xs">
+                                        <ShieldCheck className="w-4 h-4 text-cyan-400" />
+                                        <span>Akuntabilitas Karu Shift</span>
+                                      </div>
+                                      <p className="text-[11px] text-cyan-100/90 leading-relaxed">
+                                        {item.operationalNotes.karuAccountability}
+                                      </p>
+                                    </div>
+
+                                    {/* 4. Standar Mutlak K3 & LOTO */}
+                                    <div className="bg-rose-950/30 border border-rose-500/40 rounded-xl p-3.5 space-y-1.5">
+                                      <div className="flex items-center gap-2 text-rose-300 font-bold text-xs">
+                                        <AlertTriangle className="w-4 h-4 text-rose-400" />
+                                        <span>Mandat K3 & Titik Bahaya</span>
+                                      </div>
+                                      <p className="text-[11px] text-rose-100/90 leading-relaxed">
+                                        {item.operationalNotes.k3Rule}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </td>
+                              </tr>
+                            )}
+                          </React.Fragment>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* VIEW MODE 2: DETAILED CARD LIST */}
+            {matrixViewMode === 'cards' && (
+              <div className="space-y-4">
+                {filteredMatrix.map((item) => (
+                  <div
+                    key={item.id}
+                    className="bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-2xl p-4 sm:p-5 shadow-md space-y-4 transition-all"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded font-mono text-xs font-bold">
+                            {item.sopReference}
+                          </span>
+                          <span className="text-xs text-slate-400 font-semibold">{item.areaName}</span>
+                        </div>
+                        <h4 className="text-base font-bold text-white mt-1">{item.taskTitle}</h4>
+                      </div>
+                      <div className="text-xs font-mono bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800 text-emerald-400">
+                        {item.criticalStandard}
+                      </div>
+                    </div>
+
+                    {/* RACI Role Pills */}
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      {MATRIX_ROLES.map((role) => {
+                        const val = item.raci[role.id as keyof ResponsibilityItem['raci']];
+                        return (
+                          <div
+                            key={role.id}
+                            className="flex items-center gap-1.5 px-2 py-1 bg-slate-950 border border-slate-800 rounded-lg text-xs"
+                          >
+                            <span className="text-slate-400 text-[11px] font-mono">{role.shortCode}:</span>
+                            <span
+                              className={`w-5 h-5 rounded flex items-center justify-center font-black text-[10px] ${
+                                val === 'R' ? 'bg-blue-600 text-white' :
+                                val === 'A' ? 'bg-emerald-600 text-white' :
+                                val === 'C' ? 'bg-amber-600 text-slate-950' :
+                                'bg-slate-700 text-slate-300'
+                              }`}
+                            >
+                              {val}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Operational Details Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 pt-2">
+                      <div className="p-3 bg-amber-950/20 border border-amber-600/30 rounded-xl space-y-1">
+                        <div className="text-amber-300 font-bold text-xs flex items-center gap-1.5">
+                          <HardHat className="w-3.5 h-3.5" /> Tugas Helper:
+                        </div>
+                        <p className="text-[11px] text-amber-100/90 leading-relaxed">
+                          {item.operationalNotes.helperDuties}
+                        </p>
+                      </div>
+
+                      <div className="p-3 bg-blue-950/20 border border-blue-600/30 rounded-xl space-y-1">
+                        <div className="text-blue-300 font-bold text-xs flex items-center gap-1.5">
+                          <Sliders className="w-3.5 h-3.5" /> Operator Utama:
+                        </div>
+                        <p className="text-[11px] text-blue-100/90 leading-relaxed">
+                          {item.operationalNotes.operatorDuties}
+                        </p>
+                      </div>
+
+                      <div className="p-3 bg-cyan-950/20 border border-cyan-600/30 rounded-xl space-y-1">
+                        <div className="text-cyan-300 font-bold text-xs flex items-center gap-1.5">
+                          <ShieldCheck className="w-3.5 h-3.5" /> Akuntabilitas Karu:
+                        </div>
+                        <p className="text-[11px] text-cyan-100/90 leading-relaxed">
+                          {item.operationalNotes.karuAccountability}
+                        </p>
+                      </div>
+
+                      <div className="p-3 bg-rose-950/20 border border-rose-600/30 rounded-xl space-y-1">
+                        <div className="text-rose-300 font-bold text-xs flex items-center gap-1.5">
+                          <AlertTriangle className="w-3.5 h-3.5" /> Titik Kritis K3:
+                        </div>
+                        <p className="text-[11px] text-rose-100/90 leading-relaxed">
+                          {item.operationalNotes.k3Rule}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {filteredMatrix.length === 0 && (
+              <div className="text-center py-12 text-slate-400 text-xs bg-slate-900 border border-slate-800 rounded-xl">
+                Tidak ada data matriks yang sesuai dengan kriteria filter.
               </div>
             )}
 

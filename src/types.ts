@@ -136,6 +136,15 @@ export interface MachinePhotoItem {
   keyCallouts: { label: string; detail?: string; value?: string }[];
 }
 
+export interface VideoChapter {
+  time: string;
+  topic: string;
+  note: string;
+  detailedExplanation?: string;
+  technicalSpecs?: { label: string; val: string }[];
+  spokenNarration?: string;
+}
+
 export interface MachineVideoTutorial {
   id: string;
   title: string;
@@ -147,7 +156,7 @@ export interface MachineVideoTutorial {
   category: string;
   instructorRole: string;
   description: string;
-  chapters: { time: string; topic: string; note: string }[];
+  chapters: VideoChapter[];
   keyTakeaways: string[];
 }
 

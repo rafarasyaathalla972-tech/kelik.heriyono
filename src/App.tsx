@@ -16,7 +16,7 @@ import {
   deleteSharedReport,
   checkServerHealth 
 } from './services/reportService';
-import { CheckCircle2, Factory, BookOpen, GraduationCap, Share2, Building2 } from 'lucide-react';
+import { CheckCircle2, Factory, BookOpen, GraduationCap, Share2, Building2, Sliders } from 'lucide-react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<'form' | 'dashboard' | 'history'>('dashboard');
@@ -58,7 +58,13 @@ export default function App() {
   const [isTrainingOpen, setIsTrainingOpen] = useState<boolean>(false);
   const [isShareOpen, setIsShareOpen] = useState<boolean>(false);
   const [isOrgStructureOpen, setIsOrgStructureOpen] = useState<boolean>(false);
+  const [orgStructureInitialTab, setOrgStructureInitialTab] = useState<'chart' | 'jobdesc' | 'roster' | 'helpers' | 'matrix'>('chart');
   const [trainingDefaultMachine, setTrainingDefaultMachine] = useState<TrainingModuleId>('REWINDER');
+
+  const handleOpenOrgStructure = (initialTab: 'chart' | 'jobdesc' | 'roster' | 'helpers' | 'matrix' = 'chart') => {
+    setOrgStructureInitialTab(initialTab);
+    setIsOrgStructureOpen(true);
+  };
 
   // Success Notification banner
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -243,7 +249,7 @@ export default function App() {
             onSaveReport={handleSaveReport}
             onOpenSop={() => setIsSopOpen(true)}
             onOpenTraining={handleOpenTraining}
-            onOpenOrgStructure={() => setIsOrgStructureOpen(true)}
+            onOpenOrgStructure={handleOpenOrgStructure}
             editingReport={editingReport}
             onCancelEdit={handleCancelEdit}
             existingReports={reports}
@@ -306,12 +312,21 @@ export default function App() {
             </button>
             <span className="text-slate-600">&bull;</span>
             <button
-              onClick={() => setIsOrgStructureOpen(true)}
+              onClick={() => handleOpenOrgStructure('chart')}
               className="text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1"
               title="Buka Struktur Organisasi & Job Description Personel PT. PUP"
             >
               <Building2 className="w-3.5 h-3.5" />
               <span>Struktur & Job Desc</span>
+            </button>
+            <span className="text-slate-600">&bull;</span>
+            <button
+              onClick={() => handleOpenOrgStructure('matrix')}
+              className="text-emerald-400 hover:text-emerald-300 font-semibold flex items-center gap-1"
+              title="Buka Matriks Tanggung Jawab Operasional & RACI Matrix Shift PT. PUP"
+            >
+              <Sliders className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Matriks RACI Shift</span>
             </button>
             <span className="text-slate-600">&bull;</span>
             <button
@@ -344,6 +359,7 @@ export default function App() {
       <OrgStructureModal
         isOpen={isOrgStructureOpen}
         onClose={() => setIsOrgStructureOpen(false)}
+        initialTab={orgStructureInitialTab}
         onSelectOperatorForReport={(person) => {
           setIsOrgStructureOpen(false);
           setActiveTab('form');
