@@ -181,17 +181,17 @@ export const ReportForm: React.FC<ReportFormProps> = ({
   const [rosterTargetField, setRosterTargetField] = useState<'operator' | 'assistant' | 'karu'>('operator');
   const [rosterSearch, setRosterSearch] = useState<string>('');
 
-  // B. Hasil Produksi
+  // B. Hasil Produksi (Standar 2 Ton per Shift untuk Semua Unit Mesin Kertas PM)
   const [targetProductionTon, setTargetProductionTon] = useState<number>(
-    editingReport?.targetProductionTon || 40.0
+    editingReport?.targetProductionTon || 2.0
   );
   const [actualProductionTon, setActualProductionTon] = useState<number>(
-    editingReport?.actualProductionTon || 40.0
+    editingReport?.actualProductionTon || 2.0
   );
   const [netWeightKg, setNetWeightKg] = useState<number>(
-    editingReport?.netWeightKg || 40000
+    editingReport?.netWeightKg || 2000
   );
-  const [reelCount, setReelCount] = useState<number>(editingReport?.reelCount || 7);
+  const [reelCount, setReelCount] = useState<number>(editingReport?.reelCount || 2);
   
   // Data Terintegrasi Produk Jumbo Roll PM
   const initialMatchedProd = useMemo(() => {
@@ -259,9 +259,9 @@ export const ReportForm: React.FC<ReportFormProps> = ({
   };
 
   // C. Kualitas Produk
-  const [qualityGradeA, setQualityGradeA] = useState<number>(editingReport?.qualityGradeA_Ton || 37.0);
-  const [qualityGradeB, setQualityGradeB] = useState<number>(editingReport?.qualityGradeB_Ton || 2.5);
-  const [qualityGradeC, setQualityGradeC] = useState<number>(editingReport?.qualityGradeC_Ton || 0.5);
+  const [qualityGradeA, setQualityGradeA] = useState<number>(editingReport?.qualityGradeA_Ton || 1.85);
+  const [qualityGradeB, setQualityGradeB] = useState<number>(editingReport?.qualityGradeB_Ton || 0.12);
+  const [qualityGradeC, setQualityGradeC] = useState<number>(editingReport?.qualityGradeC_Ton || 0.03);
   const [qualityGradeDefect, setQualityGradeDefect] = useState<number>(editingReport?.qualityGradeDefect_Ton || 0.0);
 
   // Parameter Kualitas Fisik Lab
@@ -375,6 +375,7 @@ export const ReportForm: React.FC<ReportFormProps> = ({
   };
 
   // Set default target based on machine when machine changes (unless in edit mode)
+  // Sesuai instruksi: Target standar untuk semua unit mesin kertas (PM1, PM2, PM5) per shift adalah 2 Ton
   const handleMachineChange = (newMachine: MachineId) => {
     setMachine(newMachine);
     if (!editingReport) {
@@ -382,67 +383,52 @@ export const ReportForm: React.FC<ReportFormProps> = ({
       if (machineProds.length > 0) {
         handleSelectProduct(machineProds[0]);
       }
-      if (newMachine === 'PM1') {
-        setTargetProductionTon(40.0);
-      } else if (newMachine === 'PM2') {
-        setTargetProductionTon(62.0);
-      } else if (newMachine === 'PM5') {
-        setTargetProductionTon(110.0);
-      }
+      setTargetProductionTon(2.0);
+      setActualProductionTon(2.0);
+      setNetWeightKg(2000);
+      setReelCount(2);
+      setQualityGradeA(1.85);
+      setQualityGradeB(0.12);
+      setQualityGradeC(0.03);
+      setQualityGradeDefect(0.0);
     }
   };
 
-  // 1-Click Auto Fill Normal Standard
+  // 1-Click Auto Fill Normal Standard (Target 2 Ton per Shift untuk Semua Mesin)
   const handleQuickFillNormal = () => {
+    setTargetProductionTon(2.0);
+    setActualProductionTon(2.0);
+    setNetWeightKg(2000);
+    setReelCount(2);
+    setQualityGradeA(1.85);
+    setQualityGradeB(0.12);
+    setQualityGradeC(0.03);
+    setQualityGradeDefect(0.0);
+
+    const machProds = getProductsByMachine(machine);
+    if (machProds.length > 0) {
+      handleSelectProduct(machProds[0]);
+    }
+
     if (machine === 'PM1') {
-      setTargetProductionTon(40.0);
-      setActualProductionTon(40.5);
-      setNetWeightKg(40500);
-      setReelCount(7);
-      setQualityGradeA(37.5);
-      setQualityGradeB(2.5);
-      setQualityGradeC(0.5);
-      setQualityGradeDefect(0.0);
-      setThicknessMicron(172);
       setMoisturePercent(7.8);
-      setTensileStrength(4.2);
+      setTensileStrength(1350);
       setSurfaceSmoothness(300);
-      setPaperGradeCode(PAPER_GRADE_PRESETS.PM1[1]);
     } else if (machine === 'PM2') {
-      setTargetProductionTon(62.0);
-      setActualProductionTon(63.0);
-      setNetWeightKg(63000);
-      setReelCount(8);
-      setQualityGradeA(58.5);
-      setQualityGradeB(3.5);
-      setQualityGradeC(1.0);
-      setQualityGradeDefect(0.0);
-      setThicknessMicron(210);
       setMoisturePercent(7.5);
-      setTensileStrength(5.1);
+      setTensileStrength(1350);
       setSurfaceSmoothness(350);
-      setPaperGradeCode(PAPER_GRADE_PRESETS.PM2[0]);
     } else if (machine === 'PM5') {
-      setTargetProductionTon(110.0);
-      setActualProductionTon(111.5);
-      setNetWeightKg(111500);
-      setReelCount(9);
-      setQualityGradeA(104.0);
-      setQualityGradeB(6.0);
-      setQualityGradeC(1.5);
-      setQualityGradeDefect(0.0);
-      setThicknessMicron(245);
-      setMoisturePercent(7.2);
-      setTensileStrength(6.4);
-      setSurfaceSmoothness(240);
-      setPaperGradeCode(PAPER_GRADE_PRESETS.PM5[0]);
+      setMoisturePercent(6.5);
+      setTensileStrength(320);
+      setSurfaceSmoothness(120);
     }
     setHasIncidentOption('NO');
     setIncidents([]);
     setSelectedDefects([]);
     setActionsTaken('Semua seksi beroperasi normal sesuai standar parameter mesin.');
-    setHandoverNotes('Kondisi mesin prima, lanjutkan target gulungan berikutnya.');
-    flashNotification(`Nilai standar normal ${machine} berhasil diisikan otomatis!`);
+    setHandoverNotes('Kondisi mesin prima, target 2 Ton / shift tercapai.');
+    flashNotification(`Nilai standar normal ${machine} (2 Ton / shift) berhasil diisikan otomatis!`);
   };
 
   // Adjust Tonase with +/- buttons
@@ -942,16 +928,45 @@ export const ReportForm: React.FC<ReportFormProps> = ({
               )}
             </div>
 
-            {/* Pilihan Mesin (Kartu Besar Ramah Sentuh) */}
+            {/* Pilihan Mesin & Produk Resmi PT. PUP (Data Produksi Jumbo Roll) */}
             <div>
-              <label className="block text-slate-300 font-semibold text-xs mb-2">
-                Pilih Unit Mesin Kertas <span className="text-rose-400">*</span>
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-slate-300 font-semibold text-xs">
+                  Pilih Unit Mesin Kertas <span className="text-rose-400">*</span>
+                </label>
+                <span className="text-[11px] text-amber-400/90 font-medium">
+                  Sesuai Master Dokumen Data Produksi Jumbo Roll PT. PUP
+                </span>
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                 {([
-                  { id: 'PM1' as MachineId, name: 'PM1 - Medium Paper', spec: 'Single Wire • 110-150 gsm', target: '40 Ton' },
-                  { id: 'PM2' as MachineId, name: 'PM2 - High ECT Kraft', spec: 'Twin Wire • 140-175 gsm', target: '62 Ton' },
-                  { id: 'PM5' as MachineId, name: 'PM5 - White Top Kraft', spec: 'Multi-Ply + DCS • 140-200 gsm', target: '110 Ton' }
+                  { 
+                    id: 'PM1' as MachineId, 
+                    title: 'MESIN PM 1',
+                    productName: 'MG HVS, Facial, Toilet & Napkin Pulp', 
+                    spec: '13 - 20 GSM • Putih (Bahan Baku: HVS & PULP)', 
+                    target: '2 Ton',
+                    itemCount: '9 Item Produk',
+                    itemsSummary: 'MG HVS (Putih) • Facial Pulp (3 uk.) • Toilet Pulp (2 uk.) • Napkin Pulp (2 uk.)'
+                  },
+                  { 
+                    id: 'PM2' as MachineId, 
+                    title: 'MESIN PM 2',
+                    productName: 'MG HVS 1 PLY (Kuning, Pink, Putih)', 
+                    spec: '18 GSM (± 1) • Tebal 0.05 mm (Bahan Baku: HVS)', 
+                    target: '2 Ton',
+                    itemCount: '6 Item Produk',
+                    itemsSummary: 'MG HVS Kuning (2 uk.) • MG HVS Pink (2 uk.) • MG HVS Putih (2 uk.)'
+                  },
+                  { 
+                    id: 'PM5' as MachineId, 
+                    title: 'MESIN PM 5',
+                    productName: 'TOILET HVS 2 PLY PUTIH', 
+                    spec: '17 GSM (± 1) • Creeping 20% • Tebal 0.13 mm', 
+                    target: '2 Ton',
+                    itemCount: '8 Item Produk',
+                    itemsSummary: 'Toilet HVS 2 Ply Putih (Lebar: 200, 380, 400, 530, 800, 1140, 2200, 1300 mm)'
+                  }
                 ]).map((m) => {
                   const isSelected = machine === m.id;
                   return (
@@ -960,30 +975,115 @@ export const ReportForm: React.FC<ReportFormProps> = ({
                       key={m.id}
                       id={`machine-select-${m.id}`}
                       onClick={() => handleMachineChange(m.id)}
-                      className={`p-3 rounded-xl border text-left transition-all relative ${
+                      className={`p-3.5 rounded-xl border text-left transition-all relative flex flex-col justify-between ${
                         isSelected
                           ? 'bg-emerald-950/80 border-emerald-500 shadow-md ring-1 ring-emerald-500'
                           : 'bg-slate-950 border-slate-800 hover:border-slate-700 hover:bg-slate-900'
                       }`}
                     >
-                      <div className="flex items-center justify-between">
-                        <span className={`text-base font-black font-mono ${isSelected ? 'text-emerald-300' : 'text-white'}`}>
-                          {m.id}
-                        </span>
-                        {isSelected && (
-                          <span className="p-1 bg-emerald-500 text-slate-950 rounded-full">
-                            <Check className="w-3 h-3 stroke-[3]" />
+                      <div>
+                        <div className="flex items-center justify-between">
+                          <span className={`text-base font-black font-mono tracking-wide ${isSelected ? 'text-emerald-300' : 'text-white'}`}>
+                            {m.title}
                           </span>
-                        )}
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 font-mono font-bold">
+                              {m.itemCount}
+                            </span>
+                            {isSelected && (
+                              <span className="p-1 bg-emerald-500 text-slate-950 rounded-full">
+                                <Check className="w-3 h-3 stroke-[3]" />
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Nama Produk Resmi PM */}
+                        <div className="text-xs font-bold text-amber-300 mt-1.5 leading-snug">
+                          {m.productName}
+                        </div>
+                        
+                        {/* Spesifikasi Teknis */}
+                        <div className="text-[11px] text-slate-300 mt-1">
+                          {m.spec}
+                        </div>
+
+                        {/* Ringkasan Varian Item */}
+                        <div className="text-[10px] text-slate-400 mt-1.5 leading-relaxed bg-slate-900/70 p-1.5 rounded border border-slate-800/80">
+                          {m.itemsSummary}
+                        </div>
                       </div>
-                      <div className="text-xs font-bold text-slate-200 mt-1">{m.name.split(' - ')[1]}</div>
-                      <div className="text-[11px] text-slate-400 mt-0.5">{m.spec}</div>
-                      <div className="mt-2 text-[10px] text-emerald-400/90 font-mono font-semibold">
-                        Target Standar: {m.target} / shift
+
+                      <div className="mt-2.5 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px]">
+                        <span className="text-emerald-400 font-mono font-bold">
+                          Target Standar: {m.target} / shift
+                        </span>
+                        <span className="text-slate-400">
+                          {isSelected ? '✓ Terpilih' : 'Klik untuk Pilih'}
+                        </span>
                       </div>
                     </button>
                   );
                 })}
+              </div>
+
+              {/* Sub-Panel: Pilihan Cepat Produk Jumbo Roll untuk Mesin Aktif */}
+              <div className="mt-3 p-3 bg-slate-950 rounded-xl border border-slate-800 space-y-2">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-slate-200">
+                      Pilih Item Produk Mesin {machine}:
+                    </span>
+                    <span className="text-[11px] text-amber-400 font-mono">
+                      ({getProductsByMachine(machine).length} varian resmi PT. PUP)
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowProductCatalogModal(true)}
+                    className="text-[11px] text-amber-400 hover:text-amber-300 underline font-semibold flex items-center gap-1"
+                  >
+                    <Layers className="w-3 h-3" />
+                    <span>Lihat Tabel Master Produk</span>
+                  </button>
+                </div>
+
+                {/* Quick Interactive Product Chips */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1.5 max-h-52 overflow-y-auto pr-1">
+                  {getProductsByMachine(machine).map((prod) => {
+                    const isProdActive = selectedProduct?.id === prod.id || productCode === prod.kodeBarang;
+                    return (
+                      <button
+                        type="button"
+                        key={prod.id}
+                        onClick={() => handleSelectProduct(prod)}
+                        className={`p-2 rounded-lg border text-left text-xs transition-all flex items-start justify-between gap-2 ${
+                          isProdActive
+                            ? 'bg-amber-950/60 border-amber-500 text-white shadow-sm ring-1 ring-amber-500/50'
+                            : 'bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-700 hover:bg-slate-850'
+                        }`}
+                      >
+                        <div className="min-w-0 flex-1">
+                          <div className="font-bold text-[11px] truncate text-slate-100">
+                            {prod.no}. {prod.itemBarang}
+                          </div>
+                          <div className="flex items-center gap-2 text-[10px] text-slate-400 mt-0.5 font-mono">
+                            <span>{prod.kodeBarang}</span>
+                            <span>•</span>
+                            <span className="text-amber-300 font-semibold">{prod.gsm} GSM</span>
+                            <span>•</span>
+                            <span>{prod.bahanBaku}</span>
+                          </div>
+                        </div>
+                        {isProdActive && (
+                          <span className="shrink-0 p-0.5 bg-amber-500 text-slate-950 rounded">
+                            <Check className="w-3 h-3 stroke-[3]" />
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
 
@@ -1465,7 +1565,7 @@ export const ReportForm: React.FC<ReportFormProps> = ({
                   />
                   <span className="absolute right-3 top-2.5 text-slate-500 font-semibold">Ton</span>
                 </div>
-                <span className="text-[10px] text-slate-500 block mt-1">Standar {machine}: {machine === 'PM1' ? '40' : machine === 'PM2' ? '62' : '110'} Ton</span>
+                <span className="text-[10px] text-slate-500 block mt-1">Standar {machine}: 2 Ton / shift</span>
               </div>
 
               {/* Produksi Aktual dengan Tombol +/- Cepat */}
@@ -1489,31 +1589,35 @@ export const ReportForm: React.FC<ReportFormProps> = ({
                 <div className="grid grid-cols-4 gap-1 mt-2">
                   <button
                     type="button"
-                    onClick={() => adjustActualTon(-5)}
+                    onClick={() => adjustActualTon(-0.5)}
                     className="py-1 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded font-mono font-bold text-[11px] border border-slate-800"
+                    title="Kurangi 0.5 Ton"
                   >
-                    -5T
+                    -0.5T
                   </button>
                   <button
                     type="button"
-                    onClick={() => adjustActualTon(-1)}
+                    onClick={() => adjustActualTon(-0.1)}
                     className="py-1 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded font-mono font-bold text-[11px] border border-slate-800"
+                    title="Kurangi 0.1 Ton"
                   >
-                    -1T
+                    -0.1T
                   </button>
                   <button
                     type="button"
-                    onClick={() => adjustActualTon(1)}
+                    onClick={() => adjustActualTon(0.1)}
                     className="py-1 bg-emerald-950 hover:bg-emerald-900 text-emerald-300 rounded font-mono font-bold text-[11px] border border-emerald-800"
+                    title="Tambah 0.1 Ton"
                   >
-                    +1T
+                    +0.1T
                   </button>
                   <button
                     type="button"
-                    onClick={() => adjustActualTon(5)}
+                    onClick={() => adjustActualTon(0.5)}
                     className="py-1 bg-emerald-950 hover:bg-emerald-900 text-emerald-300 rounded font-mono font-bold text-[11px] border border-emerald-800"
+                    title="Tambah 0.5 Ton"
                   >
-                    +5T
+                    +0.5T
                   </button>
                 </div>
               </div>
