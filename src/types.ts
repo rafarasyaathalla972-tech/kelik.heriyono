@@ -25,6 +25,22 @@ export interface EditAuditLog {
   summary?: string;
 }
 
+export interface PmJumboRollProduct {
+  id: string;
+  no: number;
+  machine: MachineId;
+  itemBarang: string;
+  kodeBarang: string;
+  gsm: number;
+  gsmTolerance: string;
+  tensileMd: string;
+  tensileCd: string;
+  thicknessMm: number;
+  thicknessMicron: number;
+  creeping: string;
+  bahanBaku: 'HVS' | 'PULP';
+}
+
 export interface ShiftReport {
   id: string;
   // A. Data Umum
@@ -42,7 +58,18 @@ export interface ShiftReport {
   achievementPercentage: number; // calculated: (actual / target) * 100
   netWeightKg: number;
   reelCount: number;
-  paperGradeCode: string; // e.g. "CM125", "KL150", "TL140"
+  paperGradeCode: string; // e.g. "MG HVS 1 PLY PUTIH UK.0275 MM [60.A/B.61.2.18.0275]"
+  
+  // Data Terintegrasi Produk Jumbo Roll PM
+  productCode?: string;         // Kode Barang, e.g. "60.A/B.61.2.18.0275"
+  productItemName?: string;     // Item Barang, e.g. "MG HVS 1 PLY PUTIH UK.0275 MM"
+  targetGsm?: number;           // GSM target, e.g. 18.0
+  gsmTolerance?: string;        // Toleransi GSM, e.g. "± 1"
+  tensileMdStandard?: string;   // MD Tensile Standard, e.g. "1200 - 1500"
+  tensileCdStandard?: string;   // CD Tensile Standard, e.g. "500-600"
+  thicknessMmStandard?: number; // Ketebalan mm, e.g. 0.05
+  creepingStandard?: string;    // Creeping standard, e.g. "14%" atau "-"
+  rawMaterial?: 'HVS' | 'PULP'; // Bahan Baku, e.g. 'HVS' | 'PULP'
 
   // B. Kualitas Produk
   qualityGradeA_Ton: number;

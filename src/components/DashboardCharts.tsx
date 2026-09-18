@@ -26,6 +26,8 @@ import {
   ShieldCheck
 } from 'lucide-react';
 import { ShiftReport, MachineId } from '../types';
+import { findProductByCodeOrName } from '../data/pmProductData';
+import { PmProductsModal } from './PmProductsModal';
 
 interface DashboardChartsProps {
   reports: ShiftReport[];
@@ -35,6 +37,8 @@ interface DashboardChartsProps {
 export const DashboardCharts: React.FC<DashboardChartsProps> = ({ reports }) => {
   const [selectedMachineFilter, setSelectedMachineFilter] = useState<'ALL' | MachineId>('ALL');
   const [selectedShiftFilter, setSelectedShiftFilter] = useState<string>('ALL');
+  const [showCatalogModal, setShowCatalogModal] = useState<boolean>(false);
+  const [catalogMachine, setCatalogMachine] = useState<MachineId>('PM1');
 
   // Filtered reports based on user controls
   const filteredReports = useMemo(() => {
@@ -182,6 +186,56 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ reports }) => 
     return Object.entries(map)
       .map(([location, minutes]) => ({ location, minutes }))
       .sort((a, b) => b.minutes - a.minutes);
+  }, [filteredReports]);
+
+  // Production aggregation by PM Jumbo Roll product
+  const productionByProduct = useMemo(() => {
+    const map: Record<string, {
+      productName: string;
+      productCode: string;
+      rawMaterial: string;
+      targetGsm: number;
+      gsmTolerance: string;
+      machine: string;
+      totalTon: number;
+      reels: number;
+      reportsCount: number;
+      gradeATon: number;
+      defectTon: number;
+    }> = {};
+
+    filteredReports.forEach(r => {
+      const prod = findProductByCodeOrName(r.productCode || r.paperGradeCode);
+      const key = r.productCode || prod?.kodeBarang || r.paperGradeCode;
+      const name = r.productItemName || prod?.itemBarang || r.paperGradeCode;
+      const code = r.productCode || prod?.kodeBarang || '-';
+      const raw = r.rawMaterial || prod?.bahanBaku || 'HVS';
+      const gsm = r.targetGsm || prod?.gsm || 0;
+      const tol = r.gsmTolerance || prod?.gsmTolerance || '';
+
+      if (!map[key]) {
+        map[key] = {
+          productName: name,
+          productCode: code,
+          rawMaterial: raw,
+          targetGsm: gsm,
+          gsmTolerance: tol,
+          machine: r.machine,
+          totalTon: 0,
+          reels: 0,
+          reportsCount: 0,
+          gradeATon: 0,
+          defectTon: 0
+        };
+      }
+      map[key].totalTon += (r.actualProductionTon || 0);
+      map[key].reels += (r.reelCount || 0);
+      map[key].reportsCount += 1;
+      map[key].gradeATon += (r.qualityGradeA_Ton || 0);
+      map[key].defectTon += (r.qualityGradeDefect_Ton || 0);
+    });
+
+    return Object.values(map).sort((a, b) => b.totalTon - a.totalTon);
   }, [filteredReports]);
 
   return (
@@ -491,7 +545,108 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ reports }) => 
           )}
         </div>
 
+        {/* SECTION 5: DISTRIBUSI & AKUMULASI PRODUKSI BERDASARKAN PRODUK PM JUMBO ROLL */}
+        <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-4 sm:p-5 shadow-sm space-y-3 lg:col-span-2">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-slate-800 pb-3">
+            <div>
+              <h2 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+                <Layers className="w-4 h-4 text-amber-400" />
+                Akumulasi Produksi Berdasarkan Produk Jumbo Roll (PM Master Data PT. PUP)
+              </h2>
+              <p className="text-[11px] text-slate-400">
+                Pemetaan tonase riil, roll count, dan persentase kualitas Grade A per item kode barang PM.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setCatalogMachine(selectedMachineFilter === 'ALL' ? 'PM1' : selectedMachineFilter);
+                setShowCatalogModal(true);
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-amber-950/80 hover:bg-amber-900 text-amber-300 border border-amber-600/50 rounded-lg transition-colors self-start sm:self-auto"
+            >
+              <Layers className="w-3.5 h-3.5" />
+              <span>Buka Katalog Standar PM</span>
+            </button>
+          </div>
+
+          {productionByProduct.length > 0 ? (
+            <div className="overflow-x-auto pt-1">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-slate-950 text-slate-400 border-b border-slate-800 uppercase text-[10px]">
+                    <th className="py-2.5 px-3">Kode Barang</th>
+                    <th className="py-2.5 px-3">Item Produk</th>
+                    <th className="py-2.5 px-3">Mesin</th>
+                    <th className="py-2.5 px-3">Bahan Baku</th>
+                    <th className="py-2.5 px-3">Target GSM</th>
+                    <th className="py-2.5 px-3 text-right">Laporan</th>
+                    <th className="py-2.5 px-3 text-right">Total Reel</th>
+                    <th className="py-2.5 px-3 text-right">Produksi Aktual</th>
+                    <th className="py-2.5 px-3 text-right">Grade A</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800">
+                  {productionByProduct.map((p, idx) => {
+                    const gradeAPct = p.totalTon > 0 ? ((p.gradeATon / p.totalTon) * 100).toFixed(1) : '0';
+                    return (
+                      <tr key={idx} className="hover:bg-slate-800/40 transition-colors">
+                        <td className="py-2.5 px-3 font-mono font-bold text-amber-300">
+                          {p.productCode}
+                        </td>
+                        <td className="py-2.5 px-3 font-semibold text-slate-100">
+                          {p.productName}
+                        </td>
+                        <td className="py-2.5 px-3">
+                          <span className="px-2 py-0.5 bg-blue-950 text-blue-300 border border-blue-800/60 rounded text-[10px] font-mono font-bold">
+                            {p.machine}
+                          </span>
+                        </td>
+                        <td className="py-2.5 px-3">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
+                            p.rawMaterial === 'HVS'
+                              ? 'bg-blue-950/60 border-blue-700/50 text-blue-300'
+                              : 'bg-emerald-950/60 border-emerald-700/50 text-emerald-300'
+                          }`}>
+                            {p.rawMaterial}
+                          </span>
+                        </td>
+                        <td className="py-2.5 px-3 font-mono text-slate-300">
+                          {p.targetGsm ? `${p.targetGsm} ${p.gsmTolerance}` : '-'}
+                        </td>
+                        <td className="py-2.5 px-3 text-right text-slate-400 font-mono">
+                          {p.reportsCount}x
+                        </td>
+                        <td className="py-2.5 px-3 text-right font-mono text-slate-200">
+                          {p.reels} Roll
+                        </td>
+                        <td className="py-2.5 px-3 text-right font-mono font-bold text-emerald-400">
+                          {p.totalTon.toFixed(1)} Ton
+                        </td>
+                        <td className="py-2.5 px-3 text-right font-mono font-semibold text-cyan-300">
+                          {gradeAPct}%
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="p-6 text-center text-xs text-slate-500 bg-slate-950/40 rounded-lg">
+              Tidak ada data produk pada filter yang dipilih.
+            </div>
+          )}
+        </div>
+
       </div>
+
+      {/* Catalog Modal */}
+      <PmProductsModal
+        isOpen={showCatalogModal}
+        onClose={() => setShowCatalogModal(false)}
+        initialMachine={catalogMachine}
+      />
 
     </div>
   );

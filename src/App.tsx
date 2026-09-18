@@ -7,6 +7,7 @@ import { SopModal } from './components/SopModal';
 import { TrainingModal } from './components/TrainingModal';
 import { ShareModal } from './components/ShareModal';
 import { OrgStructureModal } from './components/OrgStructureModal';
+import { PmProductsModal } from './components/PmProductsModal';
 import { ShiftReport, MachineId, EditAuditLog, TrainingModuleId, PupPersonnel } from './types';
 import { INITIAL_SHIFT_REPORTS } from './data/initialReports';
 import { 
@@ -58,6 +59,7 @@ export default function App() {
   const [isTrainingOpen, setIsTrainingOpen] = useState<boolean>(false);
   const [isShareOpen, setIsShareOpen] = useState<boolean>(false);
   const [isOrgStructureOpen, setIsOrgStructureOpen] = useState<boolean>(false);
+  const [isPmProductsOpen, setIsPmProductsOpen] = useState<boolean>(false);
   const [orgStructureInitialTab, setOrgStructureInitialTab] = useState<'chart' | 'jobdesc' | 'roster' | 'helpers' | 'matrix'>('chart');
   const [trainingDefaultMachine, setTrainingDefaultMachine] = useState<TrainingModuleId>('REWINDER');
 
@@ -227,6 +229,7 @@ export default function App() {
         onOpenSop={() => setIsSopOpen(true)}
         onOpenTraining={() => handleOpenTraining()}
         onOpenOrgStructure={() => setIsOrgStructureOpen(true)}
+        onOpenPmProducts={() => setIsPmProductsOpen(true)}
         onOpenShare={() => setIsShareOpen(true)}
         reportCount={reports.length}
         isServerConnected={isServerConnected}
@@ -312,6 +315,15 @@ export default function App() {
             </button>
             <span className="text-slate-600">&bull;</span>
             <button
+              onClick={() => setIsPmProductsOpen(true)}
+              className="text-amber-400 hover:text-amber-300 font-semibold flex items-center gap-1"
+              title="Buka Master Data & Spesifikasi Produk Jumbo Roll PM1, PM2, PM5"
+            >
+              <Building2 className="w-3.5 h-3.5" />
+              <span>Katalog Produk PM</span>
+            </button>
+            <span className="text-slate-600">&bull;</span>
+            <button
               onClick={() => handleOpenOrgStructure('chart')}
               className="text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1"
               title="Buka Struktur Organisasi & Job Description Personel PT. PUP"
@@ -354,6 +366,11 @@ export default function App() {
         isOpen={isTrainingOpen}
         onClose={() => setIsTrainingOpen(false)}
         defaultMachine={trainingDefaultMachine}
+      />
+
+      <PmProductsModal
+        isOpen={isPmProductsOpen}
+        onClose={() => setIsPmProductsOpen(false)}
       />
 
       <OrgStructureModal

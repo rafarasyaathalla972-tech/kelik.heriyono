@@ -12,7 +12,8 @@ import {
   Share2,
   Check,
   Building2,
-  Users
+  Users,
+  Layers
 } from 'lucide-react';
 import { ShiftType } from '../types';
 
@@ -22,6 +23,7 @@ interface NavbarProps {
   onOpenSop: () => void;
   onOpenTraining: () => void;
   onOpenOrgStructure?: () => void;
+  onOpenPmProducts?: () => void;
   onOpenShare?: () => void;
   onPrintAll?: () => void;
   reportCount: number;
@@ -34,6 +36,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenSop,
   onOpenTraining,
   onOpenOrgStructure,
+  onOpenPmProducts,
   onOpenShare,
   reportCount,
   isServerConnected = true
@@ -192,6 +195,21 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span>Struktur & Job Desc</span>
                 <span className="hidden sm:inline-block bg-indigo-950 text-indigo-300 border border-indigo-400/40 text-[10px] px-1.5 py-0.2 rounded font-bold">
                   PT. PUP
+                </span>
+              </button>
+            )}
+
+            {onOpenPmProducts && (
+              <button
+                id="btn-open-pm-products-global"
+                onClick={onOpenPmProducts}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold bg-amber-950/90 hover:bg-amber-900 text-amber-100 border border-amber-500/60 transition-colors shadow-sm"
+                title="Buka Katalog Master Spesifikasi Produk Jumbo Roll PM1, PM2, PM5 PT. PUP"
+              >
+                <Layers className="w-3.5 h-3.5 text-amber-300" />
+                <span>Produk PM</span>
+                <span className="hidden sm:inline-block bg-amber-900/80 text-amber-300 border border-amber-400/40 text-[10px] px-1.5 py-0.2 rounded font-bold">
+                  Jumbo Roll
                 </span>
               </button>
             )}

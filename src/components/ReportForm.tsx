@@ -34,12 +34,21 @@ import {
   ShiftType, 
   IncidentReport,
   PupPersonnel,
-  PupGroup
+  PupGroup,
+  PmJumboRollProduct
 } from '../types';
 import { 
   PUP_PERSONNEL_ROSTER, 
   PT_PUP_METADATA 
 } from '../data/orgStructureData';
+import {
+  PM_JUMBO_ROLL_PRODUCTS,
+  getProductsByMachine,
+  findProductByCodeOrName,
+  formatPaperGradeCode,
+  formatProductOptionLabel
+} from '../data/pmProductData';
+import { PmProductsModal } from './PmProductsModal';
 
 interface ReportFormProps {
   onSaveReport: (report: ShiftReport, editReason?: string, editorName?: string) => void;
@@ -65,24 +74,9 @@ const COMMON_DEFECT_TYPES = [
 ];
 
 const PAPER_GRADE_PRESETS: Record<MachineId, string[]> = {
-  PM1: [
-    'Tissue 12-16 gsm (Facial / Soft)',
-    'Tissue 18-22 gsm (Toilet / Napkin)',
-    'MG Paper 24-26 gsm (Machine Glazed)',
-    'Doorslag 36-42 gsm (Pola & Wrapping)'
-  ],
-  PM2: [
-    'Tissue 12-16 gsm (Facial / Soft)',
-    'Tissue 18-22 gsm (Toilet / Napkin)',
-    'MG Paper 24-26 gsm (Machine Glazed)',
-    'Doorslag 36-42 gsm (Pola & Wrapping)'
-  ],
-  PM5: [
-    'Tissue 12-16 gsm (Facial / Soft)',
-    'Tissue 18-22 gsm (Toilet / Napkin)',
-    'MG Paper 24-26 gsm (Machine Glazed)',
-    'Doorslag 36-42 gsm (Pola & Wrapping)'
-  ]
+  PM1: getProductsByMachine('PM1').map(p => formatPaperGradeCode(p)),
+  PM2: getProductsByMachine('PM2').map(p => formatPaperGradeCode(p)),
+  PM5: getProductsByMachine('PM5').map(p => formatPaperGradeCode(p))
 };
 
 // Preset kendala umum pabrik kertas untuk 1-klik input
@@ -198,9 +192,71 @@ export const ReportForm: React.FC<ReportFormProps> = ({
     editingReport?.netWeightKg || 40000
   );
   const [reelCount, setReelCount] = useState<number>(editingReport?.reelCount || 7);
-  const [paperGradeCode, setPaperGradeCode] = useState<string>(
-    editingReport?.paperGradeCode || PAPER_GRADE_PRESETS.PM1[1]
+  
+  // Data Terintegrasi Produk Jumbo Roll PM
+  const initialMatchedProd = useMemo(() => {
+    if (editingReport?.productCode) {
+      return findProductByCodeOrName(editingReport.productCode);
+    }
+    if (editingReport?.paperGradeCode) {
+      return findProductByCodeOrName(editingReport.paperGradeCode);
+    }
+    const machProds = getProductsByMachine(machine);
+    return machProds[0];
+  }, [editingReport, machine]);
+
+  const [selectedProduct, setSelectedProduct] = useState<PmJumboRollProduct | null>(initialMatchedProd || null);
+  const [productCode, setProductCode] = useState<string>(
+    editingReport?.productCode || initialMatchedProd?.kodeBarang || ''
   );
+  const [productItemName, setProductItemName] = useState<string>(
+    editingReport?.productItemName || initialMatchedProd?.itemBarang || ''
+  );
+  const [targetGsm, setTargetGsm] = useState<number>(
+    editingReport?.targetGsm || initialMatchedProd?.gsm || 18.0
+  );
+  const [gsmTolerance, setGsmTolerance] = useState<string>(
+    editingReport?.gsmTolerance || initialMatchedProd?.gsmTolerance || '± 1'
+  );
+  const [tensileMdStandard, setTensileMdStandard] = useState<string>(
+    editingReport?.tensileMdStandard || initialMatchedProd?.tensileMd || ''
+  );
+  const [tensileCdStandard, setTensileCdStandard] = useState<string>(
+    editingReport?.tensileCdStandard || initialMatchedProd?.tensileCd || ''
+  );
+  const [thicknessMmStandard, setThicknessMmStandard] = useState<number>(
+    editingReport?.thicknessMmStandard || initialMatchedProd?.thicknessMm || 0.05
+  );
+  const [creepingStandard, setCreepingStandard] = useState<string>(
+    editingReport?.creepingStandard || initialMatchedProd?.creeping || '-'
+  );
+  const [rawMaterial, setRawMaterial] = useState<'HVS' | 'PULP'>(
+    editingReport?.rawMaterial || initialMatchedProd?.bahanBaku || 'HVS'
+  );
+  const [showProductCatalogModal, setShowProductCatalogModal] = useState<boolean>(false);
+
+  const [paperGradeCode, setPaperGradeCode] = useState<string>(() => {
+    if (editingReport?.paperGradeCode) return editingReport.paperGradeCode;
+    if (initialMatchedProd) return formatPaperGradeCode(initialMatchedProd);
+    return PAPER_GRADE_PRESETS.PM1[0];
+  });
+
+  // Handler saat memilih produk Jumbo Roll resmi
+  const handleSelectProduct = (prod: PmJumboRollProduct) => {
+    setSelectedProduct(prod);
+    setProductCode(prod.kodeBarang);
+    setProductItemName(prod.itemBarang);
+    setPaperGradeCode(formatPaperGradeCode(prod));
+    setTargetGsm(prod.gsm);
+    setGsmTolerance(prod.gsmTolerance);
+    setTensileMdStandard(prod.tensileMd);
+    setTensileCdStandard(prod.tensileCd);
+    setThicknessMmStandard(prod.thicknessMm);
+    setCreepingStandard(prod.creeping);
+    setRawMaterial(prod.bahanBaku);
+    setThicknessMicron(prod.thicknessMicron);
+    flashNotification(`Produk ${prod.itemBarang} (${prod.kodeBarang}) berhasil dimuat dengan standar spesifikasi pabrik.`);
+  };
 
   // C. Kualitas Produk
   const [qualityGradeA, setQualityGradeA] = useState<number>(editingReport?.qualityGradeA_Ton || 37.0);
@@ -209,7 +265,9 @@ export const ReportForm: React.FC<ReportFormProps> = ({
   const [qualityGradeDefect, setQualityGradeDefect] = useState<number>(editingReport?.qualityGradeDefect_Ton || 0.0);
 
   // Parameter Kualitas Fisik Lab
-  const [thicknessMicron, setThicknessMicron] = useState<number>(editingReport?.thicknessMicron || 172);
+  const [thicknessMicron, setThicknessMicron] = useState<number>(
+    editingReport?.thicknessMicron || initialMatchedProd?.thicknessMicron || 50
+  );
   const [moisturePercent, setMoisturePercent] = useState<number>(editingReport?.moisturePercent || 7.8);
   const [tensileStrength, setTensileStrength] = useState<number>(editingReport?.tensileStrength || 4.2);
   const [surfaceSmoothness, setSurfaceSmoothness] = useState<number>(editingReport?.surfaceSmoothness || 300);
@@ -320,15 +378,16 @@ export const ReportForm: React.FC<ReportFormProps> = ({
   const handleMachineChange = (newMachine: MachineId) => {
     setMachine(newMachine);
     if (!editingReport) {
+      const machineProds = getProductsByMachine(newMachine);
+      if (machineProds.length > 0) {
+        handleSelectProduct(machineProds[0]);
+      }
       if (newMachine === 'PM1') {
         setTargetProductionTon(40.0);
-        setPaperGradeCode(PAPER_GRADE_PRESETS.PM1[1]);
       } else if (newMachine === 'PM2') {
         setTargetProductionTon(62.0);
-        setPaperGradeCode(PAPER_GRADE_PRESETS.PM2[0]);
       } else if (newMachine === 'PM5') {
         setTargetProductionTon(110.0);
-        setPaperGradeCode(PAPER_GRADE_PRESETS.PM5[0]);
       }
     }
   };
@@ -595,6 +654,15 @@ export const ReportForm: React.FC<ReportFormProps> = ({
       netWeightKg: Number(netWeightKg) || 0,
       reelCount: Number(reelCount) || 0,
       paperGradeCode,
+      productCode: productCode || selectedProduct?.kodeBarang,
+      productItemName: productItemName || selectedProduct?.itemBarang,
+      targetGsm: Number(targetGsm) || selectedProduct?.gsm,
+      gsmTolerance: gsmTolerance || selectedProduct?.gsmTolerance,
+      tensileMdStandard: tensileMdStandard || selectedProduct?.tensileMd,
+      tensileCdStandard: tensileCdStandard || selectedProduct?.tensileCd,
+      thicknessMmStandard: Number(thicknessMmStandard) || selectedProduct?.thicknessMm,
+      creepingStandard: creepingStandard || selectedProduct?.creeping,
+      rawMaterial: rawMaterial || selectedProduct?.bahanBaku,
       qualityGradeA_Ton: Number(qualityGradeA) || 0,
       qualityGradeB_Ton: Number(qualityGradeB) || 0,
       qualityGradeC_Ton: Number(qualityGradeC) || 0,
@@ -645,6 +713,15 @@ export const ReportForm: React.FC<ReportFormProps> = ({
         netWeightKg: Number(netWeightKg) || 0,
         reelCount: Number(reelCount) || 0,
         paperGradeCode,
+        productCode: productCode || selectedProduct?.kodeBarang,
+        productItemName: productItemName || selectedProduct?.itemBarang,
+        targetGsm: Number(targetGsm) || selectedProduct?.gsm,
+        gsmTolerance: gsmTolerance || selectedProduct?.gsmTolerance,
+        tensileMdStandard: tensileMdStandard || selectedProduct?.tensileMd,
+        tensileCdStandard: tensileCdStandard || selectedProduct?.tensileCd,
+        thicknessMmStandard: Number(thicknessMmStandard) || selectedProduct?.thicknessMm,
+        creepingStandard: creepingStandard || selectedProduct?.creeping,
+        rawMaterial: rawMaterial || selectedProduct?.bahanBaku,
         qualityGradeA_Ton: Number(qualityGradeA) || 0,
         qualityGradeB_Ton: Number(qualityGradeB) || 0,
         qualityGradeC_Ton: Number(qualityGradeC) || 0,
@@ -1475,30 +1552,160 @@ export const ReportForm: React.FC<ReportFormProps> = ({
               </div>
             </div>
 
-            {/* Pilihan Jenis / Grade Kertas */}
-            <div>
-              <label className="block text-slate-300 font-semibold text-xs mb-1.5">
-                Jenis Kertas yang Diproduksi
-              </label>
+            {/* Pilihan Jenis / Grade Kertas & Data Produk Jumbo Roll PM */}
+            <div className="space-y-2.5">
+              <div className="flex items-center justify-between">
+                <label className="block text-slate-300 font-semibold text-xs flex items-center gap-1.5">
+                  <span>Jenis Kertas & Produk Jumbo Roll Mesin {machine}</span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold">
+                    Master Dokumen Pabrik
+                  </span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowProductCatalogModal(true)}
+                  className="flex items-center gap-1 text-[11px] text-amber-400 hover:text-amber-300 hover:underline font-semibold"
+                >
+                  <Layers className="w-3.5 h-3.5" />
+                  <span>Katalog Produk ({getProductsByMachine(machine).length} Item)</span>
+                </button>
+              </div>
+
               <select
                 value={paperGradeCode}
-                onChange={(e) => setPaperGradeCode(e.target.value)}
-                className="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 text-xs focus:outline-none focus:border-emerald-500 font-medium cursor-pointer"
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === 'CUSTOM') {
+                    setPaperGradeCode('CUSTOM');
+                    setSelectedProduct(null);
+                  } else {
+                    const matched = findProductByCodeOrName(val);
+                    if (matched) {
+                      handleSelectProduct(matched);
+                    } else {
+                      setPaperGradeCode(val);
+                    }
+                  }
+                }}
+                className="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 text-xs focus:outline-none focus:border-amber-500 font-medium cursor-pointer"
               >
-                {PAPER_GRADE_PRESETS[machine].map((preset, i) => (
-                  <option key={i} value={preset}>
-                    {preset}
-                  </option>
-                ))}
-                <option value="CUSTOM">-- Jenis / Pesanan Kertas Lainnya --</option>
+                <optgroup label={`Produk Resmi Jumbo Roll Mesin ${machine} (PT. PUP)`}>
+                  {getProductsByMachine(machine).map((prod) => (
+                    <option key={prod.id} value={formatPaperGradeCode(prod)}>
+                      {formatProductOptionLabel(prod)}
+                    </option>
+                  ))}
+                </optgroup>
+                <option value="CUSTOM">-- Masukkan Jenis / Grade Custom Manual --</option>
               </select>
+
               {paperGradeCode === 'CUSTOM' && (
-                <input
-                  type="text"
-                  placeholder="Masukkan nama kode / gramatur pesanan custom..."
-                  onChange={(e) => setPaperGradeCode(e.target.value)}
-                  className="w-full mt-2 px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-100 text-xs"
-                />
+                <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 space-y-2">
+                  <input
+                    type="text"
+                    placeholder="Masukkan nama item / kode barang pesanan custom..."
+                    value={productItemName}
+                    onChange={(e) => {
+                      setProductItemName(e.target.value);
+                      setPaperGradeCode(e.target.value);
+                    }}
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 text-xs"
+                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="text"
+                      placeholder="Kode Barang (opsional)"
+                      value={productCode}
+                      onChange={(e) => setProductCode(e.target.value)}
+                      className="px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 text-xs"
+                    />
+                    <select
+                      value={rawMaterial}
+                      onChange={(e) => setRawMaterial(e.target.value as any)}
+                      className="px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 text-xs"
+                    >
+                      <option value="HVS">Bahan Baku: HVS</option>
+                      <option value="PULP">Bahan Baku: PULP</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+
+              {/* KARTU SPESIFIKASI STANDAR RESMI PRODUK JUMBO ROLL */}
+              {selectedProduct && (
+                <div className="bg-gradient-to-br from-slate-950 via-slate-900/90 to-slate-950 p-3.5 rounded-xl border border-amber-500/40 shadow-inner space-y-2 text-xs">
+                  <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-800/80">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] uppercase font-bold tracking-wider text-amber-400 bg-amber-950/60 px-2 py-0.5 rounded border border-amber-800/60 font-mono">
+                        {selectedProduct.kodeBarang}
+                      </span>
+                      <span className="font-bold text-white text-xs sm:text-sm">
+                        {selectedProduct.itemBarang}
+                      </span>
+                    </div>
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                      selectedProduct.bahanBaku === 'HVS'
+                        ? 'bg-amber-950 text-amber-300 border border-amber-700'
+                        : 'bg-emerald-950 text-emerald-300 border border-emerald-700'
+                    }`}>
+                      Bahan Baku: {selectedProduct.bahanBaku}
+                    </span>
+                  </div>
+
+                  {/* Spesifikasi Standar Grid */}
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-center pt-1">
+                    <div className="bg-slate-950/80 p-2 rounded-lg border border-slate-800">
+                      <span className="text-[9px] text-slate-400 uppercase block font-semibold">Target GSM</span>
+                      <span className="font-mono font-bold text-amber-300 text-xs sm:text-sm">
+                        {selectedProduct.gsm.toFixed(1).replace('.', ',')} {selectedProduct.gsmTolerance}
+                      </span>
+                    </div>
+
+                    <div className="bg-slate-950/80 p-2 rounded-lg border border-slate-800">
+                      <span className="text-[9px] text-slate-400 uppercase block font-semibold">Tarik MD</span>
+                      <span className="font-mono font-bold text-slate-200 text-xs">
+                        {selectedProduct.tensileMd}
+                      </span>
+                    </div>
+
+                    <div className="bg-slate-950/80 p-2 rounded-lg border border-slate-800">
+                      <span className="text-[9px] text-slate-400 uppercase block font-semibold">Tarik CD</span>
+                      <span className="font-mono font-bold text-slate-200 text-xs">
+                        {selectedProduct.tensileCd}
+                      </span>
+                    </div>
+
+                    <div className="bg-slate-950/80 p-2 rounded-lg border border-slate-800">
+                      <span className="text-[9px] text-slate-400 uppercase block font-semibold">Thickness (Tebal)</span>
+                      <span className="font-mono font-bold text-cyan-300 text-xs">
+                        {selectedProduct.thicknessMm.toFixed(2).replace('.', ',')} mm ({selectedProduct.thicknessMicron} µm)
+                      </span>
+                    </div>
+
+                    <div className="bg-slate-950/80 p-2 rounded-lg border border-slate-800 col-span-2 sm:col-span-1">
+                      <span className="text-[9px] text-slate-400 uppercase block font-semibold">Creeping</span>
+                      <span className="font-mono font-bold text-emerald-300 text-xs">
+                        {selectedProduct.creeping}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-800/40">
+                    <span>Standar Kaliber Mesin: <strong className="text-white">{selectedProduct.thicknessMicron} µm</strong></span>
+                    {thicknessMicron !== selectedProduct.thicknessMicron && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setThicknessMicron(selectedProduct.thicknessMicron);
+                          flashNotification(`Ketebalan diubah ke standar ${selectedProduct.thicknessMicron} µm (${selectedProduct.thicknessMm} mm).`);
+                        }}
+                        className="text-amber-400 hover:text-amber-300 font-semibold underline cursor-pointer"
+                      >
+                        Terapkan Standar ({selectedProduct.thicknessMicron} µm) ke Uji Lab
+                      </button>
+                    )}
+                  </div>
+                </div>
               )}
             </div>
 
@@ -2034,6 +2241,14 @@ export const ReportForm: React.FC<ReportFormProps> = ({
           </div>
         </div>
       )}
+
+      {/* Modal Katalog Produk Jumbo Roll PM (PT. PUP) */}
+      <PmProductsModal
+        isOpen={showProductCatalogModal}
+        onClose={() => setShowProductCatalogModal(false)}
+        onSelectProduct={handleSelectProduct}
+        initialMachine={machine}
+      />
 
     </div>
   );

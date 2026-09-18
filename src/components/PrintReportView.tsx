@@ -1,6 +1,7 @@
 import React from 'react';
 import { ShiftReport } from '../types';
-import { Printer, X } from 'lucide-react';
+import { Printer, X, Layers } from 'lucide-react';
+import { findProductByCodeOrName } from '../data/pmProductData';
 
 interface PrintReportViewProps {
   report: ShiftReport;
@@ -11,6 +12,17 @@ export const PrintReportView: React.FC<PrintReportViewProps> = ({ report, onClos
   const handlePrint = () => {
     window.print();
   };
+
+  const matchedProd = findProductByCodeOrName(report.productCode || report.paperGradeCode);
+  const displayProdCode = report.productCode || matchedProd?.kodeBarang || '-';
+  const displayItemName = report.productItemName || matchedProd?.itemBarang || report.paperGradeCode;
+  const displayRawMat = report.rawMaterial || matchedProd?.bahanBaku || 'HVS';
+  const displayTargetGsm = report.targetGsm || matchedProd?.gsm;
+  const displayTolerance = report.gsmTolerance || matchedProd?.gsmTolerance || '-';
+  const displayTensileMd = report.tensileMdStandard || matchedProd?.tensileMd || '-';
+  const displayTensileCd = report.tensileCdStandard || matchedProd?.tensileCd || '-';
+  const displayThicknessMm = report.thicknessMmStandard || matchedProd?.thicknessMm;
+  const displayCreeping = report.creepingStandard || matchedProd?.creeping || '-';
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/75 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4">
@@ -93,7 +105,7 @@ export const PrintReportView: React.FC<PrintReportViewProps> = ({ report, onClos
           {/* Section B: Hasil Produksi & Pencapaian */}
           <div>
             <h2 className="font-bold uppercase text-slate-900 text-xs mb-1.5 border-b border-slate-300 pb-1 flex justify-between">
-              <span>I. Hasil Produksi Mesin {report.machine}</span>
+              <span>I. Hasil Produksi Mesin {report.machine} & Identifikasi Produk Jumbo Roll</span>
               <span className="font-bold">
                 Pencapaian: {report.achievementPercentage}%
               </span>
@@ -101,8 +113,16 @@ export const PrintReportView: React.FC<PrintReportViewProps> = ({ report, onClos
             <table className="w-full text-left border-collapse border border-slate-300">
               <tbody>
                 <tr className="border-b border-slate-300">
-                  <td className="p-2 font-semibold bg-slate-50 w-1/4">Jenis Kertas</td>
-                  <td className="p-2 font-medium" colSpan={3}>{report.paperGradeCode}</td>
+                  <td className="p-2 font-semibold bg-slate-50 w-1/4">Item Barang Produk</td>
+                  <td className="p-2 font-bold text-slate-950" colSpan={3}>
+                    {displayItemName}
+                  </td>
+                </tr>
+                <tr className="border-b border-slate-300">
+                  <td className="p-2 font-semibold bg-slate-50">Kode Barang Resmi</td>
+                  <td className="p-2 font-mono font-bold text-slate-900">{displayProdCode}</td>
+                  <td className="p-2 font-semibold bg-slate-50">Bahan Baku (Pulp/HVS)</td>
+                  <td className="p-2 font-semibold text-slate-900">{displayRawMat}</td>
                 </tr>
                 <tr className="border-b border-slate-300">
                   <td className="p-2 font-semibold bg-slate-50">Target Produksi</td>
@@ -120,12 +140,41 @@ export const PrintReportView: React.FC<PrintReportViewProps> = ({ report, onClos
             </table>
           </div>
 
-          {/* Section C: Kualitas Produk */}
+          {/* Section C: Kualitas Produk & Standar Dokumen */}
           <div>
             <h2 className="font-bold uppercase text-slate-900 text-xs mb-1.5 border-b border-slate-300 pb-1">
-              II. Evaluasi Kualitas Produk & Hasil Uji Fisik
+              II. Evaluasi Kualitas Produk & Standar Mutu Lab (PT. PUP)
             </h2>
             
+            {/* Standar Spesifikasi Dokumen Pabrik */}
+            <div className="bg-slate-50 p-2.5 rounded border border-slate-300 mb-2">
+              <div className="text-[10px] font-bold uppercase text-slate-600 mb-1">
+                Standar Mutu Dokumen Produk ({displayProdCode})
+              </div>
+              <div className="grid grid-cols-5 gap-2 text-center text-[11px]">
+                <div className="p-1 border border-slate-200 bg-white rounded">
+                  <span className="text-[9px] text-slate-500 block">Target GSM</span>
+                  <strong className="font-mono">{displayTargetGsm ? `${displayTargetGsm} ${displayTolerance}` : '-'}</strong>
+                </div>
+                <div className="p-1 border border-slate-200 bg-white rounded">
+                  <span className="text-[9px] text-slate-500 block">Kekuatan Tarik MD</span>
+                  <strong className="font-mono">{displayTensileMd}</strong>
+                </div>
+                <div className="p-1 border border-slate-200 bg-white rounded">
+                  <span className="text-[9px] text-slate-500 block">Kekuatan Tarik CD</span>
+                  <strong className="font-mono">{displayTensileCd}</strong>
+                </div>
+                <div className="p-1 border border-slate-200 bg-white rounded">
+                  <span className="text-[9px] text-slate-500 block">Ketebalan Standar</span>
+                  <strong className="font-mono">{displayThicknessMm ? `${displayThicknessMm} mm` : '-'}</strong>
+                </div>
+                <div className="p-1 border border-slate-200 bg-white rounded">
+                  <span className="text-[9px] text-slate-500 block">Creeping</span>
+                  <strong className="font-mono">{displayCreeping}</strong>
+                </div>
+              </div>
+            </div>
+
             {/* Grade Breakdown Table */}
             <div className="grid grid-cols-4 gap-2 mb-2 text-center">
               <div className="p-2 border border-slate-300 bg-slate-50 rounded">
@@ -150,7 +199,7 @@ export const PrintReportView: React.FC<PrintReportViewProps> = ({ report, onClos
             <table className="w-full text-left border border-slate-300">
               <thead className="bg-slate-100 text-[10px] uppercase text-slate-700 font-bold">
                 <tr>
-                  <th className="p-1.5 border-b border-slate-300">Ketebalan (Caliper)</th>
+                  <th className="p-1.5 border-b border-slate-300">Ketebalan Uji (Caliper)</th>
                   <th className="p-1.5 border-b border-slate-300">Kelembapan (Moisture)</th>
                   <th className="p-1.5 border-b border-slate-300">Kekuatan Tarik (Tensile)</th>
                   <th className="p-1.5 border-b border-slate-300">Kerataan (Smoothness)</th>

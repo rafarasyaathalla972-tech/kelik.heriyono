@@ -21,6 +21,8 @@ import {
 } from 'lucide-react';
 import { ShiftReport, MachineId } from '../types';
 import { PrintReportView } from './PrintReportView';
+import { findProductByCodeOrName } from '../data/pmProductData';
+import { PmProductsModal } from './PmProductsModal';
 
 interface ReportListProps {
   reports: ShiftReport[];
@@ -36,7 +38,10 @@ export const ReportList: React.FC<ReportListProps> = ({
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [machineFilter, setMachineFilter] = useState<'ALL' | MachineId>('ALL');
   const [shiftFilter, setShiftFilter] = useState<string>('ALL');
+  const [bahanBakuFilter, setBahanBakuFilter] = useState<'ALL' | 'HVS' | 'PULP'>('ALL');
   const [selectedDateFilter, setSelectedDateFilter] = useState<string>('');
+  const [showCatalogModal, setShowCatalogModal] = useState<boolean>(false);
+  const [catalogMachine, setCatalogMachine] = useState<MachineId>('PM1');
   
   // Expanded report detail row
   const [expandedReportId, setExpandedReportId] = useState<string | null>(null);
@@ -55,17 +60,25 @@ export const ReportList: React.FC<ReportListProps> = ({
         (shiftFilter === 'Shift 3' && (rep.shift as string) === 'Malam');
       const matchDate = !selectedDateFilter || rep.date === selectedDateFilter;
       
+      const matchedProd = findProductByCodeOrName(rep.productCode || rep.paperGradeCode);
+      const repBahan = rep.rawMaterial || matchedProd?.bahanBaku;
+      const matchBahan = bahanBakuFilter === 'ALL' || repBahan === bahanBakuFilter;
+
       const q = searchQuery.toLowerCase();
       const matchQuery = !searchQuery || 
         rep.operatorName.toLowerCase().includes(q) ||
         rep.paperGradeCode.toLowerCase().includes(q) ||
+        rep.productCode?.toLowerCase().includes(q) ||
+        rep.productItemName?.toLowerCase().includes(q) ||
+        matchedProd?.kodeBarang?.toLowerCase().includes(q) ||
+        matchedProd?.itemBarang?.toLowerCase().includes(q) ||
         rep.actionsTaken?.toLowerCase().includes(q) ||
         rep.handoverNotes?.toLowerCase().includes(q) ||
         rep.id.toLowerCase().includes(q);
 
-      return matchMachine && matchShift && matchDate && matchQuery;
+      return matchMachine && matchShift && matchDate && matchBahan && matchQuery;
     });
-  }, [reports, machineFilter, shiftFilter, selectedDateFilter, searchQuery]);
+  }, [reports, machineFilter, shiftFilter, bahanBakuFilter, selectedDateFilter, searchQuery]);
 
   // Export to CSV Function
   const handleExportCSV = () => {
@@ -80,7 +93,15 @@ export const ReportList: React.FC<ReportListProps> = ({
       'Shift',
       'Mesin',
       'Petugas Pengisi',
-      'Jenis Kertas',
+      'Item Barang Produk',
+      'Kode Barang PM',
+      'Bahan Baku',
+      'Target GSM',
+      'Toleransi GSM',
+      'Kekuatan Tarik MD',
+      'Kekuatan Tarik CD',
+      'Tebal Standar (mm)',
+      'Creeping Standar',
       'Target (Ton)',
       'Aktual (Ton)',
       'Pencapaian (%)',
@@ -91,7 +112,7 @@ export const ReportList: React.FC<ReportListProps> = ({
       'Grade C (Ton)',
       'Cacat (Ton)',
       'Cacat (%)',
-      'Caliper (um)',
+      'Caliper Uji (um)',
       'Moisture (%)',
       'Tensile (kN/m)',
       'Smoothness (ml/min)',
@@ -103,34 +124,45 @@ export const ReportList: React.FC<ReportListProps> = ({
       'Jumlah Revisi'
     ];
 
-    const rows = filteredReports.map(r => [
-      `"${r.id}"`,
-      `"${r.date}"`,
-      `"${r.shift}"`,
-      `"${r.machine}"`,
-      `"${r.operatorName}"`,
-      `"${r.paperGradeCode}"`,
-      r.targetProductionTon,
-      r.actualProductionTon,
-      r.achievementPercentage,
-      r.netWeightKg,
-      r.reelCount,
-      r.qualityGradeA_Ton,
-      r.qualityGradeB_Ton,
-      r.qualityGradeC_Ton,
-      r.qualityGradeDefect_Ton,
-      r.defectPercentage,
-      r.thicknessMicron,
-      r.moisturePercent,
-      r.tensileStrength,
-      r.surfaceSmoothness,
-      r.totalDowntimeMinutes,
-      `"${(r.actionsTaken || '').replace(/"/g, '""')}"`,
-      `"${(r.shortTermRecommendation || '').replace(/"/g, '""')}"`,
-      `"${(r.longTermRecommendation || '').replace(/"/g, '""')}"`,
-      `"${(r.handoverNotes || '').replace(/"/g, '""')}"`,
-      r.editHistory ? r.editHistory.length : 0
-    ]);
+    const rows = filteredReports.map(r => {
+      const prod = findProductByCodeOrName(r.productCode || r.paperGradeCode);
+      return [
+        `"${r.id}"`,
+        `"${r.date}"`,
+        `"${r.shift}"`,
+        `"${r.machine}"`,
+        `"${r.operatorName}"`,
+        `"${r.productItemName || prod?.itemBarang || r.paperGradeCode}"`,
+        `"${r.productCode || prod?.kodeBarang || '-'}"`,
+        `"${r.rawMaterial || prod?.bahanBaku || '-'}"`,
+        r.targetGsm || prod?.gsm || '-',
+        `"${r.gsmTolerance || prod?.gsmTolerance || '-'}"`,
+        `"${r.tensileMdStandard || prod?.tensileMd || '-'}"`,
+        `"${r.tensileCdStandard || prod?.tensileCd || '-'}"`,
+        r.thicknessMmStandard || prod?.thicknessMm || '-',
+        `"${r.creepingStandard || prod?.creeping || '-'}"`,
+        r.targetProductionTon,
+        r.actualProductionTon,
+        r.achievementPercentage,
+        r.netWeightKg,
+        r.reelCount,
+        r.qualityGradeA_Ton,
+        r.qualityGradeB_Ton,
+        r.qualityGradeC_Ton,
+        r.qualityGradeDefect_Ton,
+        r.defectPercentage,
+        r.thicknessMicron,
+        r.moisturePercent,
+        r.tensileStrength,
+        r.surfaceSmoothness,
+        r.totalDowntimeMinutes,
+        `"${(r.actionsTaken || '').replace(/"/g, '""')}"`,
+        `"${(r.shortTermRecommendation || '').replace(/"/g, '""')}"`,
+        `"${(r.longTermRecommendation || '').replace(/"/g, '""')}"`,
+        `"${(r.handoverNotes || '').replace(/"/g, '""')}"`,
+        r.editHistory ? r.editHistory.length : 0
+      ];
+    });
 
     const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(row => row.join(','))].join('\r\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -239,18 +271,46 @@ export const ReportList: React.FC<ReportListProps> = ({
               </button>
             )}
           </div>
+
+          {/* Bahan Baku Filter (HVS vs PULP) */}
+          <div className="flex items-center gap-1.5 bg-slate-950 px-3 py-1.5 border border-slate-700 rounded-lg">
+            <span className="text-slate-400 font-semibold">Bahan:</span>
+            <select
+              value={bahanBakuFilter}
+              onChange={(e) => setBahanBakuFilter(e.target.value as any)}
+              className="bg-transparent text-slate-100 font-bold focus:outline-none flex-1 cursor-pointer"
+            >
+              <option value="ALL" className="bg-slate-900">Semua Bahan</option>
+              <option value="HVS" className="bg-slate-900">HVS</option>
+              <option value="PULP" className="bg-slate-900">PULP</option>
+            </select>
+          </div>
         </div>
 
         {/* Filter Results Info */}
-        <div className="flex items-center justify-between text-xs text-slate-400 pt-1 border-t border-slate-800/80">
-          <span>
-            Menampilkan <strong>{filteredReports.length}</strong> dari <strong>{reports.length}</strong> laporan
-          </span>
-          {(machineFilter !== 'ALL' || shiftFilter !== 'ALL' || selectedDateFilter || searchQuery) && (
+        <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400 pt-1 border-t border-slate-800/80">
+          <div className="flex items-center gap-3">
+            <span>
+              Menampilkan <strong>{filteredReports.length}</strong> dari <strong>{reports.length}</strong> laporan
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                setCatalogMachine(machineFilter === 'ALL' ? 'PM1' : machineFilter);
+                setShowCatalogModal(true);
+              }}
+              className="text-amber-400 hover:text-amber-300 flex items-center gap-1 font-semibold hover:underline"
+            >
+              <Layers className="w-3.5 h-3.5" />
+              <span>Lihat Master Produk PM (PT. PUP)</span>
+            </button>
+          </div>
+          {(machineFilter !== 'ALL' || shiftFilter !== 'ALL' || bahanBakuFilter !== 'ALL' || selectedDateFilter || searchQuery) && (
             <button
               onClick={() => {
                 setMachineFilter('ALL');
                 setShiftFilter('ALL');
+                setBahanBakuFilter('ALL');
                 setSelectedDateFilter('');
                 setSearchQuery('');
               }}
@@ -268,6 +328,16 @@ export const ReportList: React.FC<ReportListProps> = ({
           filteredReports.map((report) => {
             const isExpanded = expandedReportId === report.id;
             const hasAudit = report.editHistory && report.editHistory.length > 0;
+            const matchedProd = findProductByCodeOrName(report.productCode || report.paperGradeCode);
+            const displayCode = report.productCode || matchedProd?.kodeBarang;
+            const displayItem = report.productItemName || matchedProd?.itemBarang || report.paperGradeCode;
+            const displayBahan = report.rawMaterial || matchedProd?.bahanBaku;
+            const displayTargetGsm = report.targetGsm || matchedProd?.gsm;
+            const displayTolerance = report.gsmTolerance || matchedProd?.gsmTolerance;
+            const displayTensileMd = report.tensileMdStandard || matchedProd?.tensileMd;
+            const displayTensileCd = report.tensileCdStandard || matchedProd?.tensileCd;
+            const displayThicknessMm = report.thicknessMmStandard || matchedProd?.thicknessMm;
+            const displayCreeping = report.creepingStandard || matchedProd?.creeping;
 
             return (
               <div
@@ -292,6 +362,21 @@ export const ReportList: React.FC<ReportListProps> = ({
                     {report.groupShift && (
                       <span className="px-2 py-0.5 bg-cyan-950/80 border border-cyan-700/50 text-cyan-300 text-xs font-semibold rounded-md">
                         {report.groupShift}
+                      </span>
+                    )}
+                    {displayCode && (
+                      <span className="px-2 py-0.5 bg-amber-950/80 border border-amber-600/60 text-amber-300 font-mono text-xs font-bold rounded-md flex items-center gap-1">
+                        <Layers className="w-3 h-3 text-amber-400" />
+                        {displayCode}
+                      </span>
+                    )}
+                    {displayBahan && (
+                      <span className={`px-2 py-0.5 text-[11px] font-bold rounded-md border ${
+                        displayBahan === 'HVS' 
+                          ? 'bg-blue-950/70 border-blue-700/60 text-blue-300' 
+                          : 'bg-emerald-950/70 border-emerald-700/60 text-emerald-300'
+                      }`}>
+                        {displayBahan}
                       </span>
                     )}
                     <span className="text-xs font-semibold text-slate-200 pl-1">
@@ -380,7 +465,13 @@ export const ReportList: React.FC<ReportListProps> = ({
                 {/* Compact Info Summary Row */}
                 <div className="px-4 py-2 text-xs text-slate-400 bg-slate-900/60 border-t border-slate-800/60 flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-3">
-                    <span>Jenis Kertas: <strong className="text-slate-200">{report.paperGradeCode}</strong></span>
+                    <span>Item: <strong className="text-slate-100 font-semibold">{displayItem}</strong></span>
+                    {displayCode && (
+                      <>
+                        <span>&bull;</span>
+                        <span>Kode: <strong className="text-amber-300 font-mono font-semibold">{displayCode}</strong></span>
+                      </>
+                    )}
                     <span>&bull;</span>
                     <span>Reels: <strong className="text-slate-200">{report.reelCount} Roll</strong></span>
                     <span>&bull;</span>
@@ -425,6 +516,53 @@ export const ReportList: React.FC<ReportListProps> = ({
                             <strong className="text-cyan-200">{report.karuName}</strong>
                           </div>
                         )}
+                      </div>
+                    </div>
+
+                    {/* PM Jumbo Roll Product Specifications & Standards (PT. PUP) */}
+                    <div className="bg-gradient-to-r from-slate-900 to-slate-900/90 border border-amber-500/30 rounded-lg p-3 space-y-2">
+                      <div className="flex items-center justify-between border-b border-slate-800 pb-1.5">
+                        <div className="flex items-center gap-2">
+                          <Layers className="w-4 h-4 text-amber-400" />
+                          <span className="font-bold text-slate-100 text-xs">
+                            Spesifikasi Jumbo Roll & Standar Dokumen PM ({displayCode || report.machine})
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-amber-300/80 bg-amber-950/60 border border-amber-800/40 px-2 py-0.5 rounded font-mono">
+                          Bahan: {displayBahan || 'HVS'}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 text-slate-300">
+                        <div className="bg-slate-950/60 p-2 rounded border border-slate-800/70">
+                          <span className="text-slate-500 block text-[10px]">Item Barang:</span>
+                          <span className="font-bold text-slate-200 truncate block" title={displayItem}>
+                            {displayItem}
+                          </span>
+                        </div>
+                        <div className="bg-slate-950/60 p-2 rounded border border-slate-800/70">
+                          <span className="text-slate-500 block text-[10px]">Target GSM & Toleransi:</span>
+                          <span className="font-mono font-bold text-amber-300">
+                            {displayTargetGsm ? `${displayTargetGsm} ${displayTolerance || ''}` : '-'}
+                          </span>
+                        </div>
+                        <div className="bg-slate-950/60 p-2 rounded border border-slate-800/70">
+                          <span className="text-slate-500 block text-[10px]">Kekuatan Tarik MD / CD:</span>
+                          <span className="font-mono font-bold text-slate-200">
+                            {displayTensileMd || '-'} / {displayTensileCd || '-'}
+                          </span>
+                        </div>
+                        <div className="bg-slate-950/60 p-2 rounded border border-slate-800/70">
+                          <span className="text-slate-500 block text-[10px]">Ketebalan Standar (mm):</span>
+                          <span className="font-mono font-bold text-slate-200">
+                            {displayThicknessMm ? `${displayThicknessMm} mm` : '-'}
+                          </span>
+                        </div>
+                        <div className="bg-slate-950/60 p-2 rounded border border-slate-800/70">
+                          <span className="text-slate-500 block text-[10px]">Creeping Standar:</span>
+                          <span className="font-mono font-bold text-slate-200">
+                            {displayCreeping || '-'}
+                          </span>
+                        </div>
                       </div>
                     </div>
 
@@ -576,6 +714,13 @@ export const ReportList: React.FC<ReportListProps> = ({
           onClose={() => setPrintReport(null)}
         />
       )}
+
+      {/* PM Master Product Catalog Modal */}
+      <PmProductsModal
+        isOpen={showCatalogModal}
+        onClose={() => setShowCatalogModal(false)}
+        initialMachine={catalogMachine}
+      />
 
     </div>
   );
