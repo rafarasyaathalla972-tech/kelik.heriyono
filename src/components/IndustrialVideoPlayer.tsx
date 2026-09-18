@@ -30,7 +30,7 @@ import { SlitterRewinderRealisticSimulation, CameraViewMode } from './SlitterRew
 import { K3SafetyRealisticSimulation } from './K3SafetyRealisticSimulation';
 import { StockPrepRealisticSimulation } from './StockPrepRealisticSimulation';
 import { PaperMachineRealisticSimulation } from './PaperMachineRealisticSimulation';
-import { industrialAudio } from '../utils/industrialAudioEngine';
+import { industrialAudio, SpokenSentenceProgress } from '../utils/industrialAudioEngine';
 
 interface IndustrialVideoPlayerProps {
   video: MachineVideoTutorial;
@@ -60,6 +60,10 @@ export const IndustrialVideoPlayer: React.FC<IndustrialVideoPlayerProps> = ({
   const [playerMode, setPlayerMode] = useState<'simulator' | 'youtube'>('simulator');
   const [isDetailsExpanded, setIsDetailsExpanded] = useState<boolean>(true);
   const [, setActiveCameraView] = useState<CameraViewMode>('overview');
+
+  // Live spoken sentence progress & speaking state for synchronized Indonesian audio
+  const [spokenProgress, setSpokenProgress] = useState<SpokenSentenceProgress | null>(null);
+  const [isSpeakingLive, setIsSpeakingLive] = useState<boolean>(false);
 
   // Telemetry simulation jitter
   const [webSpeedTelemetry, setWebSpeedTelemetry] = useState<number>(650);
@@ -106,14 +110,16 @@ export const IndustrialVideoPlayer: React.FC<IndustrialVideoPlayerProps> = ({
     if (!isPlaying || isMuted || !isVoiceNarrationActive) {
       industrialAudio.stopSpeech();
       industrialAudio.stopMachineHum();
+      setIsSpeakingLive(false);
+      setSpokenProgress(null);
       return;
     }
 
     // Start background running hum
     industrialAudio.startMachineHum(0.06);
 
-    // Speak chapter narration when chapter index changes
-    if (currentChapter && currentChapter.index !== lastSpokenChapterIndexRef.current) {
+    // Speak chapter narration when chapter index changes or playback resumes
+    if (currentChapter && (currentChapter.index !== lastSpokenChapterIndexRef.current || !industrialAudio.isSpeaking())) {
       lastSpokenChapterIndexRef.current = currentChapter.index;
 
       // Play soft transition chime
@@ -122,7 +128,20 @@ export const IndustrialVideoPlayer: React.FC<IndustrialVideoPlayerProps> = ({
       const chapterData = currentChapter.data;
       // Prefer spokenNarration if present, otherwise detailedExplanation, or note
       const narrationText = chapterData.spokenNarration || chapterData.detailedExplanation || `${chapterData.topic}. ${chapterData.note}`;
-      industrialAudio.speakIndonesian(narrationText, speechRate);
+      industrialAudio.speakIndonesian(
+        narrationText,
+        speechRate,
+        (progress) => {
+          setSpokenProgress(progress);
+        },
+        () => {
+          setIsSpeakingLive(true);
+        },
+        () => {
+          setIsSpeakingLive(false);
+          setSpokenProgress(null);
+        }
+      );
     }
   }, [currentChapter?.index, isPlaying, isMuted, isVoiceNarrationActive, speechRate]);
 
@@ -131,6 +150,8 @@ export const IndustrialVideoPlayer: React.FC<IndustrialVideoPlayerProps> = ({
     return () => {
       industrialAudio.stopSpeech();
       industrialAudio.stopMachineHum();
+      setIsSpeakingLive(false);
+      setSpokenProgress(null);
     };
   }, []);
 
@@ -183,6 +204,7 @@ export const IndustrialVideoPlayer: React.FC<IndustrialVideoPlayerProps> = ({
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newTime = parseFloat(e.target.value);
     setCurrentTimeSec(newTime);
+    lastSpokenChapterIndexRef.current = -1; // Allow re-speaking if chapter changed
   };
 
   // Jump to specific chapter
@@ -193,14 +215,32 @@ export const IndustrialVideoPlayer: React.FC<IndustrialVideoPlayerProps> = ({
     setCurrentTimeSec(targetSec);
     lastSpokenChapterIndexRef.current = -1; // Reset to force re-reading
     onSelectChapter(idx);
+    if (!isPlaying) {
+      setIsPlaying(true);
+    }
   };
 
   // Manual replay narration button
   const handleReplayNarration = () => {
     if (!currentChapter) return;
+    lastSpokenChapterIndexRef.current = currentChapter.index;
+    industrialAudio.playChapterChime(0.18);
     const chapterData = currentChapter.data;
     const narrationText = chapterData.spokenNarration || chapterData.detailedExplanation || `${chapterData.topic}. ${chapterData.note}`;
-    industrialAudio.speakIndonesian(narrationText, speechRate);
+    industrialAudio.speakIndonesian(
+      narrationText,
+      speechRate,
+      (progress) => {
+        setSpokenProgress(progress);
+      },
+      () => {
+        setIsSpeakingLive(true);
+      },
+      () => {
+        setIsSpeakingLive(false);
+        setSpokenProgress(null);
+      }
+    );
   };
 
   // Fullscreen toggle
@@ -331,6 +371,32 @@ export const IndustrialVideoPlayer: React.FC<IndustrialVideoPlayerProps> = ({
                   activeChapterData={currentChapter?.data}
                   machineId={video.id.includes('pm1') ? 'PM1' : video.id.includes('pm2') ? 'PM2' : video.id.includes('pm5') ? 'PM5' : 'TISSUE_PM'}
                 />
+              </div>
+            )}
+
+            {/* Live Synchronized Audio Narration Subtitle Overlay */}
+            {isVoiceNarrationActive && isSpeakingLive && spokenProgress && (
+              <div className="absolute bottom-3 left-3 right-3 z-30 pointer-events-none">
+                <div className="bg-slate-950/95 backdrop-blur-md border border-emerald-500/50 rounded-xl p-3 shadow-2xl flex items-start gap-3 text-white">
+                  <div className="flex items-center gap-1 mt-1 shrink-0">
+                    <span className="w-1.5 h-4 bg-emerald-400 rounded-full animate-pulse" />
+                    <span className="w-1.5 h-6 bg-emerald-400 rounded-full animate-pulse [animation-delay:150ms]" />
+                    <span className="w-1.5 h-3 bg-emerald-400 rounded-full animate-pulse [animation-delay:300ms]" />
+                  </div>
+                  <div className="space-y-0.5 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-700/50">
+                        Suara Instruktur ({spokenProgress.sentenceIndex + 1}/{spokenProgress.totalSentences})
+                      </span>
+                      <span className="text-[11px] text-slate-400 font-semibold truncate">
+                        {currentChapter?.data.topic}
+                      </span>
+                    </div>
+                    <p className="text-xs sm:text-sm font-semibold text-slate-100 leading-snug drop-shadow">
+                      {spokenProgress.sentence}
+                    </p>
+                  </div>
+                </div>
               </div>
             )}
           </div>
@@ -589,11 +655,19 @@ export const IndustrialVideoPlayer: React.FC<IndustrialVideoPlayerProps> = ({
           </div>
 
           {/* Spoken Text Highlight */}
-          <div className="bg-slate-950/80 p-3 rounded-lg border border-slate-800">
-            <span className="text-[10px] text-amber-400 font-extrabold uppercase tracking-wide block mb-1 flex items-center gap-1">
-              <Volume2 className="w-3.5 h-3.5 text-emerald-400" />
-              Narasi Suara Pelatihan:
-            </span>
+          <div className="bg-slate-950/80 p-3 rounded-lg border border-slate-800 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] text-amber-400 font-extrabold uppercase tracking-wide flex items-center gap-1.5">
+                <Volume2 className={`w-3.5 h-3.5 ${isSpeakingLive ? 'text-emerald-400 animate-bounce' : 'text-slate-400'}`} />
+                <span>Naskah Narasi Suara Pelatihan (Bahasa Indonesia):</span>
+              </span>
+              {isSpeakingLive && (
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-700/40">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                  Sedang Menjelaskan
+                </span>
+              )}
+            </div>
             <p className="text-white text-xs sm:text-sm font-medium leading-relaxed">
               "{currentChapter.data.spokenNarration || currentChapter.data.detailedExplanation || currentChapter.data.note}"
             </p>

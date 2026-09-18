@@ -71,9 +71,41 @@ export const TRAINING_MEDIA_DATA: Record<TrainingModuleId, MachineMediaConfig> =
         instructorRole: 'Kepala Regu Stock Prep & Teknisi Proses',
         description: 'Panduan visual komprehensif mengenai operasi normal HDC (Valve A, C, D tutup; Valve B, E buka) dan urutan flushing pembuangan kotoran staples/batu dari Junk Trap (Valve B, A tutup; Valve C, D, E buka).',
         chapters: [
-          { time: '00:00 - 02:00', topic: 'Prinsip Gaya Sentrifugal & Pusaran Vorteks HDC', note: 'Mengapa kontaminan berat terlempar ke dinding kerucut dan turun ke junk trap' },
-          { time: '02:01 - 04:30', topic: 'Fungsi Valve E & Air Elutriasi (Min 1.5 bar)', note: 'Mencegah serat pulp bagus ikut terbuang ke dalam ruang kotoran' },
-          { time: '04:31 - 07:20', topic: 'Prosedur Flushing Junk Trap & Pengisian Ulang', note: 'Membuka Valve C drain dan Valve D vacuum breaker agar kotoran jatuh bebas' }
+          {
+            time: '00:00 - 02:00',
+            topic: 'Prinsip Gaya Sentrifugal & Pusaran Vorteks HDC',
+            note: 'Mengapa kontaminan berat terlempar ke dinding kerucut dan turun ke junk trap',
+            detailedExplanation: 'Seksi High Density Cleaner bekerja mengandalkan prinsip percepatan sentrifugal fluida cair. Suspensi bubur pulp dialirkan secara tangensial ke dalam bejana kerucut dengan tekanan inlet minimal 1.5 bar. Aliran ini menciptakan pusaran vorteks berkecepatan tinggi. Kontaminan berat seperti staples logam, pasir, kawat bal, dan batu memiliki massa jenis jauh lebih tinggi daripada serat kayu. Benda berat ini terlempar ke dinding kerucut terluar akibat gaya sentrifugal, lalu meluncur turun menuju bejana penampung bawah atau Junk Trap. Sementara serat pulp yang bersih tetap berada di pusat pusaran dan naik ke pipa accept atas.',
+            technicalSpecs: [
+              { label: 'Tekanan Inlet Minimum', val: '1.5 bar' },
+              { label: 'Tekanan Accept Outlet', val: '0.5 bar' },
+              { label: 'Konsistensi Kerja HDC', val: '2.5% - 4.0%' }
+            ],
+            spokenNarration: 'Seksi High Density Cleaner bekerja mengandalkan prinsip percepatan sentrifugal cairan. Suspensi bubur pulp dialirkan secara tangensial ke dalam bejana kerucut dengan tekanan inlet minimal satu koma lima bar. Aliran ini menciptakan pusaran vorteks berkecepatan tinggi. Kontaminan berat seperti staples logam, pasir, kawat bal, dan batu memiliki massa jenis jauh lebih tinggi daripada serat kayu. Benda berat ini terlempar ke dinding kerucut terluar akibat gaya sentrifugal, lalu meluncur turun menuju bejana penampung bawah atau Junk Trap. Sementara serat pulp yang bersih tetap berada di pusat pusaran dan naik ke pipa accept atas.'
+          },
+          {
+            time: '02:01 - 04:30',
+            topic: 'Fungsi Valve E & Air Elutriasi (Min 1.5 bar)',
+            note: 'Mencegah serat pulp bagus ikut terbuang ke dalam ruang kotoran',
+            detailedExplanation: 'Di bagian bawah kerucut, terdapat katup air elutriasi yaitu Valve E. Air bertekanan bersih dialirkan masuk melalui katup ini dengan tekanan minimal 1.5 bar. Aliran air ini berfungsi melawan gaya gravitasi serat pulp yang terbawa ke bawah, sehingga serat pulp yang bagus didorong kembali ke atas menuju zona accept. Hal ini mencegah serat berharga ikut terbuang ke dalam Junk Trap. Pada kondisi operasional normal, Valve A, Valve C, dan Valve D harus tertutup rapat, sedangkan Valve B dan Valve E terbuka penuh.',
+            technicalSpecs: [
+              { label: 'Tekanan Air Elutriasi (Valve E)', val: 'Min. 1.5 bar (Lebih tinggi dari pulp)' },
+              { label: 'Status Operasi Normal', val: 'Valve B & E Buka; Valve A, C, D Tutup' }
+            ],
+            spokenNarration: 'Di bagian bawah kerucut, terdapat katup elutriasi yaitu Valve E. Air bertekanan bersih dialirkan masuk melalui katup ini dengan tekanan minimal satu koma lima bar. Aliran air ini berfungsi melawan gravitasi serat pulp yang terbawa ke bawah, sehingga serat pulp yang bagus didorong kembali ke atas menuju zona accept. Hal ini mencegah serat berharga ikut terbuang ke dalam Junk Trap. Pada kondisi operasional normal, Valve A, Valve C, dan Valve D harus tertutup rapat, sedangkan Valve B dan Valve E terbuka penuh.'
+          },
+          {
+            time: '04:31 - 07:20',
+            topic: 'Prosedur Flushing Junk Trap & Pengisian Ulang',
+            note: 'Membuka Valve C drain dan Valve D vacuum breaker agar kotoran jatuh bebas',
+            detailedExplanation: 'Ketika kotoran pada Junk Trap sudah menumpuk mendekati batas penglihatan kaca, operator wajib melakukan prosedur pembuangan atau flushing. Langkah pertama, tutup Valve B dan Valve A untuk mengisolasi bejana dari aliran utama. Selanjutnya, buka Valve C untuk pembuangan lumpur dan buka Valve D sebagai vacuum breaker agar kotoran jatuh tuntas ke bak penampung. Setelah bersih, tutup Valve C dan Valve D, lalu buka Valve E untuk mengisi ulang air ke dalam tabung hingga penuh bebas gelembung udara, sebelum akhirnya Valve B dibuka kembali untuk melanjutkan pembersihan.',
+            technicalSpecs: [
+              { label: 'Urutan Isolasi', val: 'Tutup Valve B lalu Valve A' },
+              { label: 'Urutan Pembuangan', val: 'Buka Valve C (Drain) & Valve D (Vacuum)' },
+              { label: 'Urutan Priming', val: 'Tutup C & D, Buka Valve E isi air penuh, lalu buka Valve B' }
+            ],
+            spokenNarration: 'Ketika kotoran pada Junk Trap sudah menumpuk mendekati batas penglihatan kaca, operator wajib melakukan prosedur pembuangan atau flushing. Langkah pertama, tutup Valve B dan Valve A untuk mengisolasi bejana dari aliran utama. Selanjutnya, buka Valve C untuk pembuangan lumpur dan buka Valve D sebagai vacuum breaker agar kotoran jatuh tuntas ke bak penampung. Setelah bersih, tutup Valve C dan Valve D, lalu buka Valve E untuk mengisi ulang air ke dalam tabung hingga penuh bebas gelembung udara, sebelum akhirnya Valve B dibuka kembali untuk melanjutkan pembersihan.'
+          }
         ],
         keyTakeaways: [
           'Tekanan inlet HDC wajib terjaga minimal 1.5 bar dengan tekanan accept 0.5 bar untuk menciptakan Delta P pemisahan optimal.',
@@ -91,9 +123,42 @@ export const TRAINING_MEDIA_DATA: Record<TrainingModuleId, MachineMediaConfig> =
         instructorRole: 'Superintendent PM & Ahli Refiner Pulp',
         description: 'Penjelasan mendalam mengenai mekanisme perataan serat pada Pressure Screen 0.35 mm dengan hydrofoil gap 3.0 mm, serta pengendalian freeness (320-350 CSF) pada DDR menggunakan Ampere meter dan valve throttling.',
         chapters: [
-          { time: '00:00 - 03:15', topic: 'Pressure Screen Slot 0.35 mm vs Hole 3 mm', note: 'Mengapa model slot menghasilkan accept lebih banyak dan bebas spinning fiber' },
-          { time: '03:16 - 05:45', topic: 'Fungsi Hydrofoil Wings & Kalibrasi Gap 3.0 mm', note: 'Denyut hisap membersihkan kotoran dari saringan basket tanpa menyumbat' },
-          { time: '05:46 - 09:40', topic: 'Operasional DDR & Penyetelan Ampere Freeness', note: 'Korelasi penekanan blade, bukaan valve outlet, dan freeness 320 - 350 CSF' }
+          {
+            time: '00:00 - 03:15',
+            topic: 'Pressure Screen Slot 0.35 mm vs Hole 3 mm',
+            note: 'Mengapa model slot menghasilkan accept lebih banyak dan bebas spinning fiber',
+            detailedExplanation: 'Pada sistem penyaringan buburan sebelum dialirkan ke mesin kertas, Pressure Screen model slot 0.35 mm memberikan hasil accept yang jauh lebih unggul dibandingkan model lubang 3.0 mm. Kerapatan slot yang presisi mampu menahan serat menggumpal, serpihan plastik, dan kontaminan shives tanpa memicu terjadinya serat melintir atau spinning fiber. Buburan accept yang dihasilkan memiliki keseragaman tinggi dan bebas dari cacat white spot.',
+            technicalSpecs: [
+              { label: 'Ukuran Celah Screen Basket', val: 'Slot 0.35 mm Presisi Stainless Steel' },
+              { label: 'Tekanan Operasi Screen', val: '2.0 - 2.8 bar' },
+              { label: 'Efisiensi Reject Shives', val: '> 98% Bebas Kontaminan' }
+            ],
+            spokenNarration: 'Pada sistem penyaringan buburan sebelum dialirkan ke mesin kertas, Pressure Screen model slot nol koma tiga puluh lima milimeter memberikan hasil accept yang jauh lebih unggul dibandingkan model lubang tiga milimeter. Kerapatan slot yang presisi mampu menahan serat menggumpal, serpihan plastik, dan kontaminan shives tanpa memicu terjadinya serat melintir atau spinning fiber. Buburan accept yang dihasilkan memiliki keseragaman tinggi dan bebas dari gumpalan cacat white spot.'
+          },
+          {
+            time: '03:16 - 05:45',
+            topic: 'Fungsi Hydrofoil Wings & Kalibrasi Gap 3.0 mm',
+            note: 'Denyut hisap membersihkan kotoran dari saringan basket tanpa menyumbat',
+            detailedExplanation: 'Di dalam keranjang saringan, sayap hydrofoil berputar dengan kecepatan tinggi untuk menghasilkan denyut tekanan dan hisapan mikro secara kontinu. Jarak celah atau clearance antara ujung sayap hydrofoil ke dinding saringan wajib dikalibrasi tepat 3.0 mm keliling. Denyut hisapan di belakang sayap hydrofoil berfungsi menyedot kembali serat yang mulai menumpuk di lubang saringan, sehingga saringan basket selalu bersih dan bebas dari penyumbatan tanpa merusak anyaman saringan.',
+            technicalSpecs: [
+              { label: 'Jarak Celah Hydrofoil (Gap)', val: '3.0 mm Keliling Seragam' },
+              { label: 'Arah Rotasi Sayap', val: 'Wajib Searah Lengkungan Basket' },
+              { label: 'Pemeriksaan Rutin', val: 'Cek Baut Pengunci Rotor & Keausan Bilah' }
+            ],
+            spokenNarration: 'Di dalam keranjang saringan, sayap hydrofoil berputar dengan kecepatan tinggi untuk menghasilkan denyut tekanan dan hisapan mikro secara kontinu. Jarak celah atau clearance antara ujung sayap hydrofoil ke dinding saringan wajib dikalibrasi tepat tiga milimeter keliling. Denyut hisapan di belakang sayap hydrofoil berfungsi menyedot kembali serat yang mulai menumpuk di lubang saringan, sehingga saringan basket selalu bersih dan bebas dari penyumbatan tanpa merusak anyaman saringan.'
+          },
+          {
+            time: '05:46 - 09:40',
+            topic: 'Operasional DDR & Penyetelan Ampere Freeness',
+            note: 'Korelasi penekanan blade, bukaan valve outlet, dan freeness 320 - 350 CSF',
+            detailedExplanation: 'Pengendalian derajat kehalusan gilingan serat pada Double Disc Refiner atau DDR dilakukan melalui modulasi penekanan keping pisau dan pengaturan arus beban motor. Konsistensi bubur masuk wajib dijaga minimal 3.5%. Operator memantau jarum Ampere meter beban motor DDR serta bukaan throttling valve outlet. Untuk mencapai target freeness 320 hingga 350 CSF, penekanan keping pisau disetel bertahap agar terjadi fibrilasi eksternal pada dinding sel serat kayu tanpa memotong panjang serat, sehingga lembaran tissue memiliki kelembutan tinggi dan kekuatan tarik optimal.',
+            technicalSpecs: [
+              { label: 'Target Nilai Freeness', val: '320 - 350 CSF (Canadian Standard)' },
+              { label: 'Konsistensi Bubur Masuk', val: 'Minimal 3.5% (Ideal 3.5% - 4.5%)' },
+              { label: 'Delta Tekanan Gauge', val: 'Inlet Wajib Lebih Tinggi dari Outlet' }
+            ],
+            spokenNarration: 'Pengendalian derajat kehalusan gilingan serat pada Double Disc Refiner atau DDR dilakukan melalui modulasi penekanan keping pisau dan pengaturan arus beban motor. Konsistensi bubur masuk wajib dijaga minimal tiga koma lima persen. Operator memantau jarum Ampere meter beban motor DDR serta bukaan throttling valve outlet. Untuk mencapai target freeness tiga ratus dua puluh hingga tiga ratus lima puluh Canadian Standard Freeness, penekanan keping pisau disetel bertahap agar terjadi fibrilasi eksternal pada dinding sel serat kayu tanpa memotong panjang serat, sehingga lembaran tissue memiliki kelembutan tinggi dan kekuatan tarik optimal.'
+          }
         ],
         keyTakeaways: [
           'Jarak gap hydrofoil ke basket pressure screen harus tepat 3.0 mm keliling dan arah putaran tidak boleh terbalik.',
@@ -111,9 +176,42 @@ export const TRAINING_MEDIA_DATA: Record<TrainingModuleId, MachineMediaConfig> =
         instructorRole: 'Operator Senior Kimia & Ahli Kualitas Tissue',
         description: 'Standar Operasional Prosedur penimbangan dan pelarutan serbuk PEO Axfloc (1729, 1730, 7090), pencegahan fish-eye, transfer Tangki 1-2-4 ke Tangki 3, dan pemompaan via Screw Pump.',
         chapters: [
-          { time: '00:00 - 02:10', topic: 'Tujuan PEO & Penimbangan Serbuk Presisi', note: 'Membantu pembentukan formasi rata dan ikatan serat tissue lembut' },
-          { time: '02:11 - 04:20', topic: 'Teknik Menuang Serbuk & Pengadukan Lambat', note: 'Menuang sedikit demi sedikit ke pusaran air agar tidak terbentuk lendir menggumpal' },
-          { time: '04:21 - 06:30', topic: 'Uji Viskositas Cps & Pompa Distribusi Screw Pump', note: 'Standar TM 17 - 19 Cps dan pemompaan ulir rendah shear' }
+          {
+            time: '00:00 - 02:10',
+            topic: 'Tujuan PEO & Penimbangan Serbuk Presisi',
+            note: 'Membantu pembentukan formasi rata dan ikatan serat tissue lembut',
+            detailedExplanation: 'Polyethylene Oxide atau PEO Axfloc merupakan polimer rantai panjang yang sangat penting dalam proses produksi tissue berdaya serap tinggi. PEO berfungsi sebagai zat pendispersi serat yang mencegah penggumpalan pada headbox, menghasilkan formasi awan kertas yang sangat rata dan tekstur lembaran yang lembut. Penimbangan serbuk PEO tipe Axfloc 1729, 1730, atau 7090 harus dilakukan sangat teliti sesuai instruksi kerja laboratorium kimia.',
+            technicalSpecs: [
+              { label: 'Tipe Polimer PEO', val: 'Axfloc 1729, 1730, 7090' },
+              { label: 'Fungsi Utama', val: 'Pencegah Flokulasi Serat & Peningkat Formasi' },
+              { label: 'Ketelitian Penimbangan', val: 'Toleransi Maksimal ± 0.02 kg' }
+            ],
+            spokenNarration: 'Polyethylene Oxide atau PEO Axfloc merupakan polimer rantai panjang yang sangat penting dalam proses produksi tissue berdaya serap tinggi. PEO berfungsi sebagai zat pendispersi serat yang mencegah penggumpalan pada headbox, menghasilkan formasi awan kertas yang sangat rata dan tekstur lembaran yang lembut. Penimbangan serbuk PEO tipe Axfloc seribu tujuh ratus dua puluh sembilan, seribu tujuh ratus tiga puluh, atau tujuh puluh sembilan puluh harus dilakukan sangat teliti sesuai instruksi kerja laboratorium kimia.'
+          },
+          {
+            time: '02:11 - 04:20',
+            topic: 'Teknik Menuang Serbuk & Pengadukan Lambat',
+            note: 'Menuang sedikit demi sedikit ke pusaran air agar tidak terbentuk lendir menggumpal',
+            detailedExplanation: 'Saat melarutkan serbuk PEO ke dalam tangki pencampur, air bersih di dalam tangki harus diaduk secara perlahan oleh agitator. Serbuk kimia wajib ditaburkan sedikit demi sedikit secara merata ke pusaran air. Dilarang menuang serbuk sekaligus dalam jumlah banyak karena akan terbentuk gumpalan lendir tak larut atau fenomena fish-eye yang dapat menyumbat nozel headbox. Biarkan proses hidrasi dan pelarutan berlangsung sempurna dengan kecepatan putar agitator rendah agar rantai polimer tidak putus.',
+            technicalSpecs: [
+              { label: 'Metode Penaburan', val: 'Ditabur Perlahan ke Pusaran Air' },
+              { label: 'Putaran Agitator', val: 'Low RPM (Mencegah Shear Degradation)' },
+              { label: 'Bahaya Penggumpalan', val: 'Cacat Fish-Eye & Nozel Tersumbat' }
+            ],
+            spokenNarration: 'Saat melarutkan serbuk PEO ke dalam tangki pencampur, air bersih di dalam tangki harus diaduk secara perlahan oleh agitator. Serbuk kimia wajib ditaburkan sedikit demi sedikit secara merata ke pusaran air. Dilarang menuang serbuk sekaligus dalam jumlah banyak karena akan terbentuk gumpalan lendir tak larut atau fenomena fish-eye yang dapat menyumbat nozel headbox. Biarkan proses hidrasi dan pelarutan berlangsung sempurna dengan kecepatan putar agitator rendah agar rantai polimer tidak putus.'
+          },
+          {
+            time: '04:21 - 06:30',
+            topic: 'Uji Viskositas Cps & Pompa Distribusi Screw Pump',
+            note: 'Standar TM 17 - 19 Cps dan pemompaan ulir rendah shear',
+            detailedExplanation: 'Setelah larutan PEO matang dan ditransfer ke tangki penampung, operator wajib melakukan pengujian viskositas menggunakan cangkir viskometer. Standar viskositas larutan untuk Paper Machine adalah 17 hingga 19 Cps. Pendistribusian larutan PEO menuju titik injeksi headbox wajib menggunakan pompa ulir atau Screw Pump bertekanan stabil. Hindari penggunaan pompa sentrifugal biasa karena gesekan tinggi bilah impeller akan merusak dan memutus rantai molekul polimer PEO.',
+            technicalSpecs: [
+              { label: 'Standar Viskositas Matang', val: '17 - 19 Cps (Centipoise)' },
+              { label: 'Jenis Pompa Distribusi', val: 'Progressive Cavity Screw Pump' },
+              { label: 'Titik Injeksi Pompa', val: 'Pipa Aliran Bubur Menuju Headbox' }
+            ],
+            spokenNarration: 'Setelah larutan PEO matang dan ditransfer ke tangki penampung, operator wajib melakukan pengujian viskositas menggunakan cangkir viskometer. Standar viskositas larutan untuk Paper Machine adalah tujuh belas hingga sembilan belas Centipoise. Pendistribusian larutan PEO menuju titik injeksi headbox wajib menggunakan pompa ulir atau Screw Pump bertekanan stabil. Hindari penggunaan pompa sentrifugal biasa karena gesekan tinggi bilah impeller akan merusak dan memutus rantai molekul polimer PEO.'
+          }
         ],
         keyTakeaways: [
           'Serbuk PEO wajib dituang perlahan ke dalam air yang berputar pelan oleh agitator.',

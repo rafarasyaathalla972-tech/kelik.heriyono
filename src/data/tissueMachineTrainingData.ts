@@ -1100,13 +1100,92 @@ export const TISSUE_MACHINE_MEDIA_CONFIG: MachineMediaConfig = {
       instructorRole: 'Kepala Regu Senior PM & Instruktur Training PT. PUP',
       description: 'Video tutorial komprehensif mengupas tuntas 18 slide modul materi training Tissue Mesin. Meliputi kontrol CRC, pengaturan flow control DCS, injeksi PEO/Wet Strength, cleaning felt needle shower 10-12 bar, stabilitas suhu Yankee 85-90°C, hingga perhitungan speed Pope Reel creping 15%.',
       chapters: [
-        { time: '00:00', topic: 'Pendahuluan & 3 Tahapan Utama Mesin Tissue', note: 'Ikhtisar alur proses dari pulp menjadi Jumbo Roll (Slide 1)' },
-        { time: '02:30', topic: 'Kontrol Konsistensi CRC & Panel Flow Control', note: 'Cara membaca layar actual vs set point dan pengaturan valve (Slide 2-3)' },
-        { time: '05:15', topic: 'Dosis Kimia Dry/Wet Strength & Antifoam', note: 'Titik injeksi manhole Chest 4, outlet stuffbox, dan headbox tank (Slide 4-5)' },
-        { time: '08:40', topic: 'Headbox Forming, PEO & Cleaning Wire Shower HPP', note: 'Menjaga konsistensi 0,18-0,20% dan kerapatan side seal (Slide 6-8)' },
-        { time: '11:20', topic: 'Cleaning Felt: Needle Shower 10-12 Bar & U-Box Vacuum', note: 'Pentingnya motor osilator bergerak aktif dan FC pH 8.5 (Slide 9-10)' },
-        { time: '14:00', topic: 'Silinder Yankee, Heat Exchanger & Creping 15%', note: 'Suhu 85-90°C, spray coating min 2.5 bar, dan rumus speed (Slide 11-15)' },
-        { time: '16:30', topic: 'Operasional Pope Reel & 10 Soal Evaluasi Kompetensi', note: 'Pencegahan debu trim, flagging joint, dan pembahasan soal (Slide 16-18)' }
+        {
+          time: '00:00',
+          topic: 'Pendahuluan & 3 Tahapan Utama Mesin Tissue',
+          note: 'Ikhtisar alur proses dari pulp menjadi Jumbo Roll (Slide 1)',
+          detailedExplanation: 'Proses produksi kertas tissue modern di PT. PUP berlangsung melalui 3 tahapan kontinu: 1. Wet End (penyiapan konsistensi, pembersihan LCC, forming headbox cylinder mould, dan couch roll); 2. Dry End (pengepresan felt, U-box vacuum, silinder Yankee Dryer 85-90°C, Heat Exchanger udara panas, serta doctor creping blade); 3. Pope Reel (penggulungan kontinyu menjadi Jumbo Roll). Kunci efisiensi terletak pada keselarasan parameter di setiap zona.',
+          technicalSpecs: [
+            { label: 'Tahapan Proses', val: 'Wet End, Dry End, Pope Reel' },
+            { label: 'Tipe Mesin', val: 'Cylinder Mould Tissue Machine' },
+            { label: 'Produk Akhir', val: 'Jumbo Roll Siap Potong Rewinder' }
+          ],
+          spokenNarration: 'Selamat datang dalam modul pelatihan operasional Tissue Mesin PT Panca Usahatama Paramita. Proses pembuatan kertas tissue terbagi menjadi tiga tahapan terintegrasi, yaitu Wet End untuk pembentukan lembaran basah, Dry End untuk pengeringan uap dan kreping pada silinder Yankee, serta Pope Reel untuk penggulungan menjadi Jumbo Roll. Setiap tahapan menuntut ketelitian tinggi dalam pengawasan parameter teknis demi menjamin kelembutan, kekuatan tarik, dan efisiensi produksi bebas downtime.'
+        },
+        {
+          time: '02:30',
+          topic: 'Kontrol Konsistensi CRC & Panel Flow Control',
+          note: 'Cara membaca layar actual vs set point dan pengaturan valve (Slide 2-3)',
+          detailedExplanation: 'Kekentalan buburan pulp dari Chest 4 diukur oleh Consistency Regulator Controller (CRC). Layar atas menampilkan konsistensi aktual, sedangkan layar bawah menunjukkan batas set point (2.60% - 2.80%). Jika actual lebih besar dari set point, CRC memerintahkan control valve dilution membuka air pengencer lebih besar. Buburan kemudian dialirkan ke Stuffbox konstan dan melewati magnetic flowmeter dengan target debit alir 35 - 45 m³/h yang dikontrol melalui layar sentuh DCS.',
+          technicalSpecs: [
+            { label: 'Target Konsistensi CRC', val: '2.60% - 2.80%' },
+            { label: 'Tekanan Air Delusen', val: '3.0 - 4.0 bar' },
+            { label: 'Target Flow Rate Stuffbox', val: '35 - 45 m³/h (DCS Controlled)' }
+          ],
+          spokenNarration: 'Kestabilan berat dasar atau gramatur lembaran tissue diawali dari pengendalian konsistensi buburan pulp di Stuffbox. Sensor konsistensi digital C R C memantau viskositas buburan secara kontinu. Jika pembacaan konsistensi aktual di layar atas melampaui set point batas di layar bawah, katup delusen otomatis membuka aliran air pengencer. Bersamaan dengan itu, operator memantau debit laju alir pada panel D C S Flow Control pada rentang tiga puluh lima hingga empat puluh lima meter kubik per jam.'
+        },
+        {
+          time: '05:15',
+          topic: 'Dosis Kimia Dry/Wet Strength & Antifoam',
+          note: 'Titik injeksi manhole Chest 4, outlet stuffbox, dan headbox tank (Slide 4-5)',
+          detailedExplanation: 'Aditif kimia basah berperan penting dalam spesifikasi lembaran tissue. Wet Strength (PAE resin) diinjeksikan pada manhole Chest 4 atau pipa outlet stuffbox untuk grade tissue dapur/towel. Dry Strength (kationik starch/akrilamid) ditambahkan untuk memperkuat ikatan serat facial tissue tanpa mengorbankan kelembutan. Antifoam diinjeksikan di tangki headbox untuk melenyapkan busa yang dapat memicu lubang jarum (pinholes).',
+          technicalSpecs: [
+            { label: 'Titik Dosing Wet/Dry Strength', val: 'Manhole Chest 4 & Outlet Stuffbox' },
+            { label: 'Titik Injeksi Antifoam', val: 'Tangki Headbox & Saluran White Water' },
+            { label: 'Tujuan Antifoam', val: 'Mencegah Pembentukan Pinhole Cacat Lembaran' }
+          ],
+          spokenNarration: 'Penambahan bahan kimia fungsional dilakukan pada titik-titik injeksi khusus. Bahan penguat kering atau Dry Strength dan penguat basah Wet Strength diinjeksikan secara presisi pada manhole Chest 4 atau pipa transfer buburan. Sementara bahan pencegah busa atau Antifoam diinjeksikan pada tangki headbox. Operator wajib memeriksa kerja pompa dosing, kebersihan tangki kimia harian, dan memastikan tidak ada endapan yang menyumbat jalur aliran.'
+        },
+        {
+          time: '08:40',
+          topic: 'Headbox Forming, PEO & Cleaning Wire Shower HPP',
+          note: 'Menjaga konsistensi 0,18-0,20% dan kerapatan side seal (Slide 6-8)',
+          detailedExplanation: 'Konsistensi buburan pada headbox Cylinder Mould wajib dijaga sangat encer pada rentang 0.18% - 0.20%. Polimer PEO Axfloc (17 - 19 Cps) diinjeksikan via screw pump untuk mencegah serat menggumpal (flokulasi) sehingga formasi lembaran tissue sangat rata. Kain kawat wire forming dibersihkan terus menerus oleh High Pressure Pump (HPP) shower 5 - 7 bar untuk membuang getah (pitch) dan debu pulp.',
+          technicalSpecs: [
+            { label: 'Konsistensi Kritis Headbox', val: '0.18% - 0.20% (Strict Tolerance)' },
+            { label: 'Viskositas PEO Terinjeksi', val: '17 - 19 Cps (Screw Pump Distributed)' },
+            { label: 'Tekanan Shower HPP Wire', val: '5.0 - 7.0 bar' }
+          ],
+          spokenNarration: 'Pada bagian forming headbox, konsistensi suspensi buburan wajib dijaga sangat encer, yaitu pada rentang nol koma delapan belas hingga nol koma dua puluh persen. Zat pendispersi P E O Axfloc diinjeksikan untuk mencegah flokulasi serat. Buburan kemudian disemprotkan ke permukaan kawat forming silinder. Untuk menjaga kebersihan wire dari kerak getah, shower tekanan tinggi H P P menyemprotkan air bersih dengan tekanan lima sampai tujuh bar ke celah kawat.'
+        },
+        {
+          time: '11:20',
+          topic: 'Cleaning Felt: Needle Shower 10-12 Bar & U-Box Vacuum',
+          note: 'Pentingnya motor osilator bergerak aktif dan FC pH 8.5 (Slide 9-10)',
+          detailedExplanation: 'Kain felt membawa lembaran basah melewati rol tekan menuju silinder pengering. Kebersihan pori-pori felt dijaga oleh semprotan Needle Shower bertekanan 10 - 12 bar yang dipadukan cairan pembersih Felt Cleaner (target pH 8.5). Motor osilator shower wajib bergerak ke kiri dan ke kanan secara kontinyu; jika osilator macet, felt akan tergores dan berlubang. Tiga unit kotak vakum U-Box menyedot air hingga felt kering sempurna.',
+          technicalSpecs: [
+            { label: 'Tekanan Needle Shower Felt', val: '10 - 12 bar (Wajib Berosilasi)' },
+            { label: 'Diameter Lubang Nozel', val: '0.8 - 1.0 mm Needle Jet' },
+            { label: 'Target pH Felt Cleaner', val: 'pH 8.5 (Basa Lembut)' },
+            { label: 'Dewatering Felt', val: '3 Unit U-Box Vacuum Kedap Udara' }
+          ],
+          spokenNarration: 'Kain felt berfungsi mentransfer dan menyerap air dari lembaran basah. Untuk mencegah serat felt tersumbat, shower needle bertekanan sepuluh hingga dua belas bar menyemprotkan air bercampur bahan pembersih Felt Cleaner berderajat keasaman p H delapan koma lima. Pipa shower needle wajib bergerak berosilasi ke kiri dan kanan tanpa henti. Jika osilator macet, matikan shower needle seketika untuk mencegah kain felt robek tergores. Tiga unit kotak vakum U-Box kemudian menyedot air hingga felt kembali kering.'
+        },
+        {
+          time: '14:00',
+          topic: 'Silinder Yankee, Heat Exchanger & Creping 15%',
+          note: 'Suhu 85-90°C, spray coating min 2.5 bar, dan rumus speed (Slide 11-15)',
+          detailedExplanation: 'Silinder pengering besi cor Yankee Dryer dipanaskan oleh uap steam jenuh bertekanan, mempertahankan suhu permukaan 85 - 90 °C. Sirip Heat Exchanger meniupkan udara panas tambahan di bawah kap pengering. Larutan spray coating kimia disemprotkan dengan tekanan minimal 2.5 bar agar lembaran menempel rata. Pisau creping doctor blade kemudian mengerutkan lembaran sebesar 15% untuk menghasilkan kelembutan dan bulk optimal.',
+          technicalSpecs: [
+            { label: 'Suhu Permukaan Yankee', val: '85 - 90 °C (Stabil)' },
+            { label: 'Tekanan Semprot Spray Coating', val: 'Minimal 2.5 bar' },
+            { label: 'Rasio Creping Doctor', val: '15% (Creping Ratio)' },
+            { label: 'Rasio Speed Yankee:Reel', val: 'Speed Reel = Speed Yankee x (1 - 0.15)' }
+          ],
+          spokenNarration: 'Pengeringan lembaran tissue berlangsung pada silinder uap Yankee Dryer yang dipanaskan uap bertekanan dengan suhu permukaan stabil delapan puluh lima sampai sembilan puluh derajat Celcius. Tiupan udara panas dari Heat Exchanger mempercepat laju penguapan. Permukaan silinder disemprot cairan pelapis coating minimal dua koma lima bar sebelum lembaran dilepaskan oleh pisau doctor creping dengan persentase pengerutan lima belas persen, menghasilkan kelembutan tekstur tissue berstandar tinggi.'
+        },
+        {
+          time: '16:30',
+          topic: 'Operasional Pope Reel & 10 Soal Evaluasi Kompetensi',
+          note: 'Pencegahan debu trim, flagging joint, dan pembahasan soal (Slide 16-18)',
+          detailedExplanation: 'Tahap akhir adalah penataan gulungan pada Pope Reel. Kecepatan gulung Pope Reel dikontrol otomatis: contoh jika Yankee 150 mpm, maka Pope Reel berputar 127.5 mpm (15% creping). Lembaran harus bebas dari debu trim, potongan tepi harus bersih, dan setiap sambungan atau joint lembaran wajib dipasangi bendera marker (flagging) agar terdeteksi saat proses konversi di mesin rewinder.',
+          technicalSpecs: [
+            { label: 'Contoh Kecepatan Reel', val: '127.5 mpm (Pada Yankee 150 mpm)' },
+            { label: 'Standar Kualitas Jumbo Roll', val: 'Bebas Debu Trim, Rata, & Padat Seragam' },
+            { label: 'Kepatuhan Joint Kertas', val: 'Wajib Marker Flagging di Sisi Tepi' }
+          ],
+          spokenNarration: 'Tahap akhir adalah penggulungan lembaran pada Pope Reel menjadi Jumbo Roll seberat tiga hingga empat ton. Rasio kecepatan putar drum Pope Reel disinkronkan tepat dengan kecepatan silinder Yankee dikalikan faktor kreping. Operator dan pembantu wajib memastikan tepi gulungan bebas dari debu trim, tidak melipat, serta memasang bendera penanda pada setiap sambungan lembaran sebelum ditransfer ke area slitter rewinder.'
+        }
       ],
       keyTakeaways: [
         'Konsistensi headbox WAJIB dijaga ketat di kisaran 0,18% - 0,20% untuk stabilitas gramatur.',
@@ -1126,10 +1205,54 @@ export const TISSUE_MACHINE_MEDIA_CONFIG: MachineMediaConfig = {
       instructorRole: 'Superintendent Paper Machine PT. PUP',
       description: 'Pembahasan studi kasus nyata di lantai pabrik: mengatasi CRC hunting, penanganan osilator felt macet mendadak, pembersihan sirip HE tersumbat debu, serta simulasi interaktif menjawab 10 pertanyaan evaluasi kompetensi.',
       chapters: [
-        { time: '00:00', topic: 'Bedah Kasus 1: Mengatasi Fluktuasi Konsistensi CRC', note: 'Langkah taktis operator saat grafik CRC berosilasi' },
-        { time: '03:10', topic: 'Bedah Kasus 2: Penyelamatan Felt Saat Osilator Shower Macet', note: 'Tindakan cepat darurat menurunkan tekanan shower needle' },
-        { time: '06:00', topic: 'Bedah Kasus 3: Menjaga Suhu Yankee 85-90°C & Sirip HE', note: 'Teknik pembersihan sirip HE dan kestabilan spray coating' },
-        { time: '09:15', topic: 'Simulasi Kuis 10 Pertanyaan Evaluasi Teknis', note: 'Kunci jawaban resmi dan penjelasan mendalam untuk operator & karu' }
+        {
+          time: '00:00',
+          topic: 'Bedah Kasus 1: Mengatasi Fluktuasi Konsistensi CRC',
+          note: 'Langkah taktis operator saat grafik CRC berosilasi',
+          detailedExplanation: 'Saat sensor CRC mengalami fenomena hunting atau pembacaan liar, tindakan awal adalah mengalihkan modul control valve dilution ke mode manual. Periksa kran bypass dan bersihkan sensor sensing blade dari gumpalan serat atau kawat bal. Pastikan tekanan air delusen stabil di 3.0 - 4.0 bar. Lakukan pengambilan sampel manual untuk verifikasi gravimetrik lab sebelum mengembalikan sistem ke auto.',
+          technicalSpecs: [
+            { label: 'Tindakan Pertama', val: 'Pindah Kontrol ke Manual Segera' },
+            { label: 'Inspeksi Fisik', val: 'Cek Blade Sensor CRC dari Lilitan Serat' },
+            { label: 'Verifikasi Lab', val: 'Uji Gravimetrik Sampel Manual 1x Shift' }
+          ],
+          spokenNarration: 'Ketika grafik monitor C R C menunjukkan gejala hunting atau lonjakan nilai yang liar, operator harus bertindak cepat. Alihkan kontrol valve delusen ke mode semi-otomatis atau manual. Periksa pisau sensor pengindera C R C dari kemungkinan tersangkut lilitan serat atau kawat, serta verifikasi kestabilan tekanan pompa air pengencer. Lakukan pengambilan sampel manual untuk uji laboratorium sebagai validasi kalibrasi sebelum mengembalikan kontrol ke mode otomatis.'
+        },
+        {
+          time: '03:10',
+          topic: 'Bedah Kasus 2: Penyelamatan Felt Saat Osilator Shower Macet',
+          note: 'Tindakan cepat darurat menurunkan tekanan shower needle',
+          detailedExplanation: 'Jika motor penggerak osilator shower needle felt mengalami kemacetan, operator wajib segera mematikan atau mendrop tekanan air shower needle 10-12 bar dalam tempo kurang dari 15 detik! Semprotan jarum tajam bertekanan tinggi yang terfokus pada satu garis diam akan memotong dan merusak rajutan felt hingga sobek dalam hitungan menit. Periksa mekanisme gear osilator dan kelistrikan sebelum menyalakan kembali.',
+          technicalSpecs: [
+            { label: 'Waktu Respon Darurat', val: '< 15 Detik Stop Shower Tekanan Tinggi' },
+            { label: 'Resiko Fatal', val: 'Felt Terpotong / Sobek Melingkar Permanen' },
+            { label: 'Tindakan Perbaikan', val: 'Inspeksi Limit Switch & Gearbox Osilator' }
+          ],
+          spokenNarration: 'Apabila motor osilator shower needle felt tiba-tiba macet saat mesin berjalan, operator atau helper yang bertugas harus mematikan pompa shower needle dalam hitungan detik. Tekanan semprotan sepuluh hingga dua belas bar yang diam di satu titik akan menyayat serat kain felt hingga berlubang dalam waktu kurang dari satu menit. Setelah mesin dihentikan aman, periksa poros transmisi mekanik osilator dan pastikan saklar batas bekerja normal sebelum dioperasikan kembali.'
+        },
+        {
+          time: '06:00',
+          topic: 'Bedah Kasus 3: Menjaga Suhu Yankee 85-90°C & Sirip HE',
+          note: 'Teknik pembersihan sirip HE dan kestabilan spray coating',
+          detailedExplanation: 'Penurunan suhu Yankee di bawah 85°C dapat menimbulkan masalah kertas basah, lembaran rapuh, dan coating terkelupas. Periksa saluran kondensat steam dan pastikan perangkap uap (steam trap) tidak tersumbat. Pada unit Heat Exchanger (HE), sirip-sirip pemanas wajib dibersihkan berkala dari penumpukan serbuk debu tissue yang menghambat perpindahan panas konveksi udara panas.',
+          technicalSpecs: [
+            { label: 'Rentang Suhu Yankee Aman', val: '85 - 90 °C' },
+            { label: 'Metode Pembersihan HE', val: 'Hembusan Udara Kering Bertekanan' },
+            { label: 'Dampak HE Kotor', val: 'Efisiensi Termal Turun, Konsumsi Gas/Steam Naik' }
+          ],
+          spokenNarration: 'Penurunan suhu silinder Yankee di bawah delapan puluh derajat Celcius akan menyebabkan lembaran kertas menempel terlalu kuat pada drum dan putus. Periksa tekanan steam masuk dan pastikan perangkap kondensat bekerja lancar tanpa tersumbat air. Bersihkan juga sirip-sirip pipa Heat Exchanger dari timbunan debu serat menggunakan semprotan udara kering bertekanan, agar transfer panas hembusan tudung pengering kembali maksimal.'
+        },
+        {
+          time: '09:15',
+          topic: 'Simulasi Kuis 10 Pertanyaan Evaluasi Teknis',
+          note: 'Kunci jawaban resmi dan penjelasan mendalam untuk operator & karu',
+          detailedExplanation: 'Sesi kuis evaluasi 10 soal merangkum seluruh poin krusial dalam 18 slide modul: nomor 1 konsistensi headbox 0.18-0.20%, nomor 2 bahaya osilator shower macet, nomor 3 suhu Yankee 85-90°C, nomor 4 rumus speed reel, hingga tata cara penanganan cacat tissue dan keselamatan kerja LOTO.',
+          technicalSpecs: [
+            { label: 'Jumlah Soal Uji', val: '10 Pertanyaan Standar Evaluasi Pabrik' },
+            { label: 'Passing Grade', val: 'Nilai Minimal 80% Lulus Kompetensi' },
+            { label: 'Target Peserta', val: 'Operator PM, Helper, dan Calon Karu' }
+          ],
+          spokenNarration: 'Evaluasi kompetensi menguji pemahaman menyeluruh terhadap parameter kritis operasional. Mulai dari kepatuhan konsistensi headbox nol koma delapan belas persen, batasan tekanan shower felt, perhitungan selisih kecepatan kreping Yankee terhadap Pope Reel, hingga prosedur keselamatan kerja L O T O. Pemahaman mendalam atas prinsip-prinsip ini adalah fondasi profesionalisme seluruh regu kerja di PT Panca Usahatama Paramita.'
+        }
       ],
       keyTakeaways: [
         'Tindakan cepat saat osilator macet: segera matikan shower needle dalam hitungan detik untuk selamatkan felt.',
