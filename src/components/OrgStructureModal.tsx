@@ -284,7 +284,7 @@ export const OrgStructureModal: React.FC<OrgStructureModalProps> = ({
               </p>
             </div>
 
-            {/* LEVEL 1: KEPALA PABRIK & JUMBO ROLL DIV. HEAD */}
+            {/* LEVEL 1: KEPALA PABRIK */}
             <div className="flex flex-col items-center">
               <div className="w-72 bg-gradient-to-b from-emerald-900/90 to-emerald-950 border-2 border-emerald-400/80 rounded-xl p-3 text-center shadow-lg relative">
                 <div className="text-[11px] font-bold text-emerald-300 uppercase tracking-wide">
@@ -292,14 +292,6 @@ export const OrgStructureModal: React.FC<OrgStructureModalProps> = ({
                 </div>
                 <div className="text-base font-black text-white mt-0.5">
                   Kelik Heriyono
-                </div>
-                <div className="mt-2 pt-2 border-t border-emerald-700/60">
-                  <div className="text-[11px] font-bold text-emerald-300 uppercase tracking-wide">
-                    Jumbo Roll Div. Head
-                  </div>
-                  <div className="text-sm font-bold text-white">
-                    Kelik Heriyono
-                  </div>
                 </div>
               </div>
               <div className="w-0.5 h-6 bg-slate-700"></div>

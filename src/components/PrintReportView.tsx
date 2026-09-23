@@ -334,7 +334,7 @@ export const PrintReportView: React.FC<PrintReportViewProps> = ({ report, onClos
               </div>
             </div>
             <div>
-              <div className="text-slate-500 text-[10px] uppercase font-semibold">Kepala Pabrik / JR Div. Head</div>
+              <div className="text-slate-500 text-[10px] uppercase font-semibold">Kepala Pabrik</div>
               <div className="h-12 border-b border-slate-400 mt-2"></div>
               <div className="font-bold mt-1 text-slate-900 text-[11px] truncate">
                 Kelik Heriyono

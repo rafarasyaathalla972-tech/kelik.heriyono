@@ -20,11 +20,11 @@ export const PUP_PERSONNEL_ROSTER: PupPersonnel[] = [
   {
     id: 'pers-pabrik-1',
     name: 'Kelik Heriyono',
-    role: 'Kepala Pabrik & Jumbo Roll Div. Head',
+    role: 'Kepala Pabrik',
     unit: 'MANAGEMENT',
     group: 'Non-Shift',
     status: 'Pimpinan',
-    badgeTitle: 'Kepala Pabrik / Div. Head',
+    badgeTitle: 'Kepala Pabrik',
     directSupervisor: 'Direksi PT. PUP',
     notes: 'Penanggung jawab utama seluruh operasional pabrik, keselamatan, efisiensi, dan hasil produksi jumbo roll.'
   },
@@ -250,11 +250,11 @@ export const PUP_PERSONNEL_ROSTER: PupPersonnel[] = [
 // =========================================================================
 
 export const PUP_JOB_DESCRIPTIONS: JobDescriptionDetail[] = [
-  // 1. KEPALA PABRIK & JUMBO ROLL DIV. HEAD
+  // 1. KEPALA PABRIK
   {
     id: 'jd-kepala-pabrik',
     roleKey: 'KEPALA_PABRIK',
-    title: 'Kepala Pabrik / Jumbo Roll Div. Head',
+    title: 'Kepala Pabrik',
     level: 'Pimpinan Divisi',
     department: 'Divisi Produksi Pabrik & Jumbo Roll',
     reportsTo: 'Direksi / Managing Director PT. PUP',
@@ -324,7 +324,7 @@ export const PUP_JOB_DESCRIPTIONS: JobDescriptionDetail[] = [
     title: 'Adm. JR (Administrasi Jumbo Roll)',
     level: 'Administrasi',
     department: 'Administrasi & Data Produksi Jumbo Roll',
-    reportsTo: 'Kelik Heriyono (Jumbo Roll Div. Head)',
+    reportsTo: 'Kelik Heriyono (Kepala Pabrik)',
     supervises: 'Data entry shift operator',
     personnelNames: ['Fiqih Saputra'],
     summary: 'Bertanggung jawab penuh atas keakuratan pencatatan data produksi, verifikasi laporan shift PM1, PM2, PM5, dan Rewinder, inventarisasi jumbo roll, surat jalan pengiriman, serta integrasi pelaporan shift digital.',
@@ -874,7 +874,7 @@ export const PUP_JOB_DESCRIPTIONS: JobDescriptionDetail[] = [
     title: 'Operator Utama Rewinder (Finishing Jumbo Roll)',
     level: 'Operator Utama',
     department: 'Seksi Pemotongan & Finishing Kertas (Rewinder)',
-    reportsTo: 'Wakil Kepala PM / Karu & Jumbo Roll Div. Head',
+    reportsTo: 'Wakil Kepala PM / Karu & Kepala Pabrik',
     supervises: 'Operator Rewinder, Pembantu Operator (Helper) Rewinder',
     personnelNames: [
       'Slamet P (Rewin G1)', 'Salim . B (Rewin G1)', 'Rohman/maman (Rewin G1)', 'Maryanto (Rewin G1)',

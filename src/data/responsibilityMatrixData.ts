@@ -38,7 +38,7 @@ export const MATRIX_ROLES: MatrixRole[] = [
   {
     id: 'kepalaPabrik',
     shortCode: 'KP',
-    name: 'Kepala Pabrik / Div. Head',
+    name: 'Kepala Pabrik',
     category: 'PIMPINAN',
     badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
     description: 'Kelik Heriyono - Penanggung jawab strategis operasional seluruh lini pabrik PT. PUP.'

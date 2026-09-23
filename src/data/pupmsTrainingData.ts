@@ -45,7 +45,7 @@ export interface PupmsQuizQuestion {
 export const PUPMS_METADATA = {
   title: 'PUPMS (Panca Usahatama Paramita Management System)',
   organization: 'PT. Panca Usahatama Paramita (PT. PUP)',
-  leader: 'Kelik Heriyono (Koordinator Pabrik)',
+  leader: 'Kelik Heriyono (Kepala Pabrik)',
   version: 'Edisi Standar Operasional & Pelatihan Terpadu',
   totalPilars: 4,
   coreValues: '5C (Caring, Credible, Competent, Competitive, Customer Delight)',
@@ -609,7 +609,7 @@ export const PUPMS_CHAPTERS: PupmsChapter[] = [
     summary: 'Struktur resmi pabrik Tissue Paper Mill & Converting PT. PUP, rincian wewenang setiap tingkatan jabatan, dan KPI utama departemen.',
     iconName: 'Users',
     keyPoints: [
-      'Pabrik dipimpin oleh Koordinator Pabrik (Kelik Heriyono) membawahi Paper Mill, Converting, Maintenance, QC, PPIC, dan QA/HSE.',
+      'Pabrik dipimpin oleh Kepala Pabrik (Kelik Heriyono) membawahi Paper Mill, Converting, Maintenance, QC, PPIC, dan QA/HSE.',
       'Setiap jabatan memiliki Tugas, Tanggung Jawab, dan Wewenang tertulis yang jelas.',
       'KPI Utama mengukur kinerja objektif: Tonase, Waste, OEE, MTTR/MTBF, Customer Complaint, dan OTIF.'
     ],
@@ -618,7 +618,7 @@ export const PUPMS_CHAPTERS: PupmsChapter[] = [
         heading: '1. Struktur Pimpinan Pabrik Tissue Paper Mill & Converting',
         simpleExplanation: 'Bagan garis komando kepemimpinan di pabrik PT. PUP agar alur komunikasi dan tanggung jawab jelas dari atas sampai bawah.',
         details: [
-          'Koordinator Pabrik: Kelik Heriyono',
+          'Kepala Pabrik: Kelik Heriyono',
           'Kepala Bagian Paper Mill (Mesin PM): Hasyim',
           'Kepala Bagian Converting: Sudarji',
           'Kepala Bagian Maintenance (Mekanik, Elektrik, Instrumen): Suparno',
@@ -631,7 +631,7 @@ export const PUPMS_CHAPTERS: PupmsChapter[] = [
         heading: '2. Tugas, Tanggung Jawab & Wewenang Kunci',
         simpleExplanation: 'Siapa bertanggung jawab atas apa, dan apa saja hak wewenang yang dipegang:',
         details: [
-          'KOORDINATOR PABRIK: Memimpin seluruh operasional pabrik, memastikan tercapainya target produksi, mutu, biaya, pengiriman, dan keselamatan (PCQDS). Berwenang mengambil keputusan operasional strategis dan berhak menghentikan operasi jika ada risiko bahaya K3 fatal.',
+          'KEPALA PABRIK: Memimpin seluruh operasional pabrik, memastikan tercapainya target produksi, mutu, biaya, pengiriman, dan keselamatan (PCQDS). Berwenang mengambil keputusan operasional strategis dan berhak menghentikan operasi jika ada risiko bahaya K3 fatal.',
           'KEPALA PAPER MILL: Mengelola proses produksi tissue jumbo roll di mesin PM1, PM2, dan PM5, mengendalikan pemakaian bahan baku/chemical, menekan broke/waste. Berwenang mengatur jadwal mesin dan menghentikan mesin saat terjadi abnormalitas.',
           'KEPALA CONVERTING: Mengelola proses converting tisu gulung dan lipat, memastikan target output tercapai, mengendalikan limbah converting, dan mengawasi packing/palletizing.',
           'KEPALA MAINTENANCE: Menjamin keandalan mesin dan utilitas (Boiler, Listrik, Kompresor, Air), menyusun jadwal preventive maintenance, dan mengendalikan breakdown perbaikan. Berwenang menentukan jadwal shutdown maintenance pabrik.',
@@ -657,7 +657,7 @@ export const PUPMS_CHAPTERS: PupmsChapter[] = [
             ['Maintenance', 'Breakdown Hours, MTTR (Mean Time to Repair), MTBF (Mean Time Between Failures)', 'Mesin jarang rusak mendadak, dan jika ada perbaikan bisa diselesaikan cepat dan tuntas.'],
             ['Quality Control (QC)', 'Customer Complaint, Reject Rate, Kecepatan Penanganan CPAR', 'Memastikan keluhan pelanggan nol atau ditekan seminimal mungkin, dan produk cacat tidak lolos ke pasar.'],
             ['PPIC & Gudang', 'OTIF (On Time In Full Delivery), Inventory Accuracy', 'Pesanan dikirim tepat waktu dan jumlahnya lengkap sesuai DO, serta stok gudang akurat sesuai kartu stok.'],
-            ['Koordinator Pabrik', 'Productivity, Cost, Quality, Delivery, Safety (PCQDS)', 'Pabrik produktif, biaya efisien terkontrol, kualitas prima, pengiriman tepat, dan Zero Accident.']
+            ['Kepala Pabrik', 'Productivity, Cost, Quality, Delivery, Safety (PCQDS)', 'Pabrik produktif, biaya efisien terkontrol, kualitas prima, pengiriman tepat, dan Zero Accident.']
           ]
         }
       }
@@ -776,7 +776,7 @@ export const PUPMS_QUIZ_QUESTIONS: PupmsQuizQuestion[] = [
   },
   {
     id: 10,
-    question: 'Siapakah Koordinator Pabrik PT. PUP yang memimpin seluruh kegiatan operasional Tissue Paper Mill & Converting?',
+    question: 'Siapakah Kepala Pabrik PT. PUP yang memimpin seluruh kegiatan operasional Tissue Paper Mill & Converting?',
     options: [
       'Kelik Heriyono',
       'Hasyim',
@@ -784,6 +784,6 @@ export const PUPMS_QUIZ_QUESTIONS: PupmsQuizQuestion[] = [
       'Suparno'
     ],
     correctAnswer: 0,
-    explanation: 'Sesuai struktur organisasi resmi PT. PUP, Koordinator Pabrik dijabat oleh Kelik Heriyono, membawahi Paper Mill (Hasyim), Converting (Sudarji), Maintenance (Suparno), dan PPIC (Riswan).'
+    explanation: 'Sesuai struktur organisasi resmi PT. PUP, Kepala Pabrik dijabat oleh Kelik Heriyono, membawahi Paper Mill (Hasyim), Converting (Sudarji), Maintenance (Suparno), dan PPIC (Riswan).'
   }
 ];

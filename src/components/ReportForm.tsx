@@ -447,7 +447,7 @@ export const ReportForm: React.FC<ReportFormProps> = ({
     { name: 'Bambang JH', title: 'Wakil 1 PM 5', unit: 'PM5' },
     { name: 'Warsito', title: 'Wakil 2 PM 5', unit: 'PM5' },
     { name: 'YANA ANDRIYANA', title: 'Kepala Boiler', unit: 'BOILER' },
-    { name: 'Kelik Heriyono', title: 'Kepala Pabrik / JR Div. Head', unit: 'MANAGEMENT' }
+    { name: 'Kelik Heriyono', title: 'Kepala Pabrik', unit: 'MANAGEMENT' }
   ], []);
 
   // Backward-compatible alias

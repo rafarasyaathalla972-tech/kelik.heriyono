@@ -761,7 +761,7 @@ export const PupmsTrainingView: React.FC = () => {
           <span>Dokumen Resmi: <strong>PT. Panca Usahatama Paramita (PUPMS)</strong></span>
         </div>
         <div className="flex items-center gap-2">
-          <span>Pemimpin Pelaksana: <strong className="text-white">Kelik Heriyono (Koordinator Pabrik)</strong></span>
+          <span>Pemimpin Pelaksana: <strong className="text-white">Kelik Heriyono (Kepala Pabrik)</strong></span>
         </div>
       </div>
     </div>
