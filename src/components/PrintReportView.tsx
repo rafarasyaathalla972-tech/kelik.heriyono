@@ -136,6 +136,18 @@ export const PrintReportView: React.FC<PrintReportViewProps> = ({ report, onClos
                   <td className="p-2 font-semibold bg-slate-50">Jumlah Gulungan</td>
                   <td className="p-2 font-mono">{report.reelCount} Reel / Roll</td>
                 </tr>
+                {report.oee && (
+                  <tr className="border-b border-slate-300 bg-blue-50/60 font-semibold">
+                    <td className="p-2 bg-blue-100/70 text-blue-950 font-bold">Skor OEE Shift</td>
+                    <td className="p-2 font-mono font-bold text-blue-900 text-sm">
+                      {report.oee.oee}% ({report.oee.status === 'WORLD_CLASS' ? 'World Class' : report.oee.status === 'GOOD' ? 'Optimal' : report.oee.status === 'FAIR' ? 'Fair / Cukup' : 'Perlu Kaizen'})
+                    </td>
+                    <td className="p-2 bg-blue-100/70 text-blue-950">Rincian TPM (A / P / Q)</td>
+                    <td className="p-2 font-mono text-xs text-slate-800">
+                      Avail: {report.oee.availability}% | Perf: {report.oee.performance}% | Qual: {report.oee.quality}%
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

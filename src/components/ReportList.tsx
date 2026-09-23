@@ -17,7 +17,8 @@ import {
   FileText,
   Users,
   HardHat,
-  ShieldCheck
+  ShieldCheck,
+  Gauge
 } from 'lucide-react';
 import { ShiftReport, MachineId } from '../types';
 import { PrintReportView } from './PrintReportView';
@@ -117,6 +118,10 @@ export const ReportList: React.FC<ReportListProps> = ({
       'Tensile (kN/m)',
       'Smoothness (ml/min)',
       'Total Downtime (Menit)',
+      'OEE (%)',
+      'Availability (%)',
+      'Performance (%)',
+      'Quality (%)',
       'Tindakan Dilakukan',
       'Saran Jangka Pendek',
       'Saran Jangka Panjang',
@@ -156,6 +161,10 @@ export const ReportList: React.FC<ReportListProps> = ({
         r.tensileStrength,
         r.surfaceSmoothness,
         r.totalDowntimeMinutes,
+        r.oee ? r.oee.oee : '-',
+        r.oee ? r.oee.availability : '-',
+        r.oee ? r.oee.performance : '-',
+        r.oee ? r.oee.quality : '-',
         `"${(r.actionsTaken || '').replace(/"/g, '""')}"`,
         `"${(r.shortTermRecommendation || '').replace(/"/g, '""')}"`,
         `"${(r.longTermRecommendation || '').replace(/"/g, '""')}"`,
@@ -403,6 +412,23 @@ export const ReportList: React.FC<ReportListProps> = ({
 
                   {/* Right: Numbers & Actions */}
                   <div className="flex items-center justify-between md:justify-end gap-3 shrink-0">
+                    {/* OEE Pill if present */}
+                    {report.oee && (
+                      <div className="text-right border-r border-slate-800 pr-3 hidden sm:block">
+                        <div className="flex items-center gap-1">
+                          <span className="text-xs text-slate-400">OEE:</span>
+                          <span className={`font-mono font-bold text-sm ${
+                            report.oee.oee >= 85 ? 'text-emerald-400' : report.oee.oee >= 75 ? 'text-cyan-400' : 'text-amber-400'
+                          }`}>
+                            {report.oee.oee}%
+                          </span>
+                        </div>
+                        <div className="text-[10px] text-slate-500 font-mono">
+                          A:{report.oee.availability}% P:{report.oee.performance}%
+                        </div>
+                      </div>
+                    )}
+
                     {/* Achievement Pill */}
                     <div className="text-right">
                       <div className="flex items-center gap-1.5">
@@ -518,6 +544,49 @@ export const ReportList: React.FC<ReportListProps> = ({
                         )}
                       </div>
                     </div>
+
+                    {/* PM Jumbo Roll Product Specifications & Standards (PT. PUP) */}
+                    {report.oee && (
+                      <div className="bg-gradient-to-r from-slate-900 via-slate-900 to-indigo-950/40 border border-indigo-900/50 rounded-lg p-3 space-y-2">
+                        <div className="flex items-center justify-between border-b border-slate-800 pb-1.5">
+                          <div className="flex items-center gap-2">
+                            <Gauge className="w-4 h-4 text-indigo-400" />
+                            <span className="font-bold text-slate-100 text-xs">
+                              Metrik Efektivitas Mesin (OEE: {report.oee.oee}%)
+                            </span>
+                          </div>
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
+                            report.oee.status === 'WORLD_CLASS' ? 'bg-emerald-950 text-emerald-300 border-emerald-700' :
+                            report.oee.status === 'GOOD' ? 'bg-blue-950 text-blue-300 border-blue-700' :
+                            'bg-amber-950 text-amber-300 border-amber-700'
+                          }`}>
+                            {report.oee.status === 'WORLD_CLASS' ? 'World Class (TPM)' : report.oee.status === 'GOOD' ? 'Optimal' : 'Perlu Kaizen'}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                          <div className="bg-slate-950/70 p-2 rounded border border-slate-800">
+                            <span className="text-slate-500 block text-[10px]">Availability (A):</span>
+                            <span className="font-mono font-bold text-blue-400">{report.oee.availability}%</span>
+                            <span className="text-[10px] text-slate-500 block">DT: {report.oee.unplannedDowntimeMinutes} mnt</span>
+                          </div>
+                          <div className="bg-slate-950/70 p-2 rounded border border-slate-800">
+                            <span className="text-slate-500 block text-[10px]">Performance (P):</span>
+                            <span className="font-mono font-bold text-cyan-400">{report.oee.performance}%</span>
+                            <span className="text-[10px] text-slate-500 block">{report.oee.actualProductionTon}T / {report.oee.targetProductionTon}T</span>
+                          </div>
+                          <div className="bg-slate-950/70 p-2 rounded border border-slate-800">
+                            <span className="text-slate-500 block text-[10px]">Quality (Q):</span>
+                            <span className="font-mono font-bold text-emerald-400">{report.oee.quality}%</span>
+                            <span className="text-[10px] text-slate-500 block">Baik: {report.oee.goodProductionTon} Ton</span>
+                          </div>
+                          <div className="bg-slate-950/70 p-2 rounded border border-slate-800">
+                            <span className="text-slate-500 block text-[10px]">Waktu Bersih Operasi:</span>
+                            <span className="font-mono font-bold text-slate-200">{report.oee.operatingTimeMinutes} Menit</span>
+                            <span className="text-[10px] text-slate-500 block">dari {report.oee.plannedTimeMinutes - report.oee.plannedDowntimeMinutes} mnt</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
                     {/* PM Jumbo Roll Product Specifications & Standards (PT. PUP) */}
                     <div className="bg-gradient-to-r from-slate-900 to-slate-900/90 border border-amber-500/30 rounded-lg p-3 space-y-2">

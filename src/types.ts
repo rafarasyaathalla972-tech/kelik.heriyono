@@ -90,6 +90,9 @@ export interface ShiftReport {
   incidents: IncidentReport[];
   totalDowntimeMinutes: number;
 
+  // Utilitas OEE (Overall Equipment Effectiveness)
+  oee?: OeeCalculation;
+
   // Rekomendasi & Tindakan
   actionsTaken: string;
   shortTermRecommendation: string;
@@ -100,6 +103,25 @@ export interface ShiftReport {
   createdAt: string;
   updatedAt?: string;
   editHistory: EditAuditLog[];
+}
+
+export interface OeeCalculation {
+  availability: number;        // % (Operating Time / Planned Production Time * 100)
+  performance: number;         // % (Actual Production / Expected Production during Operating Time * 100)
+  quality: number;             // % (Good Quality Output / Total Output * 100)
+  oee: number;                 // % (Availability * Performance * Quality / 10000)
+  plannedTimeMinutes: number;  // Waktu kerja shift terjadwal (standar 480 menit = 8 jam)
+  plannedDowntimeMinutes: number; // Waktu istirahat/briefing terencana (misal 30 menit)
+  unplannedDowntimeMinutes: number; // Total downtime insiden/kerusakan/kertas putus
+  operatingTimeMinutes: number; // Planned Time - Planned Downtime - Unplanned Downtime
+  targetProductionTon: number;  // Target kapasitas shift
+  actualProductionTon: number;  // Realisasi tonase shift
+  goodProductionTon: number;    // Tonase Grade A + B (layak jual)
+  defectProductionTon: number;  // Tonase Cacat / Broke
+  machineSpeedActualMpm?: number; // Kecepatan lari mesin aktual (mpm)
+  machineSpeedDesignMpm?: number; // Kecepatan desain mesin (mpm)
+  status: 'WORLD_CLASS' | 'GOOD' | 'FAIR' | 'NEEDS_IMPROVEMENT';
+  calculatedAt?: string;
 }
 
 export interface SopStep {

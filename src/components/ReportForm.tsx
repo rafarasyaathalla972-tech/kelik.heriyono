@@ -26,7 +26,9 @@ import {
   Users,
   HardHat,
   UserPlus,
-  ChevronDown
+  ChevronDown,
+  Calculator,
+  Gauge
 } from 'lucide-react';
 import { 
   ShiftReport, 
@@ -35,7 +37,8 @@ import {
   IncidentReport,
   PupPersonnel,
   PupGroup,
-  PmJumboRollProduct
+  PmJumboRollProduct,
+  OeeCalculation
 } from '../types';
 import { 
   PUP_PERSONNEL_ROSTER, 
@@ -49,6 +52,7 @@ import {
   formatProductOptionLabel
 } from '../data/pmProductData';
 import { PmProductsModal } from './PmProductsModal';
+import { OeeCalculatorModal } from './OeeCalculatorModal';
 
 interface ReportFormProps {
   onSaveReport: (report: ShiftReport, editReason?: string, editorName?: string) => void;
@@ -320,7 +324,89 @@ export const ReportForm: React.FC<ReportFormProps> = ({
     ? Number(((qualityGradeDefect / totalQualityTon) * 100).toFixed(2)) 
     : 0;
 
+  // Total Downtime
   const totalDowntimeMinutes = incidents.reduce((acc, inc) => acc + (inc.downtimeMinutes || 0), 0);
+
+  // Utilitas OEE (Overall Equipment Effectiveness) State
+  const [oeeCalculation, setOeeCalculation] = useState<OeeCalculation | undefined>(editingReport?.oee);
+  const [showOeeModal, setShowOeeModal] = useState<boolean>(false);
+
+  // Perhitungan Real-Time Estimasi Cepat OEE (Availability, Performance, Quality)
+  const quickOeeEstimate = useMemo<OeeCalculation>(() => {
+    if (oeeCalculation) return oeeCalculation;
+
+    const plannedOperatingMinutes = 450; // 480 menit standar - 30 menit istirahat & briefing
+    const downtime = hasIncidentOption === 'YES' ? totalDowntimeMinutes : 0;
+    const actualOperatingMinutes = Math.max(0, plannedOperatingMinutes - downtime);
+
+    // Availability Rate (%)
+    const rawAvail = (actualOperatingMinutes / plannedOperatingMinutes) * 100;
+    const availability = Math.min(100, Math.max(0, Number(rawAvail.toFixed(2))));
+
+    // Performance Rate (%)
+    const expectedTon = (targetProductionTon / plannedOperatingMinutes) * actualOperatingMinutes;
+    let rawPerf = 100;
+    if (expectedTon > 0) {
+      rawPerf = (actualProductionTon / expectedTon) * 100;
+    } else if (targetProductionTon > 0) {
+      rawPerf = (actualProductionTon / targetProductionTon) * 100;
+    }
+    const performance = Math.min(120, Math.max(0, Number(rawPerf.toFixed(2))));
+
+    // Quality Rate (%)
+    const totalProd = Math.max(0.01, actualProductionTon);
+    const goodTon = Math.max(0, qualityGradeA + qualityGradeB + qualityGradeC);
+    const rawQual = (goodTon / totalProd) * 100;
+    const quality = Math.min(100, Math.max(0, Number(rawQual.toFixed(2))));
+
+    // OEE Total (%)
+    const rawOee = (availability * performance * quality) / 10000;
+    const oee = Math.min(100, Math.max(0, Number(rawOee.toFixed(2))));
+
+    let status: OeeCalculation['status'] = 'NEEDS_IMPROVEMENT';
+    if (oee >= 85) status = 'WORLD_CLASS';
+    else if (oee >= 75) status = 'GOOD';
+    else if (oee >= 65) status = 'FAIR';
+
+    return {
+      availability,
+      performance,
+      quality,
+      oee,
+      plannedTimeMinutes: 480,
+      plannedDowntimeMinutes: 30,
+      unplannedDowntimeMinutes: downtime,
+      operatingTimeMinutes: actualOperatingMinutes,
+      targetProductionTon,
+      actualProductionTon,
+      goodProductionTon: Number(goodTon.toFixed(2)),
+      defectProductionTon: qualityGradeDefect,
+      status
+    };
+  }, [
+    oeeCalculation,
+    hasIncidentOption,
+    totalDowntimeMinutes,
+    targetProductionTon,
+    actualProductionTon,
+    qualityGradeA,
+    qualityGradeB,
+    qualityGradeC,
+    qualityGradeDefect
+  ]);
+
+  // Handler saat operator menerapkan hasil kalkulator OEE ke laporan
+  const handleApplyOee = (calculation: OeeCalculation, summaryNote?: string) => {
+    setOeeCalculation(calculation);
+    if (summaryNote) {
+      setHandoverNotes(prev => {
+        if (!prev) return summaryNote;
+        if (prev.includes(summaryNote)) return prev;
+        return `${prev}\n${summaryNote}`;
+      });
+    }
+    flashNotification(`Hasil OEE (${calculation.oee}%) berhasil disimpan dan diterapkan ke laporan shift!`);
+  };
 
   // Daftar Operator Resmi PT. PUP yang relevan dengan Mesin & Group aktif
   const operatorsForActiveSelection = useMemo(() => {
@@ -536,7 +622,8 @@ export const ReportForm: React.FC<ReportFormProps> = ({
         shortTermRec,
         longTermRec,
         handoverNotes,
-        hasIncidentOption
+        hasIncidentOption,
+        oeeCalculation
       };
 
       try {
@@ -575,6 +662,7 @@ export const ReportForm: React.FC<ReportFormProps> = ({
     longTermRec,
     handoverNotes,
     hasIncidentOption,
+    oeeCalculation,
     editingReport
   ]);
 
@@ -595,6 +683,9 @@ export const ReportForm: React.FC<ReportFormProps> = ({
             else if (s === 'Siang') s = 'Shift 2';
             else if (s === 'Malam') s = 'Shift 3';
             setShift(s);
+          }
+          if (parsed.oeeCalculation) {
+            setOeeCalculation(parsed.oeeCalculation);
           }
         } catch (e) {
           // ignore corrupted draft
@@ -661,6 +752,7 @@ export const ReportForm: React.FC<ReportFormProps> = ({
       defectTypes: selectedDefects,
       incidents: hasIncidentOption === 'YES' ? incidents : [],
       totalDowntimeMinutes: hasIncidentOption === 'YES' ? totalDowntimeMinutes : 0,
+      oee: oeeCalculation || quickOeeEstimate,
       actionsTaken: actionsTaken.trim() || 'Operasi mesin berjalan sesuai standar pengawasan shift.',
       shortTermRecommendation: shortTermRec.trim(),
       longTermRecommendation: longTermRec.trim(),
@@ -720,6 +812,7 @@ export const ReportForm: React.FC<ReportFormProps> = ({
         defectTypes: selectedDefects,
         incidents: hasIncidentOption === 'YES' ? incidents : [],
         totalDowntimeMinutes: hasIncidentOption === 'YES' ? totalDowntimeMinutes : 0,
+        oee: oeeCalculation || quickOeeEstimate,
         actionsTaken: actionsTaken.trim(),
         shortTermRecommendation: shortTermRec.trim(),
         longTermRecommendation: longTermRec.trim(),
@@ -773,6 +866,27 @@ export const ReportForm: React.FC<ReportFormProps> = ({
           >
             <Zap className="w-3.5 h-3.5" />
             <span>Isi Cepat Standar Normal</span>
+          </button>
+
+          {/* OEE Calculator Shortcut Button */}
+          <button
+            type="button"
+            onClick={() => setShowOeeModal(true)}
+            id="btn-open-oee-calculator"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white rounded-lg text-xs font-bold transition-all shadow-sm ring-1 ring-blue-400/40"
+            title="Buka Utilitas Kalkulator OEE (Availability, Performance, Quality)"
+          >
+            <Calculator className="w-3.5 h-3.5 text-cyan-300" />
+            <span>Kalkulator OEE</span>
+            <span className={`px-1.5 py-0.2 rounded font-mono text-[10px] font-bold ${
+              quickOeeEstimate.oee >= 85 
+                ? 'bg-emerald-950 text-emerald-300 border border-emerald-700' 
+                : quickOeeEstimate.oee >= 75 
+                ? 'bg-blue-950 text-blue-300 border border-blue-700' 
+                : 'bg-amber-950 text-amber-300 border border-amber-700'
+            }`}>
+              {quickOeeEstimate.oee}%
+            </span>
           </button>
 
           {/* Mode Switcher Toggle */}
@@ -1542,6 +1656,104 @@ export const ReportForm: React.FC<ReportFormProps> = ({
               }`}>
                 <span>Pencapaian:</span>
                 <span className="font-mono text-sm">{achievementPercentage}%</span>
+              </div>
+            </div>
+
+            {/* OEE LIVE SCORECARD & QUICK CALCULATOR BAR */}
+            <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-indigo-950/40 border border-indigo-900/40 hover:border-indigo-500/50 rounded-xl p-3.5 shadow-sm transition-all">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-indigo-600/20 border border-indigo-500/40 rounded-xl text-indigo-400 shrink-0">
+                    <Gauge className="w-5 h-5 text-indigo-400" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-white tracking-wide">
+                        Indikator OEE Shift (Overall Equipment Effectiveness)
+                      </span>
+                      {oeeCalculation ? (
+                        <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-emerald-950 text-emerald-300 border border-emerald-700 flex items-center gap-1">
+                          <Check className="w-3 h-3" /> Terverifikasi ({oeeCalculation.oee}%)
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-blue-950 text-blue-300 border border-blue-800">
+                          Estimasi Otomatis
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-slate-400 mt-0.5">
+                      Standar TPM: Availability × Performance × Quality &bull; World Class ≥ 85%
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 self-start sm:self-auto">
+                  <button
+                    type="button"
+                    onClick={() => setShowOeeModal(true)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold transition-all shadow-sm ring-1 ring-indigo-400/50"
+                  >
+                    <Calculator className="w-3.5 h-3.5" />
+                    <span>Buka Kalkulator OEE Lengkap</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* 4 Mini Gauges / Metrics */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-3 mt-3 border-t border-slate-800/80 text-xs">
+                {/* OEE Total */}
+                <div className="bg-slate-950/80 p-2 rounded-lg border border-slate-800/80">
+                  <span className="text-[10px] text-slate-400 block font-medium">Skor OEE Total:</span>
+                  <div className="flex items-baseline justify-between mt-0.5">
+                    <span className={`text-base font-black font-mono ${
+                      quickOeeEstimate.oee >= 85 ? 'text-emerald-400' : quickOeeEstimate.oee >= 75 ? 'text-cyan-400' : 'text-amber-400'
+                    }`}>
+                      {quickOeeEstimate.oee}%
+                    </span>
+                    <span className="text-[10px] text-slate-400 font-semibold uppercase">
+                      {quickOeeEstimate.status === 'WORLD_CLASS' ? 'World Class' : quickOeeEstimate.status === 'GOOD' ? 'Optimal' : 'Kaizen'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Availability */}
+                <div className="bg-slate-950/80 p-2 rounded-lg border border-slate-800/80">
+                  <span className="text-[10px] text-slate-400 block font-medium">Availability (A):</span>
+                  <div className="flex items-baseline justify-between mt-0.5">
+                    <span className="text-base font-black font-mono text-blue-400">
+                      {quickOeeEstimate.availability}%
+                    </span>
+                    <span className="text-[10px] text-slate-400 font-mono">
+                      DT: {hasIncidentOption === 'YES' ? totalDowntimeMinutes : 0}m
+                    </span>
+                  </div>
+                </div>
+
+                {/* Performance */}
+                <div className="bg-slate-950/80 p-2 rounded-lg border border-slate-800/80">
+                  <span className="text-[10px] text-slate-400 block font-medium">Performance (P):</span>
+                  <div className="flex items-baseline justify-between mt-0.5">
+                    <span className="text-base font-black font-mono text-cyan-400">
+                      {quickOeeEstimate.performance}%
+                    </span>
+                    <span className="text-[10px] text-slate-400 font-mono">
+                      {actualProductionTon}T/{targetProductionTon}T
+                    </span>
+                  </div>
+                </div>
+
+                {/* Quality */}
+                <div className="bg-slate-950/80 p-2 rounded-lg border border-slate-800/80">
+                  <span className="text-[10px] text-slate-400 block font-medium">Quality (Q):</span>
+                  <div className="flex items-baseline justify-between mt-0.5">
+                    <span className="text-base font-black font-mono text-emerald-400">
+                      {quickOeeEstimate.quality}%
+                    </span>
+                    <span className="text-[10px] text-slate-400 font-mono">
+                      Cacat: {qualityGradeDefect}T
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -2352,6 +2564,22 @@ export const ReportForm: React.FC<ReportFormProps> = ({
         onClose={() => setShowProductCatalogModal(false)}
         onSelectProduct={handleSelectProduct}
         initialMachine={machine}
+      />
+
+      {/* Utilitas Kalkulator OEE (Overall Equipment Effectiveness) */}
+      <OeeCalculatorModal
+        isOpen={showOeeModal}
+        onClose={() => setShowOeeModal(false)}
+        machine={machine}
+        targetProductionTon={targetProductionTon}
+        actualProductionTon={actualProductionTon}
+        qualityGradeA={qualityGradeA}
+        qualityGradeB={qualityGradeB}
+        qualityGradeC={qualityGradeC}
+        qualityGradeDefect={qualityGradeDefect}
+        totalDowntimeMinutes={hasIncidentOption === 'YES' ? totalDowntimeMinutes : 0}
+        shiftName={`${shift} (${groupShift})`}
+        onApplyOee={handleApplyOee}
       />
 
     </div>
