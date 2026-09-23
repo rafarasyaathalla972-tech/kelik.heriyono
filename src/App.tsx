@@ -29,7 +29,12 @@ export default function App() {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed.map((item: ShiftReport) => {
+          const existingIds = new Set(parsed.map((r: ShiftReport) => r.id));
+          const merged = [
+            ...parsed,
+            ...INITIAL_SHIFT_REPORTS.filter(initR => !existingIds.has(initR.id))
+          ];
+          return merged.map((item: ShiftReport) => {
             let normalizedShift = item.shift;
             if ((normalizedShift as string) === 'Pagi') normalizedShift = 'Shift 1';
             else if ((normalizedShift as string) === 'Siang') normalizedShift = 'Shift 2';

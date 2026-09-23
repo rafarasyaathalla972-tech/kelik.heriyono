@@ -28,7 +28,15 @@ import {
   FileText,
   PlusCircle,
   Sparkles,
-  Zap
+  Zap,
+  Award,
+  Activity,
+  TrendingDown,
+  Minus,
+  Info,
+  ChevronDown,
+  ChevronUp,
+  Table
 } from 'lucide-react';
 import { ShiftReport, MachineId } from '../types';
 import { findProductByCodeOrName } from '../data/pmProductData';
@@ -346,6 +354,263 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ reports, onNav
 
     return Object.values(map).sort((a, b) => b.totalTon - a.totalTon);
   }, [filteredReports]);
+
+  // =========================================================================
+  // ANALISIS STATISTIK TREN EFISIENSI PRODUKSI PER SHIFT (7 HARI TERAKHIR)
+  // =========================================================================
+  const [statMachineFilter, setStatMachineFilter] = useState<'ALL' | MachineId>('ALL');
+  const [showStatTable, setShowStatTable] = useState<boolean>(true);
+
+  const sevenDayShiftStats = useMemo(() => {
+    // 1. Tentukan tanggal acuan (anchor date): tanggal laporan terbaru atau hari ini
+    const reportDates = reports.map(r => r.date).filter(Boolean);
+    const maxReportDate = reportDates.length > 0 
+      ? reportDates.reduce((max, d) => (d > max ? d : max), todayStr)
+      : todayStr;
+    const anchorDate = maxReportDate > todayStr ? maxReportDate : todayStr;
+
+    // 2. Bentuk daftar 7 hari kalender berurutan (dari 6 hari lalu sampai anchorDate)
+    const [year, month, day] = anchorDate.split('-').map(Number);
+    const baseDate = new Date(year, month - 1, day);
+    
+    const datesList: string[] = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(baseDate);
+      d.setDate(d.getDate() - i);
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      datesList.push(`${yyyy}-${mm}-${dd}`);
+    }
+
+    const dayNamesShort = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+    const monthNamesShort = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+
+    // 3. Filter laporan berdasarkan mesin jika dipilih
+    const eligibleReports = reports.filter(r => {
+      if (statMachineFilter !== 'ALL' && r.machine !== statMachineFilter) return false;
+      return true;
+    });
+
+    // 4. Hitung efisiensi per shift untuk tiap tanggal
+    interface DayShiftData {
+      date: string;
+      displayDate: string;
+      fullDateLabel: string;
+      'Shift 1': number | null;
+      'Shift 2': number | null;
+      'Shift 3': number | null;
+      shift1Actual: number;
+      shift1Target: number;
+      shift1Count: number;
+      shift2Actual: number;
+      shift2Target: number;
+      shift2Count: number;
+      shift3Actual: number;
+      shift3Target: number;
+      shift3Count: number;
+      totalActual: number;
+      totalTarget: number;
+      overallEfficiency: number | null;
+    }
+
+    const chartData: DayShiftData[] = datesList.map(dateStr => {
+      const [dY, dM, dD] = dateStr.split('-').map(Number);
+      const dObj = new Date(dY, dM - 1, dD);
+      const dayName = dayNamesShort[dObj.getDay()];
+      const monthName = monthNamesShort[dM - 1];
+      const displayDate = `${dayName} ${dD}/${dM}`;
+      const fullDateLabel = `${dayName}, ${dD} ${monthName} ${dY}`;
+
+      const dayReports = eligibleReports.filter(r => r.date === dateStr);
+
+      const calcShift = (shiftName: 'Shift 1' | 'Shift 2' | 'Shift 3') => {
+        const matching = dayReports.filter(r => {
+          let s = r.shift;
+          if (s === 'Pagi') s = 'Shift 1';
+          if (s === 'Siang') s = 'Shift 2';
+          if (s === 'Malam') s = 'Shift 3';
+          return s === shiftName;
+        });
+        if (matching.length === 0) {
+          return { eff: null, actual: 0, target: 0, count: 0 };
+        }
+        const actual = matching.reduce((acc, r) => acc + (r.actualProductionTon || 0), 0);
+        const target = matching.reduce((acc, r) => acc + (r.targetProductionTon || 0), 0);
+        const eff = target > 0 ? Number(((actual / target) * 100).toFixed(1)) : 0;
+        return { eff, actual: Number(actual.toFixed(2)), target: Number(target.toFixed(2)), count: matching.length };
+      };
+
+      const s1 = calcShift('Shift 1');
+      const s2 = calcShift('Shift 2');
+      const s3 = calcShift('Shift 3');
+
+      const dayTotalActual = Number((s1.actual + s2.actual + s3.actual).toFixed(2));
+      const dayTotalTarget = Number((s1.target + s2.target + s3.target).toFixed(2));
+      const overallEff = dayTotalTarget > 0 
+        ? Number(((dayTotalActual / dayTotalTarget) * 100).toFixed(1)) 
+        : null;
+
+      return {
+        date: dateStr,
+        displayDate,
+        fullDateLabel,
+        'Shift 1': s1.eff,
+        'Shift 2': s2.eff,
+        'Shift 3': s3.eff,
+        shift1Actual: s1.actual,
+        shift1Target: s1.target,
+        shift1Count: s1.count,
+        shift2Actual: s2.actual,
+        shift2Target: s2.target,
+        shift2Count: s2.count,
+        shift3Actual: s3.actual,
+        shift3Target: s3.target,
+        shift3Count: s3.count,
+        totalActual: dayTotalActual,
+        totalTarget: dayTotalTarget,
+        overallEfficiency: overallEff
+      };
+    });
+
+    // 5. Analisis Statistik Tiap Shift selama 7 Hari
+    const getShiftMetrics = (shiftKey: 'Shift 1' | 'Shift 2' | 'Shift 3') => {
+      const values: number[] = [];
+      let totalActualTon = 0;
+      let totalTargetTon = 0;
+      let totalReportsCount = 0;
+
+      chartData.forEach(d => {
+        const val = d[shiftKey];
+        if (val !== null && typeof val === 'number') {
+          values.push(val);
+        }
+        if (shiftKey === 'Shift 1') {
+          totalActualTon += d.shift1Actual;
+          totalTargetTon += d.shift1Target;
+          totalReportsCount += d.shift1Count;
+        } else if (shiftKey === 'Shift 2') {
+          totalActualTon += d.shift2Actual;
+          totalTargetTon += d.shift2Target;
+          totalReportsCount += d.shift2Count;
+        } else {
+          totalActualTon += d.shift3Actual;
+          totalTargetTon += d.shift3Target;
+          totalReportsCount += d.shift3Count;
+        }
+      });
+
+      if (values.length === 0) {
+        return {
+          avg: 0,
+          min: 0,
+          max: 0,
+          stdDev: 0,
+          count: 0,
+          totalActualTon: 0,
+          totalTargetTon: 0,
+          totalReportsCount: 0,
+          status: 'Belum Ada Data'
+        };
+      }
+
+      const sum = values.reduce((acc, v) => acc + v, 0);
+      const avg = Number((sum / values.length).toFixed(1));
+      const min = Math.min(...values);
+      const max = Math.max(...values);
+
+      // Standar Deviasi (Mengukur Variabilitas dan Konsistensi Shift)
+      const variance = values.reduce((acc, v) => acc + Math.pow(v - avg, 2), 0) / values.length;
+      const stdDev = Number(Math.sqrt(variance).toFixed(2));
+
+      return {
+        avg,
+        min,
+        max,
+        stdDev,
+        count: values.length,
+        totalActualTon: Number(totalActualTon.toFixed(2)),
+        totalTargetTon: Number(totalTargetTon.toFixed(2)),
+        totalReportsCount,
+        status: avg >= 100 ? 'Melampaui Target' : avg >= 95 ? 'Optimal Standar' : 'Perlu Evaluasi'
+      };
+    };
+
+    const s1Metrics = getShiftMetrics('Shift 1');
+    const s2Metrics = getShiftMetrics('Shift 2');
+    const s3Metrics = getShiftMetrics('Shift 3');
+
+    // 6. Rata-rata Gabungan 7 Hari (Semua Shift)
+    const validOverallEffs = chartData.map(d => d.overallEfficiency).filter((v): v is number => v !== null);
+    const overall7DayAvg = validOverallEffs.length > 0 
+      ? Number((validOverallEffs.reduce((a, b) => a + b, 0) / validOverallEffs.length).toFixed(1))
+      : 0;
+
+    // 7. Penentuan Shift Terbaik
+    const shiftsComparison = [
+      { name: 'Shift 1 (Pagi)', shiftKey: 'Shift 1' as const, metrics: s1Metrics, color: '#3b82f6', badgeBg: 'bg-blue-950 text-blue-300 border-blue-800' },
+      { name: 'Shift 2 (Siang)', shiftKey: 'Shift 2' as const, metrics: s2Metrics, color: '#06b6d4', badgeBg: 'bg-cyan-950 text-cyan-300 border-cyan-800' },
+      { name: 'Shift 3 (Malam)', shiftKey: 'Shift 3' as const, metrics: s3Metrics, color: '#f59e0b', badgeBg: 'bg-amber-950 text-amber-300 border-amber-800' }
+    ].sort((a, b) => b.metrics.avg - a.metrics.avg);
+
+    const bestShift = shiftsComparison[0];
+
+    // 8. Penentuan Shift Paling Stabil (Deviasi Standar Terendah)
+    const shiftsByStability = [...shiftsComparison]
+      .filter(s => s.metrics.count > 1)
+      .sort((a, b) => a.metrics.stdDev - b.metrics.stdDev);
+    const mostConsistentShift = shiftsByStability.length > 0 ? shiftsByStability[0] : shiftsComparison[0];
+
+    // 9. Rekor Puncak & Terendah Selama 7 Hari
+    let peakRecord: { date: string; shift: string; value: number } | null = null;
+    let lowestRecord: { date: string; shift: string; value: number } | null = null;
+
+    chartData.forEach(d => {
+      (['Shift 1', 'Shift 2', 'Shift 3'] as const).forEach(s => {
+        const val = d[s];
+        if (val !== null) {
+          if (!peakRecord || val > peakRecord.value) {
+            peakRecord = { date: d.displayDate, shift: s, value: val };
+          }
+          if (!lowestRecord || val < lowestRecord.value) {
+            lowestRecord = { date: d.displayDate, shift: s, value: val };
+          }
+        }
+      });
+    });
+
+    // 10. Arah Tren Efisiensi (3 Hari Pertama vs 3 Hari Terakhir)
+    let trendDirection: 'NAIK' | 'TURUN' | 'STABIL' = 'STABIL';
+    let trendDelta = 0;
+    if (chartData.length >= 6) {
+      const firstHalf = chartData.slice(0, 3).map(d => d.overallEfficiency).filter((v): v is number => v !== null);
+      const secondHalf = chartData.slice(-3).map(d => d.overallEfficiency).filter((v): v is number => v !== null);
+      if (firstHalf.length > 0 && secondHalf.length > 0) {
+        const avgFirst = firstHalf.reduce((a, b) => a + b, 0) / firstHalf.length;
+        const avgSecond = secondHalf.reduce((a, b) => a + b, 0) / secondHalf.length;
+        trendDelta = Number((avgSecond - avgFirst).toFixed(1));
+        if (trendDelta >= 1.0) trendDirection = 'NAIK';
+        else if (trendDelta <= -1.0) trendDirection = 'TURUN';
+        else trendDirection = 'STABIL';
+      }
+    }
+
+    return {
+      chartData,
+      datesList,
+      s1Metrics,
+      s2Metrics,
+      s3Metrics,
+      overall7DayAvg,
+      bestShift,
+      mostConsistentShift,
+      peakRecord,
+      lowestRecord,
+      trendDirection,
+      trendDelta,
+      totalReportsIn7Days: eligibleReports.filter(r => datesList.includes(r.date)).length
+    };
+  }, [reports, todayStr, statMachineFilter]);
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -744,6 +1009,517 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ reports, onNav
       {/* CHARTS GRID */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
+        {/* ========================================================================= */}
+        {/* FITUR ANALISIS STATISTIK TREN EFISIENSI PER SHIFT (7 HARI TERAKHIR)       */}
+        {/* ========================================================================= */}
+        <div className="bg-slate-900/95 border border-blue-900/50 hover:border-blue-500/50 rounded-2xl p-4 sm:p-6 shadow-md space-y-5 lg:col-span-2 transition-all">
+          {/* Section Header with Title & Machine Filter Buttons */}
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between pb-4 border-b border-slate-800 gap-3">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="p-1.5 bg-blue-950/80 border border-blue-600/50 rounded-lg text-blue-400">
+                  <Activity className="w-5 h-5" />
+                </span>
+                <h2 className="text-base sm:text-lg font-extrabold text-white tracking-wide">
+                  Analisis Statistik Tren Efisiensi Produksi per Shift (7 Hari Terakhir)
+                </h2>
+                <span className="hidden sm:inline-block bg-blue-950 text-blue-300 border border-blue-700/60 text-[10px] px-2 py-0.5 rounded-full font-bold">
+                  Grafik Batang Berkelompok
+                </span>
+              </div>
+              <p className="text-xs text-slate-400">
+                Perbandingan efisiensi Shift 1 (Pagi), Shift 2 (Siang), dan Shift 3 (Malam) terhadap target standar 100% (2 Ton/shift)
+              </p>
+            </div>
+
+            {/* Filter Unit Mesin Kertas PM */}
+            <div className="flex items-center gap-1.5 flex-wrap self-start lg:self-auto">
+              <span className="text-[11px] font-semibold text-slate-400 mr-1 flex items-center gap-1">
+                <Filter className="w-3 h-3 text-blue-400" /> Unit:
+              </span>
+              <button
+                type="button"
+                onClick={() => setStatMachineFilter('ALL')}
+                className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all ${
+                  statMachineFilter === 'ALL'
+                    ? 'bg-blue-600 text-white shadow-sm ring-1 ring-blue-400'
+                    : 'bg-slate-950 text-slate-300 hover:bg-slate-800 border border-slate-800'
+                }`}
+              >
+                Semua PM (Gabungan)
+              </button>
+              <button
+                type="button"
+                onClick={() => setStatMachineFilter('PM1')}
+                className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all ${
+                  statMachineFilter === 'PM1'
+                    ? 'bg-blue-600 text-white shadow-sm ring-1 ring-blue-400'
+                    : 'bg-slate-950 text-slate-300 hover:bg-slate-800 border border-slate-800'
+                }`}
+              >
+                PM1 (2,20 M)
+              </button>
+              <button
+                type="button"
+                onClick={() => setStatMachineFilter('PM2')}
+                className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all ${
+                  statMachineFilter === 'PM2'
+                    ? 'bg-blue-600 text-white shadow-sm ring-1 ring-blue-400'
+                    : 'bg-slate-950 text-slate-300 hover:bg-slate-800 border border-slate-800'
+                }`}
+              >
+                PM2 (2,25 M)
+              </button>
+              <button
+                type="button"
+                onClick={() => setStatMachineFilter('PM5')}
+                className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all ${
+                  statMachineFilter === 'PM5'
+                    ? 'bg-blue-600 text-white shadow-sm ring-1 ring-blue-400'
+                    : 'bg-slate-950 text-slate-300 hover:bg-slate-800 border border-slate-800'
+                }`}
+              >
+                PM5 (3,30 M)
+              </button>
+            </div>
+          </div>
+
+          {/* 4 Statistical Summary Metric Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+            {/* 1. Kinerja Shift 1 (Pagi) */}
+            <div className="bg-slate-950/90 border border-slate-800 hover:border-blue-500/40 rounded-xl p-3.5 space-y-2 transition-all">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+                  <span className="font-bold text-slate-200">Shift 1 (Pagi: 07-15)</span>
+                </div>
+                <span className="text-[10px] bg-blue-950 text-blue-300 border border-blue-800/60 px-1.5 py-0.2 rounded font-mono font-semibold">
+                  {sevenDayShiftStats.s1Metrics.count} Hari Aktif
+                </span>
+              </div>
+              <div className="flex items-baseline justify-between pt-1">
+                <div>
+                  <span className="text-[10px] text-slate-400 uppercase tracking-wider block">Rata-rata 7 Hari</span>
+                  <span className={`text-2xl font-black font-mono ${
+                    sevenDayShiftStats.s1Metrics.avg >= 100 ? 'text-emerald-400' : 'text-blue-400'
+                  }`}>
+                    {sevenDayShiftStats.s1Metrics.avg}%
+                  </span>
+                </div>
+                <div className="text-right text-[11px]">
+                  <span className="text-slate-400 block">Stabilitas (σ)</span>
+                  <span className="font-mono font-bold text-slate-300">±{sevenDayShiftStats.s1Metrics.stdDev}%</span>
+                </div>
+              </div>
+              <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400">
+                <span>Rentang Nilai:</span>
+                <span className="font-mono font-medium text-slate-300">
+                  {sevenDayShiftStats.s1Metrics.min}% &bull; {sevenDayShiftStats.s1Metrics.max}%
+                </span>
+              </div>
+            </div>
+
+            {/* 2. Kinerja Shift 2 (Siang) */}
+            <div className="bg-slate-950/90 border border-slate-800 hover:border-cyan-500/40 rounded-xl p-3.5 space-y-2 transition-all">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
+                  <span className="font-bold text-slate-200">Shift 2 (Siang: 15-23)</span>
+                </div>
+                <span className="text-[10px] bg-cyan-950 text-cyan-300 border border-cyan-800/60 px-1.5 py-0.2 rounded font-mono font-semibold">
+                  {sevenDayShiftStats.s2Metrics.count} Hari Aktif
+                </span>
+              </div>
+              <div className="flex items-baseline justify-between pt-1">
+                <div>
+                  <span className="text-[10px] text-slate-400 uppercase tracking-wider block">Rata-rata 7 Hari</span>
+                  <span className={`text-2xl font-black font-mono ${
+                    sevenDayShiftStats.s2Metrics.avg >= 100 ? 'text-emerald-400' : 'text-cyan-400'
+                  }`}>
+                    {sevenDayShiftStats.s2Metrics.avg}%
+                  </span>
+                </div>
+                <div className="text-right text-[11px]">
+                  <span className="text-slate-400 block">Stabilitas (σ)</span>
+                  <span className="font-mono font-bold text-slate-300">±{sevenDayShiftStats.s2Metrics.stdDev}%</span>
+                </div>
+              </div>
+              <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400">
+                <span>Rentang Nilai:</span>
+                <span className="font-mono font-medium text-slate-300">
+                  {sevenDayShiftStats.s2Metrics.min}% &bull; {sevenDayShiftStats.s2Metrics.max}%
+                </span>
+              </div>
+            </div>
+
+            {/* 3. Kinerja Shift 3 (Malam) */}
+            <div className="bg-slate-950/90 border border-slate-800 hover:border-amber-500/40 rounded-xl p-3.5 space-y-2 transition-all">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+                  <span className="font-bold text-slate-200">Shift 3 (Malam: 23-07)</span>
+                </div>
+                <span className="text-[10px] bg-amber-950 text-amber-300 border border-amber-800/60 px-1.5 py-0.2 rounded font-mono font-semibold">
+                  {sevenDayShiftStats.s3Metrics.count} Hari Aktif
+                </span>
+              </div>
+              <div className="flex items-baseline justify-between pt-1">
+                <div>
+                  <span className="text-[10px] text-slate-400 uppercase tracking-wider block">Rata-rata 7 Hari</span>
+                  <span className={`text-2xl font-black font-mono ${
+                    sevenDayShiftStats.s3Metrics.avg >= 100 
+                      ? 'text-emerald-400' 
+                      : sevenDayShiftStats.s3Metrics.avg >= 95 
+                      ? 'text-amber-400' 
+                      : 'text-rose-400'
+                  }`}>
+                    {sevenDayShiftStats.s3Metrics.avg}%
+                  </span>
+                </div>
+                <div className="text-right text-[11px]">
+                  <span className="text-slate-400 block">Stabilitas (σ)</span>
+                  <span className="font-mono font-bold text-slate-300">±{sevenDayShiftStats.s3Metrics.stdDev}%</span>
+                </div>
+              </div>
+              <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400">
+                <span>Rentang Nilai:</span>
+                <span className="font-mono font-medium text-slate-300">
+                  {sevenDayShiftStats.s3Metrics.min}% &bull; {sevenDayShiftStats.s3Metrics.max}%
+                </span>
+              </div>
+            </div>
+
+            {/* 4. Highlight Statistik & Rekor Kinerja */}
+            <div className="bg-gradient-to-br from-slate-950 to-indigo-950/40 border border-indigo-900/40 rounded-xl p-3.5 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-indigo-300 flex items-center gap-1">
+                  <Award className="w-3.5 h-3.5 text-amber-400" /> Highlight Statistik
+                </span>
+                <span className="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-1.5 py-0.2 rounded font-bold">
+                  7 Hari
+                </span>
+              </div>
+              <div className="space-y-1.5 pt-0.5 text-[11px]">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-400">Shift Terbaik:</span>
+                  <span className="font-bold text-amber-300 font-mono">
+                    {sevenDayShiftStats.bestShift.name} ({sevenDayShiftStats.bestShift.metrics.avg}%)
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-400">Shift Terkonsisten:</span>
+                  <span className="font-bold text-cyan-300 font-mono">
+                    {sevenDayShiftStats.mostConsistentShift.name} (σ ±{sevenDayShiftStats.mostConsistentShift.metrics.stdDev}%)
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-400">Arah Tren Efisiensi:</span>
+                  <span className={`font-bold flex items-center gap-1 ${
+                    sevenDayShiftStats.trendDirection === 'NAIK'
+                      ? 'text-emerald-400'
+                      : sevenDayShiftStats.trendDirection === 'TURUN'
+                      ? 'text-rose-400'
+                      : 'text-slate-300'
+                  }`}>
+                    {sevenDayShiftStats.trendDirection === 'NAIK' && <TrendingUp className="w-3 h-3 text-emerald-400" />}
+                    {sevenDayShiftStats.trendDirection === 'TURUN' && <TrendingDown className="w-3 h-3 text-rose-400" />}
+                    {sevenDayShiftStats.trendDirection === 'STABIL' && <Minus className="w-3 h-3 text-slate-400" />}
+                    <span>{sevenDayShiftStats.trendDirection} ({sevenDayShiftStats.trendDelta > 0 ? `+${sevenDayShiftStats.trendDelta}%` : `${sevenDayShiftStats.trendDelta}%`})</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* THE GROUPED BAR CHART */}
+          <div className="pt-2">
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-2 text-xs">
+              <div className="flex items-center gap-3 text-slate-300">
+                <span className="font-bold text-slate-200 flex items-center gap-1.5">
+                  <BarChart3 className="w-4 h-4 text-blue-400" />
+                  Grafik Batang Efisiensi per Shift:
+                </span>
+                <span className="text-[11px] text-slate-400 hidden sm:inline">
+                  (Batas hijau putus-putus menunjukkan Target Standar 100%)
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowStatTable(!showStatTable)}
+                  className="px-2.5 py-1 text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-700 transition-colors flex items-center gap-1"
+                >
+                  <Table className="w-3.5 h-3.5 text-blue-400" />
+                  <span>{showStatTable ? 'Sembunyikan Tabel' : 'Tampilkan Tabel Rincian'}</span>
+                  {showStatTable ? <ChevronUp className="w-3 h-3 ml-0.5" /> : <ChevronDown className="w-3 h-3 ml-0.5" />}
+                </button>
+              </div>
+            </div>
+
+            <div className="h-72 sm:h-80 w-full bg-slate-950/60 p-2 sm:p-3 rounded-xl border border-slate-800/80">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart 
+                  data={sevenDayShiftStats.chartData} 
+                  margin={{ top: 15, right: 15, left: -10, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+                  <XAxis 
+                    dataKey="displayDate" 
+                    stroke="#94a3b8" 
+                    tick={{ fill: '#cbd5e1', fontSize: 11, fontWeight: 600 }} 
+                  />
+                  <YAxis 
+                    stroke="#94a3b8" 
+                    tick={{ fill: '#94a3b8', fontSize: 11 }} 
+                    domain={[80, 115]} 
+                    unit="%" 
+                  />
+                  <Tooltip 
+                    content={({ active, payload, label }: any) => {
+                      if (!active || !payload || payload.length === 0) return null;
+                      const itemData = payload[0]?.payload;
+                      return (
+                        <div className="bg-slate-950 border border-slate-700 p-3 rounded-xl shadow-2xl text-xs space-y-2 max-w-xs">
+                          <div className="border-b border-slate-800 pb-1.5 flex items-center justify-between gap-2">
+                            <span className="font-bold text-white text-xs sm:text-sm">{itemData?.fullDateLabel || label}</span>
+                            {itemData?.overallEfficiency !== null && (
+                              <span className={`px-1.5 py-0.5 rounded font-mono text-[10px] font-bold ${
+                                itemData.overallEfficiency >= 100 
+                                  ? 'bg-emerald-950 text-emerald-300 border border-emerald-800'
+                                  : 'bg-blue-950 text-blue-300 border border-blue-800'
+                              }`}>
+                                Rata-rata: {itemData.overallEfficiency}%
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="space-y-1.5">
+                            {[
+                              { name: 'Shift 1 (Pagi)', eff: itemData['Shift 1'], actual: itemData.shift1Actual, target: itemData.shift1Target, color: '#3b82f6' },
+                              { name: 'Shift 2 (Siang)', eff: itemData['Shift 2'], actual: itemData.shift2Actual, target: itemData.shift2Target, color: '#06b6d4' },
+                              { name: 'Shift 3 (Malam)', eff: itemData['Shift 3'], actual: itemData.shift3Actual, target: itemData.shift3Target, color: '#f59e0b' }
+                            ].map((s, idx) => (
+                              <div key={idx} className="flex items-center justify-between gap-3 text-[11px]">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ backgroundColor: s.color }}></span>
+                                  <span className="text-slate-300 font-medium">{s.name}:</span>
+                                </div>
+                                {s.eff !== null ? (
+                                  <div className="text-right font-mono">
+                                    <strong className={s.eff >= 100 ? 'text-emerald-400' : 'text-slate-200'}>{s.eff}%</strong>
+                                    <span className="text-[10px] text-slate-500 ml-1">({s.actual}/{s.target}T)</span>
+                                  </div>
+                                ) : (
+                                  <span className="text-slate-600 text-[10px] italic">Tidak ada shift</span>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    }}
+                  />
+                  <Legend 
+                    wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} 
+                    formatter={(value) => <span className="text-slate-300 font-semibold">{value}</span>}
+                  />
+                  <ReferenceLine 
+                    y={100} 
+                    stroke="#10b981" 
+                    strokeDasharray="4 4" 
+                    strokeWidth={2}
+                    label={{ 
+                      value: 'Target Standar 100%', 
+                      fill: '#10b981', 
+                      fontSize: 10, 
+                      fontWeight: 'bold',
+                      position: 'top' 
+                    }} 
+                  />
+                  <Bar 
+                    dataKey="Shift 1" 
+                    name="Shift 1 (Pagi 07-15)" 
+                    fill="#3b82f6" 
+                    radius={[4, 4, 0, 0]} 
+                    maxBarSize={28}
+                  />
+                  <Bar 
+                    dataKey="Shift 2" 
+                    name="Shift 2 (Siang 15-23)" 
+                    fill="#06b6d4" 
+                    radius={[4, 4, 0, 0]} 
+                    maxBarSize={28}
+                  />
+                  <Bar 
+                    dataKey="Shift 3" 
+                    name="Shift 3 (Malam 23-07)" 
+                    fill="#f59e0b" 
+                    radius={[4, 4, 0, 0]} 
+                    maxBarSize={28}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* TABEL DATA RINCIAN STATISTIK HARIAN (7 HARI) */}
+          {showStatTable && (
+            <div className="pt-2 animate-fadeIn space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-bold text-slate-200 flex items-center gap-1.5">
+                  <Table className="w-3.5 h-3.5 text-blue-400" />
+                  Tabel Rincian Efisiensi Produksi 7 Hari Terakhir:
+                </span>
+                <span className="text-[11px] text-slate-400">
+                  Target Standar: 2.0 Ton / Shift
+                </span>
+              </div>
+
+              <div className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-950/80">
+                <table className="w-full text-xs text-left border-collapse">
+                  <thead>
+                    <tr className="bg-slate-900/90 text-slate-400 border-b border-slate-800">
+                      <th className="p-2.5 font-semibold">Tanggal & Hari</th>
+                      <th className="p-2.5 font-semibold text-center text-blue-300">
+                        Shift 1 (Pagi)
+                      </th>
+                      <th className="p-2.5 font-semibold text-center text-cyan-300">
+                        Shift 2 (Siang)
+                      </th>
+                      <th className="p-2.5 font-semibold text-center text-amber-300">
+                        Shift 3 (Malam)
+                      </th>
+                      <th className="p-2.5 font-semibold text-center text-slate-200">
+                        Rata-rata Harian
+                      </th>
+                      <th className="p-2.5 font-semibold text-right">
+                        Tonase Aktual / Target
+                      </th>
+                      <th className="p-2.5 font-semibold text-center">
+                        Status Kinerja
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/60 font-mono text-[11px]">
+                    {sevenDayShiftStats.chartData.map((row) => {
+                      const isTargetMet = row.overallEfficiency !== null && row.overallEfficiency >= 100;
+                      return (
+                        <tr key={row.date} className="hover:bg-slate-900/50 transition-colors">
+                          <td className="p-2.5 font-sans font-medium text-slate-200">
+                            {row.fullDateLabel}
+                          </td>
+
+                          {/* Shift 1 */}
+                          <td className="p-2.5 text-center">
+                            {row['Shift 1'] !== null ? (
+                              <span className={`font-bold ${row['Shift 1'] >= 100 ? 'text-emerald-400' : 'text-blue-300'}`}>
+                                {row['Shift 1']}%
+                              </span>
+                            ) : (
+                              <span className="text-slate-600 text-[10px] font-sans italic">-</span>
+                            )}
+                          </td>
+
+                          {/* Shift 2 */}
+                          <td className="p-2.5 text-center">
+                            {row['Shift 2'] !== null ? (
+                              <span className={`font-bold ${row['Shift 2'] >= 100 ? 'text-emerald-400' : 'text-cyan-300'}`}>
+                                {row['Shift 2']}%
+                              </span>
+                            ) : (
+                              <span className="text-slate-600 text-[10px] font-sans italic">-</span>
+                            )}
+                          </td>
+
+                          {/* Shift 3 */}
+                          <td className="p-2.5 text-center">
+                            {row['Shift 3'] !== null ? (
+                              <span className={`font-bold ${
+                                row['Shift 3'] >= 100 
+                                  ? 'text-emerald-400' 
+                                  : row['Shift 3'] >= 95 
+                                  ? 'text-amber-300' 
+                                  : 'text-rose-400'
+                              }`}>
+                                {row['Shift 3']}%
+                              </span>
+                            ) : (
+                              <span className="text-slate-600 text-[10px] font-sans italic">-</span>
+                            )}
+                          </td>
+
+                          {/* Rata-rata Harian */}
+                          <td className="p-2.5 text-center">
+                            {row.overallEfficiency !== null ? (
+                              <span className={`px-2 py-0.5 rounded font-bold ${
+                                row.overallEfficiency >= 100 
+                                  ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' 
+                                  : 'bg-slate-800 text-slate-200'
+                              }`}>
+                                {row.overallEfficiency}%
+                              </span>
+                            ) : (
+                              <span className="text-slate-600 text-[10px] font-sans italic">-</span>
+                            )}
+                          </td>
+
+                          {/* Tonase */}
+                          <td className="p-2.5 text-right text-slate-300">
+                            {row.totalActual > 0 ? (
+                              <span>{row.totalActual} / {row.totalTarget} Ton</span>
+                            ) : (
+                              <span className="text-slate-600 text-[10px] font-sans italic">-</span>
+                            )}
+                          </td>
+
+                          {/* Status */}
+                          <td className="p-2.5 text-center font-sans">
+                            {row.overallEfficiency !== null ? (
+                              <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                                isTargetMet
+                                  ? 'bg-emerald-950 text-emerald-300 border border-emerald-800'
+                                  : row.overallEfficiency >= 95
+                                  ? 'bg-blue-950 text-blue-300 border border-blue-800'
+                                  : 'bg-amber-950 text-amber-300 border border-amber-800'
+                              }`}>
+                                {isTargetMet ? '✓ Melampaui' : row.overallEfficiency >= 95 ? '● Standar' : '⚠ Perlu Evaluasi'}
+                              </span>
+                            ) : (
+                              <span className="text-slate-600 text-[10px] italic">Tidak ada data</span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* PUPMS Kaizen Recommendation Card */}
+          <div className="bg-slate-950/80 border border-slate-800/80 rounded-xl p-3.5 text-xs text-slate-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-start gap-2.5">
+              <Info className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
+              <div>
+                <strong className="text-white block">Catatan Rekomendasi Kaizen & Horenso (PUPMS):</strong>
+                <span>
+                  {sevenDayShiftStats.s3Metrics.avg < 100 
+                    ? `Shift 3 (Malam) mencatat deviasi tertinggi (σ ±${sevenDayShiftStats.s3Metrics.stdDev}%). Disarankan evaluasi kestabilan suplai steam boiler dan pemeriksaan felt cleaner pada pergantian shift malam.`
+                    : 'Seluruh shift berhasil mempertahankan efisiensi di atas standar 100%. Lanjutkan monitoring konsistensi pada Horenso harian.'}
+                </span>
+              </div>
+            </div>
+
+            <div className="shrink-0 flex items-center gap-2">
+              <span className="text-[11px] bg-slate-900 text-slate-400 px-2.5 py-1 rounded-lg border border-slate-800">
+                Pilar 3: Seven Tools &bull; Histogram & Peta Kendali
+              </span>
+            </div>
+          </div>
+        </div>
+
         {/* CHART 1: PRODUKSI AKTUAL VS TARGET PER MESIN */}
         <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-4 sm:p-5 shadow-sm space-y-3">
           <div className="flex items-center justify-between">

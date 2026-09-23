@@ -537,5 +537,11 @@ export const TRAINING_MEDIA_DATA: Record<TrainingModuleId, MachineMediaConfig> =
         ]
       }
     ]
+  },
+  PUPMS: {
+    heroImage: pm1HeroImg,
+    heroCaption: 'PUPMS (Panca Usahatama Paramita Management System): Sistem manajemen terpadu 4 Pilar (Mentalitas Dasar, Manajemen Strategi, Manajemen Operasi, Pemberdaya).',
+    galleryPhotos: [],
+    videoTutorials: []
   }
 };
