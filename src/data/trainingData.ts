@@ -304,5 +304,26 @@ export const TRAINING_MODULES: Record<TrainingModuleId, MachineTrainingData> = {
     tissueEquipments: TISSUE_PM_MASTER_TRAINING.tissueEquipments,
     tissueQuizzes: TISSUE_PM_MASTER_TRAINING.tissueQuizzes
   },
-  REWINDER: REWINDER_TRAINING_DATA
+  REWINDER: REWINDER_TRAINING_DATA,
+  PUPMS: {
+    machineId: 'PM1',
+    name: 'PUPMS (Panca Usahatama Paramita Management System)',
+    tagline: 'Sistem Manajemen Terpadu PT. PUP (4 Pilar, Budaya 5C, ISO 9001:2015, TPM, & Kaizen)',
+    technicalSpecs: [
+      { label: 'Sistem Manajemen', value: 'PUPMS (Panca Usahatama Paramita Management System)' },
+      { label: 'Pondasi Pilar', value: '4 Pilar (Mentalitas Dasar, Manajemen Strategi, Manajemen Operasi, Pemberdaya)' },
+      { label: 'Budaya Kerja', value: '5C (Caring, Credible, Competent, Competitive, Customer Delight)' },
+      { label: 'Standar Mutu', value: 'ISO 9001:2015 & IFRA 12647-3' },
+      { label: 'Metodologi Pemeliharaan', value: 'TPM (Zero Accident, Zero Defect, Zero Breakdown)' },
+      { label: 'Alat Kualitas', value: 'Horenso, 5R, PIP, Kaizen 8 Langkah, A3 Report, 7 Tools, Sampling MIL-STD-105E' }
+    ],
+    operatingLimits: [],
+    paperGrades: [],
+    specialCharacteristics: 'Sistem manajemen terintegrasi untuk menyelaraskan strategi PT. PUP dari pimpinan puncak hingga aktivitas harian shift operator.',
+    dailyCheckpoints: [],
+    standardParameters: [],
+    dcsIndicatorsGuide: [],
+    commonFaultsAndSolutions: [],
+    k3SafetyProcedures: []
+  }
 };

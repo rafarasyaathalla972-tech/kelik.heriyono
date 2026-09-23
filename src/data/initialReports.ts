@@ -1,11 +1,19 @@
 import { ShiftReport } from '../types';
 
+const getTodayDateStr = () => {
+  try {
+    return new Date().toISOString().split('T')[0];
+  } catch (e) {
+    return '2026-09-22';
+  }
+};
+
 export const INITIAL_SHIFT_REPORTS: ShiftReport[] = [
   {
-    id: 'rep-pm5-2026-09-09-shift3',
-    date: '2026-09-09',
-    shift: 'Shift 3',
-    groupShift: 'Group 3',
+    id: 'rep-pm5-today-shift2',
+    date: getTodayDateStr(),
+    shift: 'Shift 2',
+    groupShift: 'Group 2',
     operatorName: 'Agus Saputra',
     assistantOperatorName: 'Topik',
     karuName: 'Suwardi',
@@ -38,7 +46,7 @@ export const INITIAL_SHIFT_REPORTS: ShiftReport[] = [
     incidents: [
       {
         id: 'inc-1',
-        time: '02:15',
+        time: '14:15',
         location: 'Dryer Section',
         description: 'Pembersihan bilah doctor blade Yankee dryer karena ada debu serat halus tissue menumpuk.',
         downtimeMinutes: 18
@@ -46,17 +54,17 @@ export const INITIAL_SHIFT_REPORTS: ShiftReport[] = [
     ],
     totalDowntimeMinutes: 18,
     actionsTaken: 'Mengganti bilah doctor sintetis Yankee roll dan memeriksa shower osilasi Single Felt 30 M.',
-    shortTermRecommendation: 'Periksa tegangan Single Felt 30,0 M bentang 3,5 M sebelum start shift pagi.',
+    shortTermRecommendation: 'Periksa tegangan Single Felt 30,0 M bentang 3,5 M sebelum start shift berikutnya.',
     longTermRecommendation: 'Jadwalkan pembersihan kimiawi felt kontinu pada akhir pekan.',
     handoverNotes: 'Mesin berjalan stabil pada speed 160 mpm. Single Felt 30 M berjalan lancar dengan akumulasi 620 ton. Roll nomor 12 s/d 14 siap kirim ke finishing rewinder.',
-    createdAt: '2026-09-09T22:45:00.000Z',
+    createdAt: new Date().toISOString(),
     editHistory: []
   },
   {
-    id: 'rep-pm2-2026-09-09-shift2',
-    date: '2026-09-09',
-    shift: 'Shift 2',
-    groupShift: 'Group 2',
+    id: 'rep-pm2-today-shift1',
+    date: getTodayDateStr(),
+    shift: 'Shift 1',
+    groupShift: 'Group 1',
     operatorName: 'CANDRA S',
     assistantOperatorName: 'Sapei',
     karuName: 'Rumawan',

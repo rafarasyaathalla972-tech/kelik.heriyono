@@ -262,6 +262,7 @@ export default function App() {
         {activeTab === 'dashboard' && (
           <DashboardCharts
             reports={reports}
+            onNavigateToForm={() => setActiveTab('form')}
           />
         )}
 

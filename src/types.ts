@@ -1,5 +1,5 @@
 export type MachineId = 'PM1' | 'PM2' | 'PM5';
-export type TrainingModuleId = 'STOCK_PREP' | 'REWINDER' | 'PM1' | 'PM2' | 'PM5' | 'TISSUE_PM';
+export type TrainingModuleId = 'STOCK_PREP' | 'REWINDER' | 'PM1' | 'PM2' | 'PM5' | 'TISSUE_PM' | 'PUPMS';
 export type ShiftType = 'Shift 1' | 'Shift 2' | 'Shift 3' | 'Pagi' | 'Siang' | 'Malam';
 export type QualityGrade = 'A' | 'B' | 'C' | 'Cacat';
 

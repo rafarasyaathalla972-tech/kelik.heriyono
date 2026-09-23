@@ -23,7 +23,12 @@ import {
   Layers, 
   Filter,
   ArrowUpRight,
-  ShieldCheck
+  ShieldCheck,
+  Calendar,
+  FileText,
+  PlusCircle,
+  Sparkles,
+  Zap
 } from 'lucide-react';
 import { ShiftReport, MachineId } from '../types';
 import { findProductByCodeOrName } from '../data/pmProductData';
@@ -32,13 +37,117 @@ import { PmProductsModal } from './PmProductsModal';
 interface DashboardChartsProps {
   reports: ShiftReport[];
   onSelectReportForView?: (report: ShiftReport) => void;
+  onNavigateToForm?: () => void;
 }
 
-export const DashboardCharts: React.FC<DashboardChartsProps> = ({ reports }) => {
+export const DashboardCharts: React.FC<DashboardChartsProps> = ({ reports, onNavigateToForm }) => {
   const [selectedMachineFilter, setSelectedMachineFilter] = useState<'ALL' | MachineId>('ALL');
   const [selectedShiftFilter, setSelectedShiftFilter] = useState<string>('ALL');
   const [showCatalogModal, setShowCatalogModal] = useState<boolean>(false);
   const [catalogMachine, setCatalogMachine] = useState<MachineId>('PM1');
+
+  // Dynamic today's date formatted (YYYY-MM-DD)
+  const todayStr = useMemo(() => {
+    try {
+      return new Date().toISOString().split('T')[0];
+    } catch (e) {
+      return '2026-09-22';
+    }
+  }, []);
+
+  // Sorted list of unique dates available in reports (descending)
+  const availableReportDates = useMemo(() => {
+    const set = new Set(reports.map(r => r.date));
+    set.add(todayStr);
+    return Array.from(set).sort().reverse();
+  }, [reports, todayStr]);
+
+  // Selected date for highlight view (defaults to today)
+  const [highlightDate, setHighlightDate] = useState<string>(todayStr);
+  const activeHighlightDate = highlightDate || todayStr;
+
+  // Format Indonesian date text (e.g. "Rabu, 23 September 2026")
+  const formatIndonesianDate = (dateStr: string) => {
+    try {
+      const parts = dateStr.split('-');
+      if (parts.length === 3) {
+        const dateObj = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+        return new Intl.DateTimeFormat('id-ID', {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric'
+        }).format(dateObj);
+      }
+      return dateStr;
+    } catch (e) {
+      return dateStr;
+    }
+  };
+
+  const formattedHighlightDate = useMemo(() => {
+    return formatIndonesianDate(activeHighlightDate);
+  }, [activeHighlightDate]);
+
+  // HIGHLIGHT METRICS FOR TARGET DATE (TODAY)
+  const todayHighlightMetrics = useMemo(() => {
+    const dayReports = reports.filter(r => r.date === activeHighlightDate);
+
+    // 1. Total Produksi Hari Ini
+    const totalActualTon = dayReports.reduce((acc, r) => acc + (r.actualProductionTon || 0), 0);
+    const totalTargetTon = dayReports.reduce((acc, r) => acc + (r.targetProductionTon || 0), 0);
+
+    // 2. Efisiensi Rata-rata (%)
+    // Rata-rata persentase pencapaian target dari seluruh shift hari ini
+    const avgEfficiency = dayReports.length > 0
+      ? Number((dayReports.reduce((acc, r) => acc + (r.achievementPercentage || 0), 0) / dayReports.length).toFixed(1))
+      : 0;
+
+    // 3. Jumlah Laporan yang Masuk
+    const totalReportsCount = dayReports.length;
+
+    // Additional valuable production insights
+    const totalReels = dayReports.reduce((acc, r) => acc + (r.reelCount || 0), 0);
+    const totalDowntime = dayReports.reduce((acc, r) => acc + (r.totalDowntimeMinutes || 0), 0);
+    const netWeightKg = dayReports.reduce((acc, r) => acc + (r.netWeightKg || (r.actualProductionTon * 1000)), 0);
+
+    // Shift breakdown
+    const s1 = dayReports.filter(r => r.shift === 'Shift 1' || (r.shift as string) === 'Pagi').length;
+    const s2 = dayReports.filter(r => r.shift === 'Shift 2' || (r.shift as string) === 'Siang').length;
+    const s3 = dayReports.filter(r => r.shift === 'Shift 3' || (r.shift as string) === 'Malam').length;
+
+    // PM Machine breakdown
+    const pm1Actual = dayReports.filter(r => r.machine === 'PM1').reduce((acc, r) => acc + (r.actualProductionTon || 0), 0);
+    const pm2Actual = dayReports.filter(r => r.machine === 'PM2').reduce((acc, r) => acc + (r.actualProductionTon || 0), 0);
+    const pm5Actual = dayReports.filter(r => r.machine === 'PM5').reduce((acc, r) => acc + (r.actualProductionTon || 0), 0);
+
+    // Quality breakdown today
+    const totalQuality = dayReports.reduce(
+      (acc, r) => acc + (r.qualityGradeA_Ton + r.qualityGradeB_Ton + r.qualityGradeC_Ton + r.qualityGradeDefect_Ton),
+      0
+    );
+    const totalGradeA = dayReports.reduce((acc, r) => acc + (r.qualityGradeA_Ton || 0), 0);
+    const gradeAPercent = totalQuality > 0 ? Number(((totalGradeA / totalQuality) * 100).toFixed(1)) : 0;
+
+    return {
+      date: activeHighlightDate,
+      totalActualTon: Number(totalActualTon.toFixed(1)),
+      totalTargetTon: Number(totalTargetTon.toFixed(1)),
+      avgEfficiency,
+      totalReportsCount,
+      totalReels,
+      totalDowntime,
+      netWeightKg: Math.round(netWeightKg),
+      shift1Count: s1,
+      shift2Count: s2,
+      shift3Count: s3,
+      pm1Ton: Number(pm1Actual.toFixed(1)),
+      pm2Ton: Number(pm2Actual.toFixed(1)),
+      pm5Ton: Number(pm5Actual.toFixed(1)),
+      gradeAPercent,
+      reports: dayReports
+    };
+  }, [reports, activeHighlightDate]);
 
   // Filtered reports based on user controls
   const filteredReports = useMemo(() => {
@@ -285,6 +394,269 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ reports }) => 
           </div>
         </div>
       </div>
+
+      {/* ========================================================================= */}
+      {/* KARTU RINGKASAN: HIGHLIGHT SHIFT HARI INI                                 */}
+      {/* ========================================================================= */}
+      <section 
+        aria-label="Highlight Shift Hari Ini"
+        className="relative overflow-hidden rounded-2xl border-2 border-emerald-500/40 bg-gradient-to-br from-slate-900 via-slate-900/95 to-slate-950 p-5 sm:p-6 shadow-xl shadow-emerald-950/20 backdrop-blur-sm"
+      >
+        {/* Subtle Ambient Glowing Spheres */}
+        <div className="absolute -top-24 -right-24 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-20 -left-20 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+
+        {/* Header Section */}
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-3 pb-4 border-b border-slate-800/90">
+          <div>
+            <div className="flex items-center gap-2 flex-wrap mb-1">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-emerald-950/90 text-emerald-300 border border-emerald-500/50 shadow-sm">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping inline-block" />
+                <span>MONITORING REAL-TIME SHIFT</span>
+              </span>
+              <span className="text-xs text-slate-400 font-medium">
+                PT. Panca Usahatama Paramita
+              </span>
+            </div>
+
+            <h2 className="text-lg sm:text-2xl font-black text-white flex items-center gap-2.5 tracking-tight">
+              <Calendar className="w-6 h-6 text-emerald-400 shrink-0" />
+              <span>Highlight Shift Hari Ini</span>
+              <span className="text-xs sm:text-sm font-semibold text-emerald-400/90 font-mono bg-emerald-950/60 px-2.5 py-0.5 rounded-lg border border-emerald-800/60">
+                {formattedHighlightDate}
+              </span>
+            </h2>
+          </div>
+
+          {/* Quick Date Control & New Report Button */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {availableReportDates.length > 1 && (
+              <div className="flex items-center gap-1.5 bg-slate-950/90 px-3 py-1.5 rounded-xl border border-slate-800 text-xs text-slate-300 shadow-inner">
+                <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                <span className="text-[11px] text-slate-400 font-medium">Tanggal:</span>
+                <select
+                  value={activeHighlightDate}
+                  onChange={(e) => setHighlightDate(e.target.value)}
+                  className="bg-transparent text-emerald-300 font-bold text-xs focus:outline-none cursor-pointer"
+                >
+                  <option value={todayStr} className="bg-slate-900">
+                    Hari Ini ({todayStr})
+                  </option>
+                  {availableReportDates
+                    .filter(d => d !== todayStr)
+                    .map(d => (
+                      <option key={d} value={d} className="bg-slate-900">
+                        {d} ({reports.filter(r => r.date === d).length} Laporan)
+                      </option>
+                    ))}
+                </select>
+              </div>
+            )}
+
+            {activeHighlightDate !== todayStr && (
+              <button
+                type="button"
+                onClick={() => setHighlightDate(todayStr)}
+                className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl border border-slate-700 transition-colors"
+                title="Kembali ke tanggal hari ini"
+              >
+                Hari Ini
+              </button>
+            )}
+
+            {onNavigateToForm && (
+              <button
+                type="button"
+                onClick={onNavigateToForm}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold rounded-xl transition-all shadow-md shadow-emerald-950/50 hover:scale-[1.02]"
+              >
+                <PlusCircle className="w-4 h-4 stroke-[2.5]" />
+                <span>+ Input Laporan Shift</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* 3 Main Highlights Grid */}
+        <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-3.5 sm:gap-4 mt-5">
+          
+          {/* 1. TOTAL PRODUKSI HARI INI */}
+          <div className="bg-slate-950/85 border border-slate-800/90 hover:border-emerald-500/50 rounded-xl p-4 transition-all flex flex-col justify-between group shadow-sm">
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-400 group-hover:text-emerald-300 transition-colors">
+                  Total Produksi Hari Ini
+                </span>
+                <div className="mt-2 flex items-baseline gap-2">
+                  <span className="text-2xl sm:text-3xl font-black font-mono text-emerald-400 tracking-tight">
+                    {todayHighlightMetrics.totalActualTon.toLocaleString('id-ID', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
+                  </span>
+                  <span className="text-sm font-bold text-slate-400 font-mono">Ton</span>
+                </div>
+              </div>
+              <div className="p-2.5 rounded-xl bg-emerald-950/70 border border-emerald-600/40 text-emerald-400 group-hover:scale-110 transition-transform shrink-0">
+                <Layers className="w-5 h-5" />
+              </div>
+            </div>
+
+            <div className="mt-3.5 pt-2.5 border-t border-slate-800/80 text-[11px] text-slate-400 flex flex-col gap-1">
+              <div className="flex items-center justify-between">
+                <span>Target Shift Hari Ini:</span>
+                <span className="font-mono font-bold text-slate-200">{todayHighlightMetrics.totalTargetTon} Ton</span>
+              </div>
+              <div className="flex items-center justify-between text-[10px] text-slate-500">
+                <span>Berat Bersih (Netto):</span>
+                <span className="font-mono text-slate-400">
+                  ~{todayHighlightMetrics.netWeightKg.toLocaleString('id-ID')} Kg ({todayHighlightMetrics.totalReels} Roll)
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* 2. EFISIENSI RATA-RATA */}
+          <div className="bg-slate-950/85 border border-slate-800/90 hover:border-blue-500/50 rounded-xl p-4 transition-all flex flex-col justify-between group shadow-sm">
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-400 group-hover:text-blue-300 transition-colors">
+                  Efisiensi Rata-rata
+                </span>
+                <div className="mt-2 flex items-baseline gap-2">
+                  <span className={`text-2xl sm:text-3xl font-black font-mono tracking-tight ${
+                    todayHighlightMetrics.avgEfficiency >= 100 
+                      ? 'text-emerald-400' 
+                      : todayHighlightMetrics.avgEfficiency >= 95 
+                      ? 'text-blue-400' 
+                      : todayHighlightMetrics.avgEfficiency > 0 
+                      ? 'text-amber-400' 
+                      : 'text-slate-500'
+                  }`}>
+                    {todayHighlightMetrics.avgEfficiency}%
+                  </span>
+                  {todayHighlightMetrics.avgEfficiency > 0 && (
+                    <span className="text-xs text-slate-400 font-semibold font-mono">
+                      {todayHighlightMetrics.avgEfficiency >= 100 ? '▲ Melampaui' : '● Standar'}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className={`p-2.5 rounded-xl border group-hover:scale-110 transition-transform shrink-0 ${
+                todayHighlightMetrics.avgEfficiency >= 100
+                  ? 'bg-emerald-950/70 border-emerald-600/40 text-emerald-400'
+                  : todayHighlightMetrics.avgEfficiency >= 95
+                  ? 'bg-blue-950/70 border-blue-600/40 text-blue-400'
+                  : 'bg-amber-950/70 border-amber-600/40 text-amber-400'
+              }`}>
+                <TrendingUp className="w-5 h-5" />
+              </div>
+            </div>
+
+            <div className="mt-3.5 pt-2.5 border-t border-slate-800/80 text-[11px] text-slate-400 flex flex-col gap-1">
+              <div className="flex items-center justify-between">
+                <span>Evaluasi Kinerja:</span>
+                <span className={`font-bold px-2 py-0.5 rounded text-[10px] ${
+                  todayHighlightMetrics.avgEfficiency >= 100
+                    ? 'bg-emerald-950 text-emerald-300 border border-emerald-800'
+                    : todayHighlightMetrics.avgEfficiency >= 95
+                    ? 'bg-blue-950 text-blue-300 border border-blue-800'
+                    : todayHighlightMetrics.avgEfficiency > 0
+                    ? 'bg-amber-950 text-amber-300 border border-amber-800'
+                    : 'bg-slate-800 text-slate-400'
+                }`}>
+                  {todayHighlightMetrics.avgEfficiency >= 100
+                    ? '✓ Target Tercapai'
+                    : todayHighlightMetrics.avgEfficiency >= 95
+                    ? '✓ Optimal Standar'
+                    : todayHighlightMetrics.avgEfficiency > 0
+                    ? '⚠ Perlu Evaluasi'
+                    : 'Belum Ada Shift'}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-[10px] text-slate-500">
+                <span>Total Downtime Hari Ini:</span>
+                <span className="font-mono text-amber-400 font-semibold">{todayHighlightMetrics.totalDowntime} Menit</span>
+              </div>
+            </div>
+          </div>
+
+          {/* 3. JUMLAH LAPORAN YANG MASUK */}
+          <div className="bg-slate-950/85 border border-slate-800/90 hover:border-amber-500/50 rounded-xl p-4 transition-all flex flex-col justify-between group shadow-sm">
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-400 group-hover:text-amber-300 transition-colors">
+                  Jumlah Laporan yang Masuk
+                </span>
+                <div className="mt-2 flex items-baseline gap-2">
+                  <span className="text-2xl sm:text-3xl font-black font-mono text-amber-300 tracking-tight">
+                    {todayHighlightMetrics.totalReportsCount}
+                  </span>
+                  <span className="text-sm font-bold text-slate-400">Laporan Masuk</span>
+                </div>
+              </div>
+              <div className="p-2.5 rounded-xl bg-amber-950/70 border border-amber-600/40 text-amber-400 group-hover:scale-110 transition-transform shrink-0">
+                <FileText className="w-5 h-5" />
+              </div>
+            </div>
+
+            <div className="mt-3.5 pt-2.5 border-t border-slate-800/80 text-[11px] text-slate-400 flex flex-col gap-1">
+              <div className="flex items-center justify-between">
+                <span>Status Shift Hari Ini:</span>
+                <div className="flex items-center gap-1.5 font-mono text-[10px]">
+                  <span className={`px-1.5 py-0.5 rounded ${todayHighlightMetrics.shift1Count > 0 ? 'bg-blue-950 text-blue-300 border border-blue-800 font-bold' : 'bg-slate-900 text-slate-600'}`}>
+                    S1: {todayHighlightMetrics.shift1Count}
+                  </span>
+                  <span className={`px-1.5 py-0.5 rounded ${todayHighlightMetrics.shift2Count > 0 ? 'bg-cyan-950 text-cyan-300 border border-cyan-800 font-bold' : 'bg-slate-900 text-slate-600'}`}>
+                    S2: {todayHighlightMetrics.shift2Count}
+                  </span>
+                  <span className={`px-1.5 py-0.5 rounded ${todayHighlightMetrics.shift3Count > 0 ? 'bg-indigo-950 text-indigo-300 border border-indigo-800 font-bold' : 'bg-slate-900 text-slate-600'}`}>
+                    S3: {todayHighlightMetrics.shift3Count}
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center justify-between text-[10px] text-slate-500">
+                <span>Kualitas Grade A Hari Ini:</span>
+                <span className="font-mono text-emerald-400 font-bold">{todayHighlightMetrics.gradeAPercent}%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Unit PM Breakdown Strip */}
+        <div className="relative z-10 mt-4 pt-3 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-3 flex-wrap">
+            <span className="text-[11px] font-bold text-slate-300 flex items-center gap-1.5">
+              <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span>Realisasi per Unit PM ({activeHighlightDate === todayStr ? 'Hari Ini' : activeHighlightDate}):</span>
+            </span>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800 text-[11px] font-mono">
+                <span className="text-slate-400">PM1:</span> <strong className="text-emerald-400">{todayHighlightMetrics.pm1Ton} Ton</strong>
+              </span>
+              <span className="px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800 text-[11px] font-mono">
+                <span className="text-slate-400">PM2:</span> <strong className="text-cyan-400">{todayHighlightMetrics.pm2Ton} Ton</strong>
+              </span>
+              <span className="px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800 text-[11px] font-mono">
+                <span className="text-slate-400">PM5:</span> <strong className="text-amber-400">{todayHighlightMetrics.pm5Ton} Ton</strong>
+              </span>
+            </div>
+          </div>
+
+          {todayHighlightMetrics.totalReportsCount === 0 && (
+            <div className="flex items-center gap-2 text-amber-400 text-xs bg-amber-950/40 px-3 py-1.5 rounded-lg border border-amber-800/60">
+              <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+              <span>Belum ada laporan shift yang masuk untuk {activeHighlightDate === todayStr ? 'hari ini' : activeHighlightDate}.</span>
+              {availableReportDates.length > 0 && availableReportDates[0] !== activeHighlightDate && (
+                <button
+                  type="button"
+                  onClick={() => setHighlightDate(availableReportDates[0])}
+                  className="underline hover:text-amber-300 font-bold ml-1 cursor-pointer"
+                >
+                  Lihat tanggal {availableReportDates[0]}
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      </section>
 
       {/* KPI Highlight Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
