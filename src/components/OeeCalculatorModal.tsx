@@ -462,7 +462,7 @@ export const OeeCalculatorModal: React.FC<OeeCalculatorModalProps> = ({
                     {calculationResult.performance}%
                   </span>
                   <span className="text-[11px] text-slate-400">
-                    {actualTon} / {targetTon} Ton
+                    {(actualTon * 1000).toLocaleString('id-ID')} / {(targetTon * 1000).toLocaleString('id-ID')} Kg
                   </span>
                 </div>
                 <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
@@ -474,7 +474,7 @@ export const OeeCalculatorModal: React.FC<OeeCalculatorModalProps> = ({
                   />
                 </div>
                 <p className="text-[10px] text-slate-400">
-                  Rasio kecepatan/tonase terhadap target kapasitas jam operasi.
+                  Rasio kecepatan/output terhadap target kapasitas jam operasi.
                 </p>
               </div>
 
@@ -494,7 +494,7 @@ export const OeeCalculatorModal: React.FC<OeeCalculatorModalProps> = ({
                     {calculationResult.quality}%
                   </span>
                   <span className="text-[11px] text-slate-400">
-                    Good: {calculationResult.goodProductionTon} Ton
+                    Good: {(calculationResult.goodProductionTon * 1000).toLocaleString('id-ID')} Kg
                   </span>
                 </div>
                 <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
@@ -614,7 +614,7 @@ export const OeeCalculatorModal: React.FC<OeeCalculatorModalProps> = ({
                         performanceMethod === 'tonnage' ? 'bg-cyan-600 text-white' : 'text-slate-400 hover:text-white'
                       }`}
                     >
-                      Tonase
+                      Output (Kg)
                     </button>
                     <button
                       type="button"
@@ -630,34 +630,34 @@ export const OeeCalculatorModal: React.FC<OeeCalculatorModalProps> = ({
 
                 {performanceMethod === 'tonnage' ? (
                   <>
-                    {/* Target Tonase */}
+                    {/* Target Produksi (Kg) */}
                     <div>
                       <div className="flex items-center justify-between text-[11px] text-slate-400 mb-1">
                         <span>Target Produksi Shift:</span>
-                        <span className="font-mono text-slate-200 font-bold">{targetTon} Ton</span>
+                        <span className="font-mono text-slate-200 font-bold">{Math.round(targetTon * 1000).toLocaleString('id-ID')} Kg</span>
                       </div>
                       <input
                         type="number"
-                        step="0.05"
-                        min="0.1"
-                        value={targetTon}
-                        onChange={(e) => setTargetTon(Math.max(0.1, Number(e.target.value)))}
+                        step="50"
+                        min="100"
+                        value={Math.round(targetTon * 1000)}
+                        onChange={(e) => setTargetTon(Math.max(0.1, (Number(e.target.value) || 0) / 1000))}
                         className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold text-white focus:outline-none focus:border-cyan-500"
                       />
                     </div>
 
-                    {/* Actual Tonase */}
+                    {/* Actual Produksi (Kg) */}
                     <div>
                       <div className="flex items-center justify-between text-[11px] text-slate-400 mb-1">
-                        <span>Aktual Tonase Dihasilkan:</span>
-                        <span className="font-mono text-cyan-400 font-bold">{actualTon} Ton</span>
+                        <span>Aktual Hasil Produksi:</span>
+                        <span className="font-mono text-cyan-400 font-bold">{Math.round(actualTon * 1000).toLocaleString('id-ID')} Kg</span>
                       </div>
                       <input
                         type="number"
-                        step="0.05"
+                        step="50"
                         min="0"
-                        value={actualTon}
-                        onChange={(e) => setActualTon(Math.max(0, Number(e.target.value)))}
+                        value={Math.round(actualTon * 1000)}
+                        onChange={(e) => setActualTon(Math.max(0, (Number(e.target.value) || 0) / 1000))}
                         className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold text-white focus:outline-none focus:border-cyan-500"
                       />
                     </div>

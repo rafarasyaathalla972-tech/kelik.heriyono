@@ -8,6 +8,7 @@ import { TrainingModal } from './components/TrainingModal';
 import { ShareModal } from './components/ShareModal';
 import { OrgStructureModal } from './components/OrgStructureModal';
 import { PmProductsModal } from './components/PmProductsModal';
+import { PresentationDeckModal } from './components/PresentationDeckModal';
 import { ShiftReport, MachineId, EditAuditLog, TrainingModuleId, PupPersonnel } from './types';
 import { INITIAL_SHIFT_REPORTS } from './data/initialReports';
 import { 
@@ -17,7 +18,7 @@ import {
   deleteSharedReport,
   checkServerHealth 
 } from './services/reportService';
-import { CheckCircle2, Factory, BookOpen, GraduationCap, Share2, Building2, Sliders } from 'lucide-react';
+import { CheckCircle2, Factory, BookOpen, GraduationCap, Share2, Building2, Sliders, Presentation } from 'lucide-react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<'form' | 'dashboard' | 'history'>('dashboard');
@@ -62,6 +63,7 @@ export default function App() {
   // Modals state
   const [isSopOpen, setIsSopOpen] = useState<boolean>(false);
   const [isTrainingOpen, setIsTrainingOpen] = useState<boolean>(false);
+  const [isPresentationOpen, setIsPresentationOpen] = useState<boolean>(false);
   const [isShareOpen, setIsShareOpen] = useState<boolean>(false);
   const [isOrgStructureOpen, setIsOrgStructureOpen] = useState<boolean>(false);
   const [isPmProductsOpen, setIsPmProductsOpen] = useState<boolean>(false);
@@ -233,6 +235,7 @@ export default function App() {
         }}
         onOpenSop={() => setIsSopOpen(true)}
         onOpenTraining={() => handleOpenTraining()}
+        onOpenPresentation={() => setIsPresentationOpen(true)}
         onOpenOrgStructure={() => setIsOrgStructureOpen(true)}
         onOpenPmProducts={() => setIsPmProductsOpen(true)}
         onOpenShare={() => setIsShareOpen(true)}
@@ -294,6 +297,15 @@ export default function App() {
           </div>
 
           <div className="flex flex-wrap items-center gap-4 text-[11px]">
+            <button
+              onClick={() => setIsPresentationOpen(true)}
+              className="text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1 bg-amber-950/50 px-2 py-0.5 rounded border border-amber-500/40"
+              title="Buka Materi Presentasi Resmi Power Point Kepala Pabrik (Kelik Heriyono)"
+            >
+              <Presentation className="w-3.5 h-3.5 text-amber-400" />
+              <span>Presentasi PPT (Kepala Pabrik)</span>
+            </button>
+            <span className="text-slate-600">&bull;</span>
             <button
               onClick={() => setIsSopOpen(true)}
               className="text-emerald-400 hover:text-emerald-300 font-semibold flex items-center gap-1"
@@ -372,6 +384,15 @@ export default function App() {
         isOpen={isTrainingOpen}
         onClose={() => setIsTrainingOpen(false)}
         defaultMachine={trainingDefaultMachine}
+        onOpenPresentation={() => {
+          setIsTrainingOpen(false);
+          setIsPresentationOpen(true);
+        }}
+      />
+
+      <PresentationDeckModal
+        isOpen={isPresentationOpen}
+        onClose={() => setIsPresentationOpen(false)}
       />
 
       <PmProductsModal

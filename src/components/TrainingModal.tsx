@@ -31,7 +31,8 @@ import {
   Award,
   Gauge,
   Factory,
-  Building2
+  Building2,
+  Presentation
 } from 'lucide-react';
 import { TRAINING_MODULES } from '../data/trainingData';
 import { TRAINING_MEDIA_DATA } from '../data/trainingMediaData';
@@ -45,12 +46,14 @@ interface TrainingModalProps {
   isOpen: boolean;
   onClose: () => void;
   defaultMachine?: TrainingModuleId;
+  onOpenPresentation?: () => void;
 }
 
 export const TrainingModal: React.FC<TrainingModalProps> = ({
   isOpen,
   onClose,
-  defaultMachine = 'TISSUE_PM'
+  defaultMachine = 'TISSUE_PM',
+  onOpenPresentation
 }) => {
   const [selectedMachine, setSelectedMachine] = useState<TrainingModuleId>(defaultMachine);
   const [activeSubTab, setActiveSubTab] = useState<string>('all');
@@ -116,6 +119,19 @@ export const TrainingModal: React.FC<TrainingModalProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
+            {onOpenPresentation && (
+              <button
+                onClick={() => {
+                  onClose();
+                  onOpenPresentation();
+                }}
+                className="px-3 py-1.5 bg-gradient-to-r from-amber-500 via-orange-500 to-rose-600 hover:from-amber-600 hover:to-rose-700 text-white text-xs font-black rounded-lg transition-all flex items-center gap-1.5 shadow-md shadow-orange-950/40"
+                title="Buka Materi Presentasi Power Point Resmi Kepala Pabrik (Kelik Heriyono)"
+              >
+                <Presentation className="w-3.5 h-3.5 text-white" />
+                <span>Presentasi PPT (Kepala Pabrik)</span>
+              </button>
+            )}
             <button
               onClick={() => window.print()}
               className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5 border border-slate-700"

@@ -13,7 +13,8 @@ import {
   Check,
   Building2,
   Users,
-  Layers
+  Layers,
+  Presentation
 } from 'lucide-react';
 import { ShiftType } from '../types';
 
@@ -23,6 +24,7 @@ interface NavbarProps {
   onOpenSop: () => void;
   onOpenTraining: () => void;
   onOpenPupms?: () => void;
+  onOpenPresentation?: () => void;
   onOpenOrgStructure?: () => void;
   onOpenPmProducts?: () => void;
   onOpenShare?: () => void;
@@ -37,6 +39,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenSop,
   onOpenTraining,
   onOpenPupms,
+  onOpenPresentation,
   onOpenOrgStructure,
   onOpenPmProducts,
   onOpenShare,
@@ -54,7 +57,6 @@ export const Navbar: React.FC<NavbarProps> = ({
       onOpenShare();
     } else {
       navigator.clipboard?.writeText('https://bit.ly/laporan-shift-pm-pup');
-      alert('Tautan bit.ly/laporan-shift-pm-pup berhasil disalin!');
     }
   };
 
@@ -186,6 +188,21 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Quick Guidance Buttons: Always Accessible */}
           <div className="flex items-center gap-2">
+            {onOpenPresentation && (
+              <button
+                id="btn-open-presentation-global"
+                onClick={onOpenPresentation}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-black bg-gradient-to-r from-amber-500 via-orange-500 to-rose-600 hover:from-amber-600 hover:to-rose-700 text-white border border-amber-300 shadow-md shadow-orange-950/40 transition-all hover:scale-105"
+                title="Buka Materi Presentasi Resmi Power Point Kepala Pabrik (Kelik Heriyono) - Lengkap Foto Mesin, Spek Produk & Unduh .PPTX"
+              >
+                <Presentation className="w-3.5 h-3.5 text-white animate-pulse" />
+                <span>Presentasi PPT</span>
+                <span className="hidden sm:inline-block bg-slate-950/80 text-amber-300 border border-amber-400/40 text-[10px] px-1.5 py-0.2 rounded font-black">
+                  Kepala Pabrik
+                </span>
+              </button>
+            )}
+
             {onOpenOrgStructure && (
               <button
                 id="btn-open-org-structure-global"

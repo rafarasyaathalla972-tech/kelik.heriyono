@@ -41,28 +41,49 @@ export interface PmJumboRollProduct {
   bahanBaku: 'HVS' | 'PULP';
 }
 
+export interface ProducedProductItem {
+  id: string;
+  productCode: string;
+  productItemName: string;
+  reelCount: number;
+  weightKg: number;
+  targetGsm?: number;
+  gsmTolerance?: string;
+  tensileMdStandard?: string;
+  tensileCdStandard?: string;
+  thicknessMmStandard?: number;
+  creepingStandard?: string;
+  rawMaterial?: 'HVS' | 'PULP';
+}
+
 export interface ShiftReport {
   id: string;
   // A. Data Umum
   date: string; // YYYY-MM-DD
   shift: ShiftType;
-  operatorName: string;
-  assistantOperatorName?: string; // Pembantu Operator / Helper Shift
-  karuName?: string;              // Kepala Regu / Wakil PM
+  operatorName: string; // Operator Utama (bisa multi, dipisah koma)
+  operatorNames?: string[]; // Array personel operator utama
+  assistantOperatorName?: string; // Pembantu Operator / Helper (bisa multi)
+  assistantOperatorNames?: string[]; // Array personel helper
+  karuName?: string;              // Kepala Regu / Wakil PM (bisa multi)
+  karuNames?: string[];           // Array personel karu
   groupShift?: 'Group 1' | 'Group 2' | 'Group 3';
   machine: MachineId;
 
-  // B. Hasil Produksi
-  targetProductionTon: number;
-  actualProductionTon: number;
+  // B. Hasil Produksi (Standar Satuan Kg: 2.000 Kg / Shift)
+  targetProductionKg?: number; // Target standar pershift: 2000 Kg
+  actualProductionKg?: number; // Realisasi produksi (Kg)
+  targetProductionTon: number; // Kompatibilitas Ton
+  actualProductionTon: number; // Kompatibilitas Ton
   achievementPercentage: number; // calculated: (actual / target) * 100
   netWeightKg: number;
   reelCount: number;
-  paperGradeCode: string; // e.g. "MG HVS 1 PLY PUTIH UK.0275 MM [60.A/B.61.2.18.0275]"
+  paperGradeCode: string; // e.g. "Mg HVS 1 Ply Putih 18 gsm Uk. 0275 mm A [60.A.61.2.18.0275]"
   
-  // Data Terintegrasi Produk Jumbo Roll PM
-  productCode?: string;         // Kode Barang, e.g. "60.A/B.61.2.18.0275"
-  productItemName?: string;     // Item Barang, e.g. "MG HVS 1 PLY PUTIH UK.0275 MM"
+  // Data Terintegrasi Produk Jumbo Roll PM (Mendukung 1 s/d 4 produk per shift)
+  productsProduced?: ProducedProductItem[];
+  productCode?: string;         // Kode Barang, e.g. "60.A.61.2.18.0275"
+  productItemName?: string;     // Item Barang, e.g. "Mg HVS 1 Ply Putih 18 gsm Uk. 0275 mm A"
   targetGsm?: number;           // GSM target, e.g. 18.0
   gsmTolerance?: string;        // Toleransi GSM, e.g. "± 1"
   tensileMdStandard?: string;   // MD Tensile Standard, e.g. "1200 - 1500"

@@ -97,13 +97,20 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ reports, onNav
     return formatIndonesianDate(activeHighlightDate);
   }, [activeHighlightDate]);
 
-  // HIGHLIGHT METRICS FOR TARGET DATE (TODAY)
+  // HIGHLIGHT METRICS FOR TARGET DATE (TODAY) - STANDAR TARGET: 2.000 KG / SHIFT
   const todayHighlightMetrics = useMemo(() => {
     const dayReports = reports.filter(r => r.date === activeHighlightDate);
 
-    // 1. Total Produksi Hari Ini
-    const totalActualTon = dayReports.reduce((acc, r) => acc + (r.actualProductionTon || 0), 0);
-    const totalTargetTon = dayReports.reduce((acc, r) => acc + (r.targetProductionTon || 0), 0);
+    // 1. Total Produksi Hari Ini (Satuan Kg)
+    const totalActualKg = dayReports.reduce(
+      (acc, r) => acc + (r.actualProductionKg || r.netWeightKg || Math.round((r.actualProductionTon || 0) * 1000) || 0),
+      0
+    );
+    // Standar Resmi Target Shift: 2.000 Kg / shift
+    const standardShiftTargetKg = 2000;
+    const totalTargetKg = dayReports.length > 0
+      ? dayReports.reduce((acc, r) => acc + (r.targetProductionKg || Math.round((r.targetProductionTon || 2.0) * 1000) || standardShiftTargetKg), 0)
+      : standardShiftTargetKg;
 
     // 2. Efisiensi Rata-rata (%)
     // Rata-rata persentase pencapaian target dari seluruh shift hari ini
@@ -114,20 +121,20 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ reports, onNav
     // 3. Jumlah Laporan yang Masuk
     const totalReportsCount = dayReports.length;
 
-    // Additional valuable production insights
+    // Additional valuable production insights (Kg)
     const totalReels = dayReports.reduce((acc, r) => acc + (r.reelCount || 0), 0);
     const totalDowntime = dayReports.reduce((acc, r) => acc + (r.totalDowntimeMinutes || 0), 0);
-    const netWeightKg = dayReports.reduce((acc, r) => acc + (r.netWeightKg || (r.actualProductionTon * 1000)), 0);
+    const netWeightKg = dayReports.reduce((acc, r) => acc + (r.netWeightKg || r.actualProductionKg || Math.round((r.actualProductionTon || 0) * 1000)), 0);
 
     // Shift breakdown
     const s1 = dayReports.filter(r => r.shift === 'Shift 1' || (r.shift as string) === 'Pagi').length;
     const s2 = dayReports.filter(r => r.shift === 'Shift 2' || (r.shift as string) === 'Siang').length;
     const s3 = dayReports.filter(r => r.shift === 'Shift 3' || (r.shift as string) === 'Malam').length;
 
-    // PM Machine breakdown
-    const pm1Actual = dayReports.filter(r => r.machine === 'PM1').reduce((acc, r) => acc + (r.actualProductionTon || 0), 0);
-    const pm2Actual = dayReports.filter(r => r.machine === 'PM2').reduce((acc, r) => acc + (r.actualProductionTon || 0), 0);
-    const pm5Actual = dayReports.filter(r => r.machine === 'PM5').reduce((acc, r) => acc + (r.actualProductionTon || 0), 0);
+    // PM Machine breakdown (Kg)
+    const pm1Actual = dayReports.filter(r => r.machine === 'PM1').reduce((acc, r) => acc + (r.actualProductionKg || r.netWeightKg || Math.round((r.actualProductionTon || 0) * 1000)), 0);
+    const pm2Actual = dayReports.filter(r => r.machine === 'PM2').reduce((acc, r) => acc + (r.actualProductionKg || r.netWeightKg || Math.round((r.actualProductionTon || 0) * 1000)), 0);
+    const pm5Actual = dayReports.filter(r => r.machine === 'PM5').reduce((acc, r) => acc + (r.actualProductionKg || r.netWeightKg || Math.round((r.actualProductionTon || 0) * 1000)), 0);
 
     // Quality breakdown today
     const totalQuality = dayReports.reduce(
@@ -139,8 +146,9 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ reports, onNav
 
     return {
       date: activeHighlightDate,
-      totalActualTon: Number(totalActualTon.toFixed(1)),
-      totalTargetTon: Number(totalTargetTon.toFixed(1)),
+      totalActualKg: Math.round(totalActualKg),
+      totalTargetKg: Math.round(totalTargetKg),
+      standardShiftTargetKg,
       avgEfficiency,
       totalReportsCount,
       totalReels,
@@ -149,9 +157,9 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ reports, onNav
       shift1Count: s1,
       shift2Count: s2,
       shift3Count: s3,
-      pm1Ton: Number(pm1Actual.toFixed(1)),
-      pm2Ton: Number(pm2Actual.toFixed(1)),
-      pm5Ton: Number(pm5Actual.toFixed(1)),
+      pm1Kg: Math.round(pm1Actual),
+      pm2Kg: Math.round(pm2Actual),
+      pm5Kg: Math.round(pm5Actual),
       gradeAPercent,
       reports: dayReports
     };
@@ -170,12 +178,12 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ reports, onNav
     });
   }, [reports, selectedMachineFilter, selectedShiftFilter]);
 
-  // Aggregate Metrics for Top KPI Cards
+  // Aggregate Metrics for Top KPI Cards (Satuan Kg)
   const kpiMetrics = useMemo(() => {
     if (filteredReports.length === 0) {
       return {
-        totalActualTon: 0,
-        totalTargetTon: 0,
+        totalActualKg: 0,
+        totalTargetKg: 0,
         avgAchievement: 0,
         totalDowntime: 0,
         avgDefectRate: 0,
@@ -184,10 +192,16 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ reports, onNav
       };
     }
 
-    const totalActualTon = filteredReports.reduce((acc, r) => acc + (r.actualProductionTon || 0), 0);
-    const totalTargetTon = filteredReports.reduce((acc, r) => acc + (r.targetProductionTon || 0), 0);
-    const avgAchievement = totalTargetTon > 0 
-      ? Number(((totalActualTon / totalTargetTon) * 100).toFixed(1)) 
+    const totalActualKg = filteredReports.reduce(
+      (acc, r) => acc + (r.actualProductionKg || r.netWeightKg || Math.round((r.actualProductionTon || 0) * 1000)),
+      0
+    );
+    const totalTargetKg = filteredReports.reduce(
+      (acc, r) => acc + (r.targetProductionKg || Math.round((r.targetProductionTon || 2.0) * 1000)),
+      0
+    );
+    const avgAchievement = totalTargetKg > 0 
+      ? Number(((totalActualKg / totalTargetKg) * 100).toFixed(1)) 
       : 0;
 
     const totalDowntime = filteredReports.reduce((acc, r) => acc + (r.totalDowntimeMinutes || 0), 0);
@@ -208,8 +222,8 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ reports, onNav
       : 0;
 
     return {
-      totalActualTon: Number(totalActualTon.toFixed(1)),
-      totalTargetTon: Number(totalTargetTon.toFixed(1)),
+      totalActualKg: Math.round(totalActualKg),
+      totalTargetKg: Math.round(totalTargetKg),
       avgAchievement,
       totalDowntime,
       avgDefectRate,
@@ -218,19 +232,25 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ reports, onNav
     };
   }, [filteredReports]);
 
-  // Chart 1: Produksi vs Target per Mesin (PM1, PM2, PM5)
+  // Chart 1: Produksi vs Target per Mesin (PM1, PM2, PM5) - Satuan Kg
   const productionByMachineData = useMemo(() => {
     const machines: MachineId[] = ['PM1', 'PM2', 'PM5'];
     return machines.map(mId => {
       const machineReports = filteredReports.filter(r => r.machine === mId);
-      const target = machineReports.reduce((acc, r) => acc + (r.targetProductionTon || 0), 0);
-      const actual = machineReports.reduce((acc, r) => acc + (r.actualProductionTon || 0), 0);
+      const target = machineReports.reduce(
+        (acc, r) => acc + (r.targetProductionKg || Math.round((r.targetProductionTon || 2.0) * 1000)),
+        0
+      );
+      const actual = machineReports.reduce(
+        (acc, r) => acc + (r.actualProductionKg || r.netWeightKg || Math.round((r.actualProductionTon || 0) * 1000)),
+        0
+      );
       const ach = target > 0 ? Number(((actual / target) * 100).toFixed(1)) : 0;
 
       return {
         machine: mId,
-        TargetTon: Number(target.toFixed(1)),
-        AktualTon: Number(actual.toFixed(1)),
+        TargetKg: Math.round(target),
+        AktualKg: Math.round(actual),
         PencapaianPersen: ach,
         JumlahShift: machineReports.length
       };
@@ -279,10 +299,14 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ reports, onNav
 
     return sorted.map(r => {
       const shiftCode = r.shift.replace('Shift ', 'S');
+      const targetKg = r.targetProductionKg || Math.round((r.targetProductionTon || 2.0) * 1000);
+      const actualKg = r.actualProductionKg || r.netWeightKg || Math.round((r.actualProductionTon || 0) * 1000);
       return {
         label: `${r.date.slice(5)} (${shiftCode}-${r.machine})`,
-        target: r.targetProductionTon,
-        aktual: r.actualProductionTon,
+        targetKg,
+        aktualKg: actualKg,
+        target: targetKg,
+        aktual: actualKg,
         persentase: r.achievementPercentage,
         downtime: r.totalDowntimeMinutes,
         operator: r.operatorName
@@ -305,7 +329,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ reports, onNav
       .sort((a, b) => b.minutes - a.minutes);
   }, [filteredReports]);
 
-  // Production aggregation by PM Jumbo Roll product
+  // Production aggregation by PM Jumbo Roll product (Satuan Kg)
   const productionByProduct = useMemo(() => {
     const map: Record<string, {
       productName: string;
@@ -314,11 +338,12 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ reports, onNav
       targetGsm: number;
       gsmTolerance: string;
       machine: string;
+      totalKg: number;
       totalTon: number;
       reels: number;
       reportsCount: number;
-      gradeATon: number;
-      defectTon: number;
+      gradeAKg: number;
+      defectKg: number;
     }> = {};
 
     filteredReports.forEach(r => {
@@ -329,6 +354,9 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ reports, onNav
       const raw = r.rawMaterial || prod?.bahanBaku || 'HVS';
       const gsm = r.targetGsm || prod?.gsm || 0;
       const tol = r.gsmTolerance || prod?.gsmTolerance || '';
+      const prodKg = r.actualProductionKg || r.netWeightKg || Math.round((r.actualProductionTon || 0) * 1000);
+      const gradeA = Math.round((r.qualityGradeA_Ton || 0) * 1000);
+      const defect = Math.round((r.qualityGradeDefect_Ton || 0) * 1000);
 
       if (!map[key]) {
         map[key] = {
@@ -338,21 +366,23 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ reports, onNav
           targetGsm: gsm,
           gsmTolerance: tol,
           machine: r.machine,
+          totalKg: 0,
           totalTon: 0,
           reels: 0,
           reportsCount: 0,
-          gradeATon: 0,
-          defectTon: 0
+          gradeAKg: 0,
+          defectKg: 0
         };
       }
-      map[key].totalTon += (r.actualProductionTon || 0);
+      map[key].totalKg += prodKg;
+      map[key].totalTon += (r.actualProductionTon || prodKg / 1000);
       map[key].reels += (r.reelCount || 0);
       map[key].reportsCount += 1;
-      map[key].gradeATon += (r.qualityGradeA_Ton || 0);
-      map[key].defectTon += (r.qualityGradeDefect_Ton || 0);
+      map[key].gradeAKg += gradeA;
+      map[key].defectKg += defect;
     });
 
-    return Object.values(map).sort((a, b) => b.totalTon - a.totalTon);
+    return Object.values(map).sort((a, b) => b.totalKg - a.totalKg);
   }, [filteredReports]);
 
   // =========================================================================
@@ -433,22 +463,28 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ reports, onNav
           return s === shiftName;
         });
         if (matching.length === 0) {
-          return { eff: null, actual: 0, target: 0, count: 0 };
+          return { eff: null, actualKg: 0, targetKg: 0, count: 0 };
         }
-        const actual = matching.reduce((acc, r) => acc + (r.actualProductionTon || 0), 0);
-        const target = matching.reduce((acc, r) => acc + (r.targetProductionTon || 0), 0);
-        const eff = target > 0 ? Number(((actual / target) * 100).toFixed(1)) : 0;
-        return { eff, actual: Number(actual.toFixed(2)), target: Number(target.toFixed(2)), count: matching.length };
+        const actualKg = matching.reduce(
+          (acc, r) => acc + (r.actualProductionKg || r.netWeightKg || Math.round((r.actualProductionTon || 0) * 1000)),
+          0
+        );
+        const targetKg = matching.reduce(
+          (acc, r) => acc + (r.targetProductionKg || Math.round((r.targetProductionTon || 2.0) * 1000)),
+          0
+        );
+        const eff = targetKg > 0 ? Number(((actualKg / targetKg) * 100).toFixed(1)) : 0;
+        return { eff, actualKg: Math.round(actualKg), targetKg: Math.round(targetKg), count: matching.length };
       };
 
       const s1 = calcShift('Shift 1');
       const s2 = calcShift('Shift 2');
       const s3 = calcShift('Shift 3');
 
-      const dayTotalActual = Number((s1.actual + s2.actual + s3.actual).toFixed(2));
-      const dayTotalTarget = Number((s1.target + s2.target + s3.target).toFixed(2));
-      const overallEff = dayTotalTarget > 0 
-        ? Number(((dayTotalActual / dayTotalTarget) * 100).toFixed(1)) 
+      const dayTotalActualKg = s1.actualKg + s2.actualKg + s3.actualKg;
+      const dayTotalTargetKg = s1.targetKg + s2.targetKg + s3.targetKg;
+      const overallEff = dayTotalTargetKg > 0 
+        ? Number(((dayTotalActualKg / dayTotalTargetKg) * 100).toFixed(1)) 
         : null;
 
       return {
@@ -458,26 +494,26 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ reports, onNav
         'Shift 1': s1.eff,
         'Shift 2': s2.eff,
         'Shift 3': s3.eff,
-        shift1Actual: s1.actual,
-        shift1Target: s1.target,
+        shift1Actual: s1.actualKg,
+        shift1Target: s1.targetKg,
         shift1Count: s1.count,
-        shift2Actual: s2.actual,
-        shift2Target: s2.target,
+        shift2Actual: s2.actualKg,
+        shift2Target: s2.targetKg,
         shift2Count: s2.count,
-        shift3Actual: s3.actual,
-        shift3Target: s3.target,
+        shift3Actual: s3.actualKg,
+        shift3Target: s3.targetKg,
         shift3Count: s3.count,
-        totalActual: dayTotalActual,
-        totalTarget: dayTotalTarget,
+        totalActual: dayTotalActualKg,
+        totalTarget: dayTotalTargetKg,
         overallEfficiency: overallEff
       };
     });
 
-    // 5. Analisis Statistik Tiap Shift selama 7 Hari
+    // 5. Analisis Statistik Tiap Shift selama 7 Hari (Satuan Kg)
     const getShiftMetrics = (shiftKey: 'Shift 1' | 'Shift 2' | 'Shift 3') => {
       const values: number[] = [];
-      let totalActualTon = 0;
-      let totalTargetTon = 0;
+      let totalActualKg = 0;
+      let totalTargetKg = 0;
       let totalReportsCount = 0;
 
       chartData.forEach(d => {
@@ -486,16 +522,16 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ reports, onNav
           values.push(val);
         }
         if (shiftKey === 'Shift 1') {
-          totalActualTon += d.shift1Actual;
-          totalTargetTon += d.shift1Target;
+          totalActualKg += d.shift1Actual;
+          totalTargetKg += d.shift1Target;
           totalReportsCount += d.shift1Count;
         } else if (shiftKey === 'Shift 2') {
-          totalActualTon += d.shift2Actual;
-          totalTargetTon += d.shift2Target;
+          totalActualKg += d.shift2Actual;
+          totalTargetKg += d.shift2Target;
           totalReportsCount += d.shift2Count;
         } else {
-          totalActualTon += d.shift3Actual;
-          totalTargetTon += d.shift3Target;
+          totalActualKg += d.shift3Actual;
+          totalTargetKg += d.shift3Target;
           totalReportsCount += d.shift3Count;
         }
       });
@@ -507,8 +543,8 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ reports, onNav
           max: 0,
           stdDev: 0,
           count: 0,
-          totalActualTon: 0,
-          totalTargetTon: 0,
+          totalActualKg: 0,
+          totalTargetKg: 0,
           totalReportsCount: 0,
           status: 'Belum Ada Data'
         };
@@ -529,8 +565,10 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ reports, onNav
         max,
         stdDev,
         count: values.length,
-        totalActualTon: Number(totalActualTon.toFixed(2)),
-        totalTargetTon: Number(totalTargetTon.toFixed(2)),
+        totalActualKg: Math.round(totalActualKg),
+        totalTargetKg: Math.round(totalTargetKg),
+        totalActualTon: Number((totalActualKg / 1000).toFixed(2)),
+        totalTargetTon: Number((totalTargetKg / 1000).toFixed(2)),
         totalReportsCount,
         status: avg >= 100 ? 'Melampaui Target' : avg >= 95 ? 'Optimal Standar' : 'Perlu Evaluasi'
       };
@@ -754,9 +792,9 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ reports, onNav
                 </span>
                 <div className="mt-2 flex items-baseline gap-2">
                   <span className="text-2xl sm:text-3xl font-black font-mono text-emerald-400 tracking-tight">
-                    {todayHighlightMetrics.totalActualTon.toLocaleString('id-ID', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
+                    {todayHighlightMetrics.totalActualKg.toLocaleString('id-ID')}
                   </span>
-                  <span className="text-sm font-bold text-slate-400 font-mono">Ton</span>
+                  <span className="text-sm font-bold text-slate-400 font-mono">Kg</span>
                 </div>
               </div>
               <div className="p-2.5 rounded-xl bg-emerald-950/70 border border-emerald-600/40 text-emerald-400 group-hover:scale-110 transition-transform shrink-0">
@@ -767,7 +805,11 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ reports, onNav
             <div className="mt-3.5 pt-2.5 border-t border-slate-800/80 text-[11px] text-slate-400 flex flex-col gap-1">
               <div className="flex items-center justify-between">
                 <span>Target Shift Hari Ini:</span>
-                <span className="font-mono font-bold text-slate-200">{todayHighlightMetrics.totalTargetTon} Ton</span>
+                <span className="font-mono font-bold text-emerald-300">
+                  {todayHighlightMetrics.totalReportsCount <= 1
+                    ? '2.000 Kg'
+                    : `${todayHighlightMetrics.totalTargetKg.toLocaleString('id-ID')} Kg (Standar: 2.000 Kg / shift)`}
+                </span>
               </div>
               <div className="flex items-center justify-between text-[10px] text-slate-500">
                 <span>Berat Bersih (Netto):</span>
@@ -894,13 +936,13 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ reports, onNav
             </span>
             <div className="flex items-center gap-2 flex-wrap">
               <span className="px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800 text-[11px] font-mono">
-                <span className="text-slate-400">PM1:</span> <strong className="text-emerald-400">{todayHighlightMetrics.pm1Ton} Ton</strong>
+                <span className="text-slate-400">PM1:</span> <strong className="text-emerald-400">{todayHighlightMetrics.pm1Kg.toLocaleString('id-ID')} Kg</strong>
               </span>
               <span className="px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800 text-[11px] font-mono">
-                <span className="text-slate-400">PM2:</span> <strong className="text-cyan-400">{todayHighlightMetrics.pm2Ton} Ton</strong>
+                <span className="text-slate-400">PM2:</span> <strong className="text-cyan-400">{todayHighlightMetrics.pm2Kg.toLocaleString('id-ID')} Kg</strong>
               </span>
               <span className="px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800 text-[11px] font-mono">
-                <span className="text-slate-400">PM5:</span> <strong className="text-amber-400">{todayHighlightMetrics.pm5Ton} Ton</strong>
+                <span className="text-slate-400">PM5:</span> <strong className="text-amber-400">{todayHighlightMetrics.pm5Kg.toLocaleString('id-ID')} Kg</strong>
               </span>
             </div>
           </div>
@@ -925,7 +967,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ reports, onNav
 
       {/* KPI Highlight Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        {/* Card 1: Total Tonase Produksi */}
+        {/* Card 1: Total Produksi Aktual (Kg) */}
         <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-4 shadow-sm relative overflow-hidden">
           <div className="flex items-center justify-between text-slate-400 text-xs font-semibold">
             <span>Total Produksi Aktual</span>
@@ -935,12 +977,12 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ reports, onNav
           </div>
           <div className="mt-2 flex items-baseline gap-1.5">
             <span className="text-xl sm:text-2xl font-bold font-mono text-white">
-              {kpiMetrics.totalActualTon.toLocaleString('id-ID')}
+              {kpiMetrics.totalActualKg.toLocaleString('id-ID')}
             </span>
-            <span className="text-xs text-slate-400 font-medium">Ton</span>
+            <span className="text-xs text-slate-400 font-medium font-bold">Kg</span>
           </div>
           <div className="mt-1 text-[11px] text-slate-400">
-            Target gabungan: {kpiMetrics.totalTargetTon} Ton &bull; {kpiMetrics.totalReels} Roll
+            Target gabungan: {kpiMetrics.totalTargetKg.toLocaleString('id-ID')} Kg &bull; {kpiMetrics.totalReels} Roll
           </div>
         </div>
 
@@ -1028,7 +1070,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ reports, onNav
                 </span>
               </div>
               <p className="text-xs text-slate-400">
-                Perbandingan efisiensi Shift 1 (Pagi), Shift 2 (Siang), dan Shift 3 (Malam) terhadap target standar 100% (2 Ton/shift)
+                Perbandingan efisiensi Shift 1 (Pagi), Shift 2 (Siang), dan Shift 3 (Malam) terhadap target standar 100% (2.000 Kg / shift)
               </p>
             </div>
 
@@ -1308,7 +1350,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ reports, onNav
                                 {s.eff !== null ? (
                                   <div className="text-right font-mono">
                                     <strong className={s.eff >= 100 ? 'text-emerald-400' : 'text-slate-200'}>{s.eff}%</strong>
-                                    <span className="text-[10px] text-slate-500 ml-1">({s.actual}/{s.target}T)</span>
+                                    <span className="text-[10px] text-slate-500 ml-1">({s.actual.toLocaleString('id-ID')}/{s.target.toLocaleString('id-ID')} Kg)</span>
                                   </div>
                                 ) : (
                                   <span className="text-slate-600 text-[10px] italic">Tidak ada shift</span>
@@ -1371,8 +1413,8 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ reports, onNav
                   <Table className="w-3.5 h-3.5 text-blue-400" />
                   Tabel Rincian Efisiensi Produksi 7 Hari Terakhir:
                 </span>
-                <span className="text-[11px] text-slate-400">
-                  Target Standar: 2.0 Ton / Shift
+                <span className="text-[11px] text-emerald-400 font-semibold">
+                  Target Standar: 2.000 Kg / Shift
                 </span>
               </div>
 
@@ -1394,7 +1436,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ reports, onNav
                         Rata-rata Harian
                       </th>
                       <th className="p-2.5 font-semibold text-right">
-                        Tonase Aktual / Target
+                        Produksi Aktual / Target (Kg)
                       </th>
                       <th className="p-2.5 font-semibold text-center">
                         Status Kinerja
@@ -1464,10 +1506,10 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ reports, onNav
                             )}
                           </td>
 
-                          {/* Tonase */}
+                          {/* Produksi Aktual / Target (Kg) */}
                           <td className="p-2.5 text-right text-slate-300">
                             {row.totalActual > 0 ? (
-                              <span>{row.totalActual} / {row.totalTarget} Ton</span>
+                              <span>{row.totalActual.toLocaleString('id-ID')} / {row.totalTarget.toLocaleString('id-ID')} Kg</span>
                             ) : (
                               <span className="text-slate-600 text-[10px] font-sans italic">-</span>
                             )}
@@ -1520,16 +1562,16 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ reports, onNav
           </div>
         </div>
 
-        {/* CHART 1: PRODUKSI AKTUAL VS TARGET PER MESIN */}
+        {/* CHART 1: PRODUKSI AKTUAL VS TARGET PER MESIN (KG) */}
         <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-4 sm:p-5 shadow-sm space-y-3">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
                 <BarChart3 className="w-4 h-4 text-emerald-400" />
-                Pencapaian Produksi vs Target per Mesin
+                Pencapaian Produksi vs Target per Mesin (Kg)
               </h2>
               <p className="text-[11px] text-slate-400">
-                Perbandingan tonase target vs realisasi aktual (PM1, PM2, PM5)
+                Perbandingan produksi target vs realisasi aktual (PM1, PM2, PM5) dalam satuan Kg
               </p>
             </div>
           </div>
@@ -1543,10 +1585,11 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ reports, onNav
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px', fontSize: '12px' }}
                   labelStyle={{ color: '#f8fafc', fontWeight: 'bold' }}
+                  formatter={(val: any) => [`${Number(val).toLocaleString('id-ID')} Kg`, '']}
                 />
                 <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '8px' }} />
-                <Bar dataKey="TargetTon" name="Target (Ton)" fill="#475569" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="AktualTon" name="Aktual (Ton)" fill="#10b981" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="TargetKg" name="Target (Kg)" fill="#475569" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="AktualKg" name="Realisasi Aktual (Kg)" fill="#10b981" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -1559,8 +1602,8 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ reports, onNav
                 <div className="text-[11px] text-emerald-400 font-mono font-bold mt-0.5">
                   {item.PencapaianPersen}%
                 </div>
-                <div className="text-[10px] text-slate-500 mt-0.5">
-                  {item.AktualTon} / {item.TargetTon} T
+                <div className="text-[10px] text-slate-500 mt-0.5 font-mono">
+                  {item.AktualKg.toLocaleString('id-ID')} / {item.TargetKg.toLocaleString('id-ID')} Kg
                 </div>
               </div>
             ))}
@@ -1573,7 +1616,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ reports, onNav
             <div>
               <h2 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4 text-cyan-400" />
-                Perbandingan Kualitas Produk Antar Mesin (Ton)
+                Perbandingan Kualitas Produk Antar Mesin
               </h2>
               <p className="text-[11px] text-slate-400">
                 Distribusi kualitas Grade A, Grade B, Grade C, dan Cacat Reject
@@ -1702,7 +1745,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ reports, onNav
                 Akumulasi Produksi Berdasarkan Produk Jumbo Roll (PM Master Data PT. PUP)
               </h2>
               <p className="text-[11px] text-slate-400">
-                Pemetaan tonase riil, roll count, dan persentase kualitas Grade A per item kode barang PM.
+                Pemetaan hasil produksi riil (Kg), roll count, dan persentase kualitas Grade A per item kode barang PM.
               </p>
             </div>
             <button
@@ -1730,13 +1773,13 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ reports, onNav
                     <th className="py-2.5 px-3">Target GSM</th>
                     <th className="py-2.5 px-3 text-right">Laporan</th>
                     <th className="py-2.5 px-3 text-right">Total Reel</th>
-                    <th className="py-2.5 px-3 text-right">Produksi Aktual</th>
+                    <th className="py-2.5 px-3 text-right">Produksi Aktual (Kg)</th>
                     <th className="py-2.5 px-3 text-right">Grade A</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800">
                   {productionByProduct.map((p, idx) => {
-                    const gradeAPct = p.totalTon > 0 ? ((p.gradeATon / p.totalTon) * 100).toFixed(1) : '0';
+                    const gradeAPct = p.totalKg > 0 ? ((p.gradeAKg / p.totalKg) * 100).toFixed(1) : '0';
                     return (
                       <tr key={idx} className="hover:bg-slate-800/40 transition-colors">
                         <td className="py-2.5 px-3 font-mono font-bold text-amber-300">
@@ -1769,7 +1812,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({ reports, onNav
                           {p.reels} Roll
                         </td>
                         <td className="py-2.5 px-3 text-right font-mono font-bold text-emerald-400">
-                          {p.totalTon.toFixed(1)} Ton
+                          {p.totalKg.toLocaleString('id-ID')} Kg
                         </td>
                         <td className="py-2.5 px-3 text-right font-mono font-semibold text-cyan-300">
                           {gradeAPct}%

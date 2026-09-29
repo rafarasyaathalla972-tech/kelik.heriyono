@@ -79,7 +79,7 @@ export const PrintReportView: React.FC<PrintReportViewProps> = ({ report, onClos
           </div>
 
           {/* Section A: Data Umum */}
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 bg-slate-100 p-3 rounded border border-slate-300 text-xs">
+          <div className="grid grid-cols-2 sm:grid-cols-6 gap-2 bg-slate-100 p-3 rounded border border-slate-300 text-xs">
             <div>
               <span className="text-[10px] text-slate-500 block uppercase font-bold">Tanggal Laporan</span>
               <span className="font-bold text-slate-900 text-sm font-mono">{report.date}</span>
@@ -89,16 +89,20 @@ export const PrintReportView: React.FC<PrintReportViewProps> = ({ report, onClos
               <span className="font-bold text-slate-900 text-sm">{report.shift} ({report.groupShift || 'Group 1'})</span>
             </div>
             <div>
-              <span className="text-[10px] text-slate-500 block uppercase font-bold">Operator Utama</span>
-              <span className="font-bold text-slate-900 text-sm">{report.operatorName}</span>
-            </div>
-            <div>
-              <span className="text-[10px] text-slate-500 block uppercase font-bold">Pembantu (Helper)</span>
-              <span className="font-bold text-slate-900 text-sm">{report.assistantOperatorName || '-'}</span>
-            </div>
-            <div>
               <span className="text-[10px] text-slate-500 block uppercase font-bold">Unit Mesin</span>
               <span className="font-bold text-slate-900 text-sm">{report.machine}</span>
+            </div>
+            <div className="col-span-1">
+              <span className="text-[10px] text-slate-500 block uppercase font-bold">Kepala Regu (Karu)</span>
+              <span className="font-bold text-slate-900 text-xs leading-tight block break-words">{report.karuName || '-'}</span>
+            </div>
+            <div className="col-span-1">
+              <span className="text-[10px] text-slate-500 block uppercase font-bold">Operator Utama</span>
+              <span className="font-bold text-slate-900 text-xs leading-tight block break-words">{report.operatorName}</span>
+            </div>
+            <div className="col-span-1">
+              <span className="text-[10px] text-slate-500 block uppercase font-bold">Pembantu (Helper)</span>
+              <span className="font-bold text-slate-900 text-xs leading-tight block break-words">{report.assistantOperatorName || '-'}</span>
             </div>
           </div>
 
@@ -125,17 +129,56 @@ export const PrintReportView: React.FC<PrintReportViewProps> = ({ report, onClos
                   <td className="p-2 font-semibold text-slate-900">{displayRawMat}</td>
                 </tr>
                 <tr className="border-b border-slate-300">
-                  <td className="p-2 font-semibold bg-slate-50">Target Produksi</td>
-                  <td className="p-2 font-mono">{report.targetProductionTon} Ton</td>
+                  <td className="p-2 font-semibold bg-slate-50">Target Produksi Standar</td>
+                  <td className="p-2 font-mono font-bold text-slate-900">
+                    {(report.targetProductionKg || Math.round(report.targetProductionTon * 1000)).toLocaleString('id-ID')} Kg / shift
+                  </td>
                   <td className="p-2 font-semibold bg-slate-50">Produksi Aktual</td>
-                  <td className="p-2 font-mono font-bold text-slate-900">{report.actualProductionTon} Ton</td>
+                  <td className="p-2 font-mono font-bold text-slate-900">
+                    {(report.actualProductionKg || report.netWeightKg || Math.round(report.actualProductionTon * 1000)).toLocaleString('id-ID')} Kg
+                  </td>
                 </tr>
                 <tr className="border-b border-slate-300">
                   <td className="p-2 font-semibold bg-slate-50">Berat Bersih (Net)</td>
-                  <td className="p-2 font-mono">{report.netWeightKg?.toLocaleString('id-ID')} Kg</td>
+                  <td className="p-2 font-mono">{(report.netWeightKg || report.actualProductionKg || Math.round(report.actualProductionTon * 1000))?.toLocaleString('id-ID')} Kg</td>
                   <td className="p-2 font-semibold bg-slate-50">Jumlah Gulungan</td>
                   <td className="p-2 font-mono">{report.reelCount} Reel / Roll</td>
                 </tr>
+                {report.productsProduced && report.productsProduced.length > 0 && (
+                  <tr className="border-b border-slate-300 bg-amber-50/40">
+                    <td className="p-2 font-semibold bg-amber-100/60 text-amber-950 align-top">
+                      Rincian Produk Shift ({report.productsProduced.length} Item)
+                    </td>
+                    <td className="p-2 text-xs" colSpan={3}>
+                      <table className="w-full text-left border-collapse border border-slate-300 text-[11px]">
+                        <thead>
+                          <tr className="bg-slate-100 border-b border-slate-300 text-slate-700">
+                            <th className="p-1 border border-slate-300">#</th>
+                            <th className="p-1 border border-slate-300">Item Produk</th>
+                            <th className="p-1 border border-slate-300">Kode</th>
+                            <th className="p-1 border border-slate-300 text-center">Bahan</th>
+                            <th className="p-1 border border-slate-300 text-center">Rol</th>
+                            <th className="p-1 border border-slate-300 text-right">Berat (Kg)</th>
+                            <th className="p-1 border border-slate-300 text-center">Target GSM</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {report.productsProduced.map((p, idx) => (
+                            <tr key={p.id || idx} className="border-b border-slate-200">
+                              <td className="p-1 border border-slate-300 font-bold text-center">{idx + 1}</td>
+                              <td className="p-1 border border-slate-300 font-semibold">{p.productItemName}</td>
+                              <td className="p-1 border border-slate-300 font-mono text-slate-800">{p.productCode}</td>
+                              <td className="p-1 border border-slate-300 text-center">{p.rawMaterial || 'HVS'}</td>
+                              <td className="p-1 border border-slate-300 text-center font-bold">{p.reelCount} Rol</td>
+                              <td className="p-1 border border-slate-300 text-right font-bold text-slate-900">{p.weightKg?.toLocaleString('id-ID')} Kg</td>
+                              <td className="p-1 border border-slate-300 text-center">{p.targetGsm} {p.gsmTolerance}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </td>
+                  </tr>
+                )}
                 {report.oee && (
                   <tr className="border-b border-slate-300 bg-blue-50/60 font-semibold">
                     <td className="p-2 bg-blue-100/70 text-blue-950 font-bold">Skor OEE Shift</td>
@@ -187,23 +230,31 @@ export const PrintReportView: React.FC<PrintReportViewProps> = ({ report, onClos
               </div>
             </div>
 
-            {/* Grade Breakdown Table */}
+            {/* Grade Breakdown Table - Satuan Kg */}
             <div className="grid grid-cols-4 gap-2 mb-2 text-center">
               <div className="p-2 border border-slate-300 bg-slate-50 rounded">
                 <div className="text-[10px] text-slate-500 uppercase">Grade A</div>
-                <div className="font-bold font-mono text-sm">{report.qualityGradeA_Ton} T</div>
+                <div className="font-bold font-mono text-sm">
+                  {Math.round((report.qualityGradeA_Ton || 0) * 1000).toLocaleString('id-ID')} Kg
+                </div>
               </div>
               <div className="p-2 border border-slate-300 bg-slate-50 rounded">
                 <div className="text-[10px] text-slate-500 uppercase">Grade B</div>
-                <div className="font-bold font-mono text-sm">{report.qualityGradeB_Ton} T</div>
+                <div className="font-bold font-mono text-sm">
+                  {Math.round((report.qualityGradeB_Ton || 0) * 1000).toLocaleString('id-ID')} Kg
+                </div>
               </div>
               <div className="p-2 border border-slate-300 bg-slate-50 rounded">
                 <div className="text-[10px] text-slate-500 uppercase">Grade C</div>
-                <div className="font-bold font-mono text-sm">{report.qualityGradeC_Ton} T</div>
+                <div className="font-bold font-mono text-sm">
+                  {Math.round((report.qualityGradeC_Ton || 0) * 1000).toLocaleString('id-ID')} Kg
+                </div>
               </div>
               <div className="p-2 border border-rose-300 bg-rose-50 text-rose-900 rounded">
                 <div className="text-[10px] uppercase font-bold text-rose-700">Cacat / Reject</div>
-                <div className="font-bold font-mono text-sm">{report.qualityGradeDefect_Ton} T ({report.defectPercentage}%)</div>
+                <div className="font-bold font-mono text-sm">
+                  {Math.round((report.qualityGradeDefect_Ton || 0) * 1000).toLocaleString('id-ID')} Kg ({report.defectPercentage}%)
+                </div>
               </div>
             </div>
 
@@ -314,29 +365,29 @@ export const PrintReportView: React.FC<PrintReportViewProps> = ({ report, onClos
           <div className="pt-6 grid grid-cols-4 gap-3 text-center text-xs">
             <div>
               <div className="text-slate-500 text-[10px] uppercase font-semibold">Pembantu (Helper)</div>
-              <div className="h-12 border-b border-slate-400 mt-2"></div>
-              <div className="font-bold mt-1 text-slate-900 text-[11px] truncate">
+              <div className="h-10 border-b border-slate-400 mt-2"></div>
+              <div className="font-bold mt-1 text-slate-900 text-[10px] leading-tight break-words">
                 {report.assistantOperatorName || '( ........................ )'}
               </div>
             </div>
             <div>
               <div className="text-slate-500 text-[10px] uppercase font-semibold">Operator Utama</div>
-              <div className="h-12 border-b border-slate-400 mt-2"></div>
-              <div className="font-bold mt-1 text-slate-900 text-[11px] truncate">
+              <div className="h-10 border-b border-slate-400 mt-2"></div>
+              <div className="font-bold mt-1 text-slate-900 text-[10px] leading-tight break-words">
                 {report.operatorName}
               </div>
             </div>
             <div>
               <div className="text-slate-500 text-[10px] uppercase font-semibold">Kepala Regu / Karu</div>
-              <div className="h-12 border-b border-slate-400 mt-2"></div>
-              <div className="font-bold mt-1 text-slate-900 text-[11px] truncate">
+              <div className="h-10 border-b border-slate-400 mt-2"></div>
+              <div className="font-bold mt-1 text-slate-900 text-[10px] leading-tight break-words">
                 {report.karuName || '( ........................ )'}
               </div>
             </div>
             <div>
               <div className="text-slate-500 text-[10px] uppercase font-semibold">Kepala Pabrik</div>
-              <div className="h-12 border-b border-slate-400 mt-2"></div>
-              <div className="font-bold mt-1 text-slate-900 text-[11px] truncate">
+              <div className="h-10 border-b border-slate-400 mt-2"></div>
+              <div className="font-bold mt-1 text-slate-900 text-[10px] leading-tight">
                 Kelik Heriyono
               </div>
             </div>

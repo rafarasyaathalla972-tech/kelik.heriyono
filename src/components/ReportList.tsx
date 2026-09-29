@@ -439,8 +439,8 @@ export const ReportList: React.FC<ReportListProps> = ({
                           {report.achievementPercentage}%
                         </span>
                       </div>
-                      <div className="text-[11px] text-slate-500 font-mono">
-                        {report.actualProductionTon} / {report.targetProductionTon} Ton
+                      <div className="text-[11px] text-slate-400 font-mono">
+                        {(report.actualProductionKg || report.netWeightKg || Math.round(report.actualProductionTon * 1000)).toLocaleString('id-ID')} / {(report.targetProductionKg || Math.round(report.targetProductionTon * 1000)).toLocaleString('id-ID')} Kg
                       </div>
                     </div>
 
@@ -504,7 +504,7 @@ export const ReportList: React.FC<ReportListProps> = ({
                     <span>Downtime: <strong className={report.totalDowntimeMinutes > 0 ? 'text-amber-400' : 'text-slate-200'}>{report.totalDowntimeMinutes} Menit</strong></span>
                   </div>
                   <div>
-                    <span>Grade A: <strong className="text-emerald-400">{report.qualityGradeA_Ton} T</strong></span>
+                    <span>Grade A: <strong className="text-emerald-400">{Math.round((report.qualityGradeA_Ton || 0) * 1000).toLocaleString('id-ID')} Kg</strong></span>
                     <span className="mx-1">&bull;</span>
                     <span>Cacat: <strong className="text-rose-400">{report.defectPercentage}%</strong></span>
                   </div>
@@ -572,18 +572,69 @@ export const ReportList: React.FC<ReportListProps> = ({
                           <div className="bg-slate-950/70 p-2 rounded border border-slate-800">
                             <span className="text-slate-500 block text-[10px]">Performance (P):</span>
                             <span className="font-mono font-bold text-cyan-400">{report.oee.performance}%</span>
-                            <span className="text-[10px] text-slate-500 block">{report.oee.actualProductionTon}T / {report.oee.targetProductionTon}T</span>
+                            <span className="text-[10px] text-slate-500 block">
+                              {(report.oee.actualProductionTon * 1000).toLocaleString('id-ID')} / {(report.oee.targetProductionTon * 1000).toLocaleString('id-ID')} Kg
+                            </span>
                           </div>
                           <div className="bg-slate-950/70 p-2 rounded border border-slate-800">
                             <span className="text-slate-500 block text-[10px]">Quality (Q):</span>
                             <span className="font-mono font-bold text-emerald-400">{report.oee.quality}%</span>
-                            <span className="text-[10px] text-slate-500 block">Baik: {report.oee.goodProductionTon} Ton</span>
+                            <span className="text-[10px] text-slate-500 block">
+                              Baik: {(report.oee.goodProductionTon * 1000).toLocaleString('id-ID')} Kg
+                            </span>
                           </div>
                           <div className="bg-slate-950/70 p-2 rounded border border-slate-800">
                             <span className="text-slate-500 block text-[10px]">Waktu Bersih Operasi:</span>
                             <span className="font-mono font-bold text-slate-200">{report.oee.operatingTimeMinutes} Menit</span>
                             <span className="text-[10px] text-slate-500 block">dari {report.oee.plannedTimeMinutes - report.oee.plannedDowntimeMinutes} mnt</span>
                           </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* PM Jumbo Roll Product Specifications & Standards (PT. PUP) - Mendukung 1 s/d 4 Produk */}
+                    {report.productsProduced && report.productsProduced.length > 0 && (
+                      <div className="bg-slate-900 border border-amber-500/40 rounded-lg p-3 space-y-2">
+                        <div className="flex items-center justify-between border-b border-slate-800 pb-1.5">
+                          <div className="flex items-center gap-2">
+                            <Layers className="w-4 h-4 text-amber-400" />
+                            <span className="font-bold text-slate-100 text-xs">
+                              Daftar Produk yang Diproduksi Shift Ini ({report.productsProduced.length} Produk)
+                            </span>
+                          </div>
+                          <span className="text-[10px] text-amber-300 font-mono font-bold bg-amber-950/60 px-2 py-0.5 rounded border border-amber-800">
+                            Total {report.productsProduced.reduce((acc, p) => acc + (p.reelCount || 0), 0)} Rol &bull; {report.productsProduced.reduce((acc, p) => acc + (p.weightKg || 0), 0).toLocaleString('id-ID')} Kg
+                          </span>
+                        </div>
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-left text-xs text-slate-300">
+                            <thead>
+                              <tr className="border-b border-slate-800 text-slate-400 text-[10px] uppercase">
+                                <th className="py-1 px-2">No</th>
+                                <th className="py-1 px-2">Item Barang</th>
+                                <th className="py-1 px-2">Kode Barang</th>
+                                <th className="py-1 px-2">Bahan</th>
+                                <th className="py-1 px-2 text-center">Rol</th>
+                                <th className="py-1 px-2 text-right">Berat (Kg)</th>
+                                <th className="py-1 px-2 text-center">Target GSM</th>
+                                <th className="py-1 px-2 text-center">Tebal</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-800/60 font-mono text-[11px]">
+                              {report.productsProduced.map((prod, idx) => (
+                                <tr key={prod.id || idx} className="hover:bg-slate-800/40">
+                                  <td className="py-1.5 px-2 text-slate-500">#{idx + 1}</td>
+                                  <td className="py-1.5 px-2 font-sans font-semibold text-white">{prod.productItemName}</td>
+                                  <td className="py-1.5 px-2 text-amber-300 font-bold">{prod.productCode}</td>
+                                  <td className="py-1.5 px-2 text-slate-300">{prod.rawMaterial || 'HVS'}</td>
+                                  <td className="py-1.5 px-2 text-center font-bold text-cyan-300">{prod.reelCount} Rol</td>
+                                  <td className="py-1.5 px-2 text-right font-bold text-emerald-400">{prod.weightKg?.toLocaleString('id-ID')} Kg</td>
+                                  <td className="py-1.5 px-2 text-center">{prod.targetGsm} {prod.gsmTolerance}</td>
+                                  <td className="py-1.5 px-2 text-center">{prod.thicknessMmStandard ? `${prod.thicknessMmStandard} mm` : '-'}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
                         </div>
                       </div>
                     )}
