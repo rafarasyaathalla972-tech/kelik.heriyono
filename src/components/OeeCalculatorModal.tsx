@@ -711,19 +711,19 @@ export const OeeCalculatorModal: React.FC<OeeCalculatorModalProps> = ({
                   <h4 className="text-xs font-bold text-slate-200">3. Parameter Kualitas & Mutu</h4>
                 </div>
 
-                {/* Good Ton */}
+                {/* Good Ton (Kg) */}
                 <div>
                   <div className="flex items-center justify-between text-[11px] text-slate-400 mb-1">
-                    <span>Tonase Baik (Grade A+B):</span>
-                    <span className="font-mono text-emerald-400 font-bold">{manualGoodTon} Ton</span>
+                    <span>Produksi Baik (Grade A+B):</span>
+                    <span className="font-mono text-emerald-400 font-bold">{Math.round(manualGoodTon * 1000).toLocaleString('id-ID')} Kg</span>
                   </div>
                   <input
                     type="number"
-                    step="0.05"
+                    step="50"
                     min="0"
-                    max={actualTon}
-                    value={manualGoodTon}
-                    onChange={(e) => setManualGoodTon(Math.max(0, Number(e.target.value)))}
+                    max={Math.round(actualTon * 1000)}
+                    value={Math.round(manualGoodTon * 1000)}
+                    onChange={(e) => setManualGoodTon(Math.max(0, (Number(e.target.value) || 0) / 1000))}
                     className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold text-white focus:outline-none focus:border-emerald-500"
                   />
                 </div>
@@ -739,21 +739,21 @@ export const OeeCalculatorModal: React.FC<OeeCalculatorModalProps> = ({
                     />
                     <span>Sertakan Grade C sebagai Produk Layak</span>
                   </label>
-                  <span className="text-[10px] text-slate-500 font-mono">({qualityGradeC} Ton)</span>
+                  <span className="text-[10px] text-slate-500 font-mono">({Math.round(qualityGradeC * 1000).toLocaleString('id-ID')} Kg)</span>
                 </div>
 
-                {/* Broke / Defect Ton */}
+                {/* Broke / Defect Ton (Kg) */}
                 <div>
                   <div className="flex items-center justify-between text-[11px] text-slate-400 mb-1">
-                    <span>Tonase Cacat / Reject (Broke):</span>
-                    <span className="font-mono text-rose-400 font-bold">{manualDefectTon} Ton</span>
+                    <span>Produksi Cacat / Reject (Broke):</span>
+                    <span className="font-mono text-rose-400 font-bold">{Math.round(manualDefectTon * 1000).toLocaleString('id-ID')} Kg</span>
                   </div>
                   <input
                     type="number"
-                    step="0.01"
+                    step="10"
                     min="0"
-                    value={manualDefectTon}
-                    onChange={(e) => setManualDefectTon(Math.max(0, Number(e.target.value)))}
+                    value={Math.round(manualDefectTon * 1000)}
+                    onChange={(e) => setManualDefectTon(Math.max(0, (Number(e.target.value) || 0) / 1000))}
                     className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold text-white focus:outline-none focus:border-rose-500"
                   />
                 </div>
