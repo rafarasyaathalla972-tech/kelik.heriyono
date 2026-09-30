@@ -391,34 +391,35 @@ export const PUP_JOB_DESCRIPTIONS: JobDescriptionDetail[] = [
     reportsTo: 'Kelik Heriyono (Kepala Pabrik)',
     supervises: 'Wakil 1, Wakil 2, Operator Utama PM, Pembantu Operator PM',
     personnelNames: ['Untung S (PM1)', 'Rumawan (PM2)', 'Suwardi (PM5)'],
-    summary: 'Memimpin operasional unit mesin kertas yang dipimpinnya secara teknis dan operasional untuk menghasilkan lembaran kertas sesuai spesifikasi gramatur, kelancaran formasi web, efisiensi energi uap, serta meminimalkan break sheet.',
+    summary: 'Memimpin operasional unit mesin kertas yang dipimpinnya (PM 1, PM 2, atau PM 5) secara teknis dan manajerial untuk menjamin tercapainya target produksi harian per unit mesin masing-masing PM sebesar 2.000 Kg (100% target standar) dengan mutu prima Grade A (≥ 95%), kelancaran formasi lembaran, efisiensi energi uap boiler, serta penekanan waktu henti (downtime).',
     coreResponsibilities: [
-      'Menjamin tercapainya target produksi harian per unit mesin (PM1: 40 Ton, PM2: 62 Ton, PM5: 110 Ton / hari).',
-      'Mengawasi kepatuhan parameter kritis: Speed 100-150 MPM, Tekanan Yankee 1-3 BAR, konsistensi headbox 0.25-0.40%, dan kelembapan 6-8%.',
-      'Mengatur rotasi kerja, disiplin regu, dan kompetensi operator utama serta pembantu operator.',
-      'Melakukan troubleshooting teknis pada formasi wire, dewatering press, silinder pengering, dan kalender.',
-      'Menyetujui penggantian kawat (wire), kain kempa (felt), serta bilah doctor blade.'
+      'Menjamin tercapainya target produksi harian per unit mesin masing-masing PM sebesar 2.000 Kg (standar pencapaian 100% per unit mesin / shift untuk PM 1, PM 2, dan PM 5).',
+      'Menetapkan sasaran operasional efisiensi output produksi harian minimal 100% (2.000 Kg) per unit mesin dengan rasio reject/broke di bawah 1.0%.',
+      'Mengawasi kepatuhan parameter kritis: Speed 100-180 MPM, Tekanan Yankee 1-3 BAR, konsistensi headbox 0.25-0.40%, dan kelembapan 6-8% guna memastikan pencapaian target 2.000 Kg tercapai stabil.',
+      'Mengatur rotasi kerja, disiplin regu, dan kompetensi Operator Utama serta Pembantu Operator (Helper) dalam mempertahankan target harian 2.000 Kg per unit mesin.',
+      'Melakukan troubleshooting teknis pada formasi wire, dewatering press, silinder pengering, dan kalender untuk mencegah downtime yang menghambat kuota 2.000 Kg.',
+      'Menyetujui penggantian kawat (wire), kain kempa (felt), serta bilah doctor blade secara berkala demi menjamin kontinuitas target output 2.000 Kg per unit mesin.'
     ],
     dailyTasks: [
       {
         phase: 'Fase 1: Pra-Shift & Inspeksi Kesiapan (30 Menit Awal)',
         tasks: [
           'Memeriksa status operasional mesin, kondisi kain felt (kondisi pori & kebersihan), dan ketajaman doctor blade.',
-          'Memberikan arahan teknis kepada Wakil 1, Wakil 2, dan Operator Utama terkait target grade kertas hari ini.'
+          'Memberikan arahan teknis kepada Wakil 1, Wakil 2, dan Operator Utama terkait pencapaian target produksi harian 2.000 Kg per unit mesin dan spesifikasi grade kertas hari ini.'
         ]
       },
       {
         phase: 'Fase 2: Operasional Berjalan & Pengendalian Kualitas (Inti Shift)',
         tasks: [
-          'Memantau kestabilan kurva basis weight (gsm) dan moisture profile melintang (CD profile).',
-          'Menginvestigasi akar masalah jika terjadi kertas putus (sheet break) berulang lebih dari 2 kali per shift.',
+          'Memantau kestabilan kurva basis weight (gsm) dan moisture profile melintang (CD profile) untuk memastikan bobot produk stabil sesuai target 2.000 Kg.',
+          'Menginvestigasi akar masalah jika terjadi kertas putus (sheet break) berulang lebih dari 2 kali per shift agar tidak mengurangi capaian target 2.000 Kg.',
           'Memastikan koordinasi pasokan bubur dari Stock Prep memiliki derajat freeness (°SR) sesuai resep standar.'
         ]
       },
       {
         phase: 'Fase 3: Handover, Administrasi & 5S (30 Menit Akhir)',
         tasks: [
-          'Memeriksa dan menandatangani lembar serah terima shift beserta catatan handover operator.',
+          'Memeriksa dan menandatangani lembar serah terima shift beserta catatan evaluasi pencapaian target produksi 2.000 Kg per unit mesin.',
           'Memastikan seluruh sisa broke kertas di pit bawah telah dialirkan ke pulper kembali dan area bersih.'
         ]
       }
@@ -435,9 +436,10 @@ export const PUP_JOB_DESCRIPTIONS: JobDescriptionDetail[] = [
       ]
     },
     kpis: [
-      { indicator: 'OEE (Overall Equipment Effectiveness) PM', target: '≥ 85%', impact: 'Pemanfaatan aset mesin maksimal' },
-      { indicator: 'Frekuensi Kertas Putus (Sheet Break)', target: '≤ 2 Kejadian / Shift', impact: 'Meminimalkan broke dan kehilangan tonase' },
-      { indicator: 'Kesesuaian Gramatur & Moisture', target: 'CPK ≥ 1.33', impact: 'Keseragaman kualitas produk jadi' }
+      { indicator: 'Pencapaian Target Produksi Harian per Unit Mesin', target: '2.000 Kg / Unit Mesin PM (100%)', impact: 'Ketercapaian kuota produksi standar Jumbo Roll PT. PUP' },
+      { indicator: 'OEE (Overall Equipment Effectiveness) PM', target: '≥ 85% (World Class TPM)', impact: 'Pemanfaatan aset mesin maksimal' },
+      { indicator: 'Frekuensi Kertas Putus (Sheet Break)', target: '≤ 2 Kejadian / Shift', impact: 'Meminimalkan broke dan mempertahankan target produksi 2.000 Kg' },
+      { indicator: 'Kesesuaian Gramatur & Moisture', target: 'CPK ≥ 1.33 (Toleransi Standar)', impact: 'Keseragaman kualitas produk jadi' }
     ],
     k3SafetyRequirements: [
       'Wajib memastikan tombol Emergency Wire/Press/Reel berfungsi sempurna dan mudah dijangkau.',
@@ -640,8 +642,8 @@ export const PUP_JOB_DESCRIPTIONS: JobDescriptionDetail[] = [
       ]
     },
     kpis: [
-      { indicator: 'Pencapaian Target Tonase Shift', target: '≥ 95% dari Target Rencana', impact: 'Kelancaran kuota produksi' },
-      { indicator: 'Rasio Broke Kertas', target: '≤ 4.5% dari Total Output', impact: 'Penghematan bahan baku dan energi' }
+      { indicator: 'Pencapaian Target Produksi Shift (Kg)', target: '2.000 Kg / Shift (100%)', impact: 'Kelancaran kuota produksi standar per unit mesin' },
+      { indicator: 'Rasio Broke Kertas', target: '≤ 1.0% dari Total Output', impact: 'Penghematan bahan baku dan energi' }
     ],
     k3SafetyRequirements: [
       'Wajib menggunakan sarung tangan tahan panas saat menyambung kertas di silinder dryer.',
